@@ -910,105 +910,112 @@ export class PostsService {
 
       // // this.logsServicePostsAdd.log(`старт  для ${chats}`)
       // // получем сессионый ключ
-      // const savedSessionString = process.env['TELEGRAM_SESSION_STRING']
+      const savedSessionString = process.env['TELEGRAM_SESSION_STRING']
       // // apiId приложения
-      // const apiId = +process.env['API_ID']
+      const apiId = +process.env['API_ID']
       // // apiHash приложения
-      // const apiHash = process.env['API_HASH']
+      const apiHash = process.env['API_HASH']
       // // получем сессионый ключ в переменную
-      // const session = new StringSession(savedSessionString || '') // You should put your string session here
-      // const client = new TelegramClient(session, apiId, apiHash, {})
-      //
-      // await client.connect()
-      //
-      // const currentDate = new Date();
-      // const firstDayOfCurrentMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-      // const firstDayOfLastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-      //
-      // const minDate = Math.floor(firstDayOfLastMonth.getTime() / 1000);
-      // const maxDate = Math.floor(firstDayOfCurrentMonth.getTime() / 1000) - 1; // Последний день предыдущего месяца
-      //
-      // // let nextRate = 0;
-      // let userName = 'Kristina3245'
-      // for (let i = 0; i < 3; i++) {
-      //
-      //   const result  = await limiterTwo.schedule(() =>client.invoke(
-      //       new Api.messages.SearchGlobal({
-      //         q: "посоветуйте репетитора",
-      //         filter: new Api.InputMessagesFilterEmpty(),
-      //         minDate: Math.floor(Date.now() / 1000),
-      //         maxDate: Math.floor(Date.now() / 1000),
-      //         offsetRate: 0,
-      //         offsetPeer: userName,
-      //         offsetId: 0,
-      //         limit: 10,
-      //       })))
-      //
-      //   if (!result) {
-      //     console.log( 'no res')
-      //     continue
-      //   }
-      //
-      //   // получаем непосредственно сообщения
-      //   const messagesArray = result['messages']
-      //   if (!messagesArray) {
-      //     console.log('no message')
-      //     continue
-      //   }
-      //     // nextRate = message.nextRate
-      //   // console.log(result.nextRate)
-      //   // nextRate = result.nextRate
-      //
-      //   const chats = result['chats']
-      //     if (!chats) {
-      //       console.log(  'no chats')
-      //       continue
-      //     }
-      //     const users = result['users']
-      //     if (!users) {
-      //       console.log(  'no users')
-      //       continue
-      //     }
-      //   messagesArray.forEach(message => {
-      //   // Находим соответствующий чат и пользователя
-      //   const chat = chats.find(chat => chat?.id?.value === message?.peerId?.channelId?.value);
-      //   const user = users.find(user => user?.id?.value === message?.fromId?.userId?.value);
-      //     // userName = user.username;
-      //     console.log(chats)
-      //   // console.log(startPage)
-      //   // Если чат или пользователь не найдены, пропускаем это сообщение
-      //   //
-      //   // console.log(message?.id)
-      //   // console.log(new Date(message.date * 1000))
-      //   //
-      //   // const obj = {
-      //   //   identification_post: 'tg',  // оставляем как есть
-      //   //   id_group: chat?.id?.value.toString(),
-      //   //   name_group: chat?.title,
-      //   //   city_group: '',  // информация о городе и стране группы не предоставлена
-      //   //   country_group: '',
-      //   //   photo_100_group: chat?.photo?.photoId?.value?.toString() || '',
-      //   //   first_name_user: user?.firstName,
-      //   //   last_name_user: user?.lastName || '',
-      //   //   city_user: '',  // информация о городе и стране пользователя не предоставлена
-      //   //   country_user: '',
-      //   //   photo_100_user: user?.photo ? user?.photo?.photoId?.value?.toString() : '',
-      //   //   post_id: message?.id?.toString(),
-      //   //   post_owner_id: chat?.id?.value?.toString(),
-      //   //   post_fromId: user?.id?.value?.toString(),
-      //   //   post_date_publish: message?.date,
-      //   //   post_text: message?.message,
-      //   //   post_type: 'Message',
-      //   //   signer_id: user?.id?.value?.toString(),
-      //   //   username_tg: user?.username,
-      //   //   chatUsername:chat?.username,
-      //   // };
-      //
-      //   // const userLink = user.username ? `https://t.me/${user.username}` : 'Профиль пользователя недоступен';
-      //   // const messageLink = chat.username ? `https://t.me/${chat.username}/${message.id.value}` : 'Ссылка на сообщение недоступна';
-      //
-      //   });
-      // }
+      const session = new StringSession(savedSessionString || '') // You should put your string session here
+      const client = new TelegramClient(session, apiId, apiHash, {})
+
+      await client.connect()
+
+      const currentDate = new Date();
+      const firstDayOfCurrentMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      const firstDayOfLastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+
+      const minDate = Math.floor(firstDayOfLastMonth.getTime() / 1000);
+      const maxDate = Math.floor(firstDayOfCurrentMonth.getTime() / 1000) - 1; // Последний день предыдущего месяца
+
+      let nextRate = 0;
+      let userName = 'Kristina3245'
+      for (let i = 0; i < 3; i++) {
+
+        const result  = await limiterTwo.schedule(() =>client.invoke(
+            new Api.messages.SearchGlobal({
+              q: "посоветуйте репетитора",
+              filter: new Api.InputMessagesFilterEmpty(),
+              minDate: Math.floor(Date.now() / 1000),
+              maxDate: Math.floor(Date.now() / 1000),
+              offsetRate: 0,
+              offsetPeer: userName,
+              offsetId: 100,
+              limit: 2,
+            })))
+
+        if (!result) {
+          console.log( 'no res')
+          continue
+        }
+
+        // получаем непосредственно сообщения
+        const messagesArray = result['messages']
+        if (!messagesArray) {
+          console.log('no message')
+          continue
+        }
+          // nextRate = message.nextRate
+        // console.log(result.nextRate)
+        // nextRate = result.nextRate
+
+        const chats = result['chats']
+          if (!chats) {
+            console.log(  'no chats')
+            continue
+          }
+          const users = result['users']
+          if (!users) {
+            console.log(  'no users')
+            continue
+          }
+        messagesArray.forEach(message => {
+        // Находим соответствующий чат и пользователя
+        const chat = chats.find(chat => chat?.id?.value === message?.peerId?.channelId?.value);
+        const user = users.find(user => user?.id?.value === message?.fromId?.userId?.value);
+          // userName = user.username;
+          console.log(chats)
+        // console.log(startPage)
+        // Если чат или пользователь не найдены, пропускаем это сообщение
+        //
+        // console.log(message?.id)
+        // console.log(new Date(message.date * 1000))
+        //
+        // const obj = {
+        //   identification_post: 'tg',  // оставляем как есть
+        //   id_group: chat?.id?.value.toString(),
+        //   name_group: chat?.title,
+        //   city_group: '',  // информация о городе и стране группы не предоставлена
+        //   country_group: '',
+        //   photo_100_group: chat?.photo?.photoId?.value?.toString() || '',
+        //   first_name_user: user?.firstName,
+        //   last_name_user: user?.lastName || '',
+        //   city_user: '',  // информация о городе и стране пользователя не предоставлена
+        //   country_user: '',
+        //   photo_100_user: user?.photo ? user?.photo?.photoId?.value?.toString() : '',
+        //   post_id: message?.id?.toString(),
+        //   post_owner_id: chat?.id?.value?.toString(),
+        //   post_fromId: user?.id?.value?.toString(),
+        //   post_date_publish: message?.date,
+        //   post_text: message?.message,
+        //   post_type: 'Message',
+        //   signer_id: user?.id?.value?.toString(),
+        //   username_tg: user?.username,
+        //   chatUsername:chat?.username,
+        // };
+
+        // const userLink = user.username ? `https://t.me/${user.username}` : 'Профиль пользователя недоступен';
+        // const messageLink = chat.username ? `https://t.me/${chat.username}/${message.id.value}` : 'Ссылка на сообщение недоступна';
+
+        });
+      }
+
+
+
+
+
+
+
 
       this.logsServicePostsAdd.log(`ТГ ${new Date().toTimeString()} ${indicator == 1 ? 'ОБНОВЛЕНИЕ' : 'СОЗДАНИЕ'}`)
       this.logsServicePostsAdd.log(`получаем группы: ${new Date().toTimeString()}`);
@@ -1288,9 +1295,11 @@ export class PostsService {
     const data = await response.json();
   }
   async enterToTelegram() {
+    console.log('s')
     try {
       const savedSessionString = process.env['TELEGRAM_SESSION_STRING']
       if (savedSessionString) return
+
       const apiId = 22974621
       const apiHash = 'b3af68b7b98ee02f1dbc42fcfdecf935'
       const stringSession = new StringSession('')
@@ -1314,56 +1323,6 @@ export class PostsService {
       } finally {
         await client.disconnect()
       }
-
-      // const access = process.env['ACCESS_TOKEN'];
-      // const versionVk = process.env['VERSION_VK'];
-      //
-      // const arrayLinks = [
-      //     {id: 1, method: "wall.get", param: "owner_id", count: "count", offset: "offset", access: "access_token"},
-      // ];
-      //
-      // let count = 10000000
-      //
-      // for (let i = item > 0 ? item : 862250; i <= count; i++) {
-      //     chack = i;
-      //     console.log(i)
-      //
-      //     const {data:posts} = await firstValueFrom(
-      //         this.httpService
-      //             .get<any>(
-      //                 `https://api.vk.com/method/groups.getById?group_id=${i}&&fields=city&${arrayLinks[0].access}=${access}&v=${versionVk}`
-      //             )
-      //             .pipe(
-      //                 catchError((error: AxiosError) => {
-      //                     if (error.response && 'data' in error.response && error.response.data != undefined) {
-      //                         // this.loggerError(error.response.data)
-      //                         // this.logger.error(error.response.data);
-      //                     }
-      //                     console.log(error)
-      //                     throw 'An error happened!';
-      //                 }),
-      //             ),
-      //     );
-      //
-      //     if(!posts && !posts.response) continue
-      //     if (
-      //         posts?.response?.groups[0]?.name.toLowerCase().includes('подслушано') ||
-      //         posts?.response?.groups[0]?.name.toLowerCase().includes('мамы') ||
-      //         posts?.response?.groups[0]?.name.toLowerCase().includes('мамочки') ||
-      //         posts?.response?.groups[0]?.name.toLowerCase().includes('услышано') ||
-      //         posts?.response?.groups[0]?.name.toLowerCase().includes('Объявления') ||
-      //         posts?.response?.groups[0]?.name.toLowerCase().includes('доска объявлений') ||
-      //         posts?.response?.groups[0]?.name.toLowerCase().includes('бесплатные объявления') ||
-      //         posts?.response?.groups[0]?.name.toLowerCase().includes('типичный') ||
-      //         posts?.response?.groups[0]?.name.toLowerCase().includes('типичнаяя') ||
-      //         posts?.response?.groups[0]?.name.toLowerCase().includes('барахолка')
-      //     ) {
-      //         this.groupsFromVkService.create(1, {
-      //             identificator:1,
-      //             id_group: `-${posts.response.groups[0].id}` }
-      //         )
-      //     }
-      // }
     } catch (err) {
       console.log(err)
     }
@@ -1378,7 +1337,10 @@ export class PostsService {
       const apiHash = process.env['API_HASH']
       // получем сессионый ключ в переменную
       const session = new StringSession(savedSessionString || '') // You should put your string session here
-      const client = new TelegramClient(session, apiId, apiHash, {})
+      const client = new TelegramClient(session, apiId, apiHash, { connectionRetries: 5 })
+
+      const initialState = { phoneNumber: '+79292642644', password: 'your-2fa-password', phoneCode: 'Code ?' } // Initialize component initial state
+
       // количество сообщений которое будет получено
       let numberPost = process.env['NUMBER_POST']
       // офсет при переборе сообщений

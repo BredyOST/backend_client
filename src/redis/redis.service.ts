@@ -9,14 +9,14 @@ export class RedisService {
     private isConnected: boolean = false;
     constructor() {
         console.log('Creating Redis client...');
-        console.log(process.env["PATH_REDIS"]);
+
         const password = encodeURIComponent(process.env["PASSWORD_REDIS"]);
         const config = {
             url: `rediss://:${password}${process.env['ADRESS_REDIS']}`,
             socket: {
                 tls: true,
                 rejectUnauthorized: true,
-                ca: [fs.readFileSync(process.env["PATH_REDIS"]).toString()],
+                ca: [fs.readFileSync(`/var/www/ClientBack.redis/root.crt`).toString()],
             }
         };
         this.client = createClient(config);

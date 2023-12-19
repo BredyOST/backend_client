@@ -16,7 +16,7 @@ export class RedisService {
             socket: {
                 tls: true,
                 rejectUnauthorized: true,
-                ca: [fs.readFileSync(`D:/WEB/search-back/.redis/root.crt`).toString()],
+                ca: [fs.readFileSync(process.env['PATH_REDIS']).toString()],
             }
         };
         this.client = createClient(config);

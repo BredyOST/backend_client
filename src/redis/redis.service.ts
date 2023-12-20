@@ -2,30 +2,38 @@ import { Injectable } from '@nestjs/common'
 import * as fs from 'fs'
 import { createClient, RedisClientType } from 'redis'
 import { reviveFromBase64Representation } from '@neshca/json-replacer-reviver'
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class RedisService {
     private readonly client: RedisClientType;
     private isConnected: boolean = false;
-    constructor() {
+    constructor(private configService: ConfigService) {
         console.log('Creating Redis client...');
-        console.log(process.env["PATH_REDIS"]);
-        const password = encodeURIComponent(process.env["PASSWORD_REDIS"]);
-        const config = {
-            url: `rediss://:${password}${process.env['ADRESS_REDIS']}`,
+
+
+        const password = encodeURIComponent(this.configService.get<string>('PASSWORD_REDIS'));
+        const redisPath = this.configService.get<string>('PATH_REDIS');
+        const redisAddress = this.configService.get<string>('ADRESS_REDIS')
+
+        console.log(redisPath)
+        console.log(redisAddress)
+        // const password = encodeURIComponent(process.env["PASSWORD_REDIS"]);
+    const config = {
+            url: `rediss://:${password}${redisAddress}`,
             socket: {
-                tls: true,
-                rejectUnauthorized: true,
-                ca: [fs.readFileSync(process.env["PATH_REDIS"]).toString()],
-            }
+        tls: true,
+        rejectUnauthorized: true,
+                ca: [fs.readFileSync(redisPath).toString()],
+      },
         };
         this.client = createClient(config);
         this.client.connect().then(() => {
             this.isConnected = true;
-            console.log('Redis client connected.');
+        console.log('Redis client connected.')
         }).catch((err) => {
-            console.error('Redis connection error:', err);
-        });
+        console.error('Redis connection error:', err)
+      })
     }
 
 

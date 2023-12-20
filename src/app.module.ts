@@ -41,8 +41,8 @@ import { ChatsFromTelegramModule } from './groupsAndChats/chats-from-telegram/ch
 import { HouseholdStaffModule } from './AllCategoriesForSearch/household-staff/household-staff.module'
 import { HandymanAndBuilderModule } from './AllCategoriesForSearch/handyman-and-builder/handyman-and-builder.module'
 import { DesignersModule } from './designers/designers.module'
-import {RedisModule} from "./redis/redis.module";
-import {RedisService} from "./redis/redis.service";
+import { RedisModule } from './redis/redis.module'
+import { RedisService } from './redis/redis.service'
 
 @Module({
   imports: [

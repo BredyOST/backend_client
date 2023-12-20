@@ -22,11 +22,11 @@ export class RedisService {
         console.log("Конец вывода");
         // const password = encodeURIComponent(process.env["PASSWORD_REDIS"]);
     const config = {
-            url: `rediss://:${password}${redisAddress}`,
+            url: `rediss://:${password}@master.5a8ea7e5-5c92-4bc2-822f-94bf61acf9c9.c.dbaas.selcloud.ru:6380`,
             socket: {
         tls: true,
         rejectUnauthorized: true,
-                ca: [fs.readFileSync(redisPath).toString()],
+                ca: [fs.readFileSync('D:/WEB/search-back/.redis/root.crt').toString()],
       },
         };
         this.client = createClient(config);

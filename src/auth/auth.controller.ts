@@ -1,10 +1,13 @@
-import {Controller, Post, UseGuards, Request, Body, Get, Redirect, Res} from '@nestjs/common'
+import { Controller, Post, UseGuards, Request, Body, Get, Redirect} from '@nestjs/common'
 import { AuthService } from './auth.service'
 import { UserEntity } from '../users/entities/user.entity'
 import { LocalAuthGuard } from './guards/local.guard'
 import { RefreshTokenDto } from '../users/dto/refresh-token.dto'
 import { SessionAuthService } from './session-auth/session-auth.service'
-import * as process from 'process'
+import * as dotenv from 'dotenv'
+import {ConfigService} from "@nestjs/config";
+dotenv.config()
+
 
 export type createUserType = {
   email: string
@@ -20,7 +23,8 @@ export type email = {
 export class AuthController {
   constructor(
       private readonly authService: AuthService,
-      private readonly sessionAuthService: SessionAuthService
+      private readonly sessionAuthService: SessionAuthService,
+      private configService: ConfigService
   ) {}
 
   // РЕГИСТРАЦИЯ
@@ -42,7 +46,7 @@ export class AuthController {
 
   // КОГДА ПЕРЕШЛИ ПО ССЫЛКЕ АКТИВАЦИИ
   @Get('activate/:link')
-  @Redirect('http://localhost:3000', 200)
+  @Redirect('http://5.35.12.33:7777', 200)
   async activate(@Request() req: any) {
     return this.authService.activate(req.params.link)
   }

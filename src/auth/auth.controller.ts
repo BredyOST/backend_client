@@ -46,7 +46,7 @@ export class AuthController {
 
   // КОГДА ПЕРЕШЛИ ПО ССЫЛКЕ АКТИВАЦИИ
   @Get('activate/:link')
-  @Redirect('http://5.35.12.33:7777', 200)
+  @Redirect('http://localhost:7777', 200)
   async activate(@Request() req: any) {
     return this.authService.activate(req.params.link)
   }

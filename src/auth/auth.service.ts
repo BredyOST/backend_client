@@ -12,6 +12,7 @@ import { AuthorizationsService } from '../additionalRepositories/authorizations/
 import { LogsServiceOtherErrors } from '../otherServices/loggerService/logger.service'
 import { createUserType, email } from './auth.controller'
 import { SessionAuthService } from './session-auth/session-auth.service'
+import {ConfigService} from "@nestjs/config";
 
 @Injectable()
 export class AuthService {
@@ -23,6 +24,7 @@ export class AuthService {
     private logsServiceForOtherErrors: LogsServiceOtherErrors,
     private readonly authorizationsService: AuthorizationsService,
     private readonly mailerService: MailerService,
+    private configService: ConfigService,
   ) {}
 
   // регистрация
@@ -49,7 +51,7 @@ export class AuthService {
       const newUserDate = await this.usersService.create(newUser)
       if (!newUserDate || !newUserDate.email) throw new HttpException('Ошибка при создании учетной записи, обновите страницу и попробуйте еще раз', HttpStatus.BAD_REQUEST)
       // отправляем ссылку активации на указанный при регистрации email
-      await this.usersService.sendActivationMail(dto.email, `${process.env['API_URL']}/auth/activate/${activationLink}`)
+      await this.usersService.sendActivationMail(dto.email, `${this.configService.get<string>('API_URL')}/auth/activate/${activationLink}`)
 
       return {
         text: 'Регистрация завершена. На Ваш Email направлено сообщение для активации аккаунта',

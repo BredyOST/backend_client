@@ -13,6 +13,7 @@ import { HttpService } from '@nestjs/axios'
 import { LogsServiceOtherErrors } from '../otherServices/loggerService/logger.service'
 import { email } from '../auth/auth.controller'
 import { codeForNewEmailType, codeForNewPhone, codeType, fullNAmeType, phoneType } from './users.controller'
+import {ConfigService} from "@nestjs/config";
 
 export type createUSerWithLink = {
   email: string
@@ -29,6 +30,7 @@ export class UsersService {
     private readonly mailerService: MailerService,
     private logsServiceForOtherErrors: LogsServiceOtherErrors, // сервис для создания общих уведомления и ошибок
     private readonly httpService: HttpService,
+
   ) {}
 
   // блоки получения пользователей по параметрам

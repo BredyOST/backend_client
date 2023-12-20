@@ -14,7 +14,7 @@ export class RedisService {
 
         const password = encodeURIComponent(this.configService.get<string>('PASSWORD_REDIS'));
         const redisPath = this.configService.get<string>('PATH_REDIS');
-        const redisAddress = this.configService.get<string>('ADRESS_REDIS')
+        const redisAddress =  this.configService.get<string>('WEB_REDIS')
 
         console.log(`путь ${redisPath}`)
         console.log(`адрес ${redisAddress}`)

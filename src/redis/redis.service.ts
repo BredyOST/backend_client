@@ -2,8 +2,7 @@ import { Injectable } from '@nestjs/common'
 import * as fs from 'fs'
 import { createClient, RedisClientType } from 'redis'
 import { reviveFromBase64Representation } from '@neshca/json-replacer-reviver'
-import * as dotenv from 'dotenv'
-dotenv.config()
+
 @Injectable()
 export class RedisService {
     private readonly client: RedisClientType;

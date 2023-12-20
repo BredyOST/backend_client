@@ -18,7 +18,7 @@ export class PostsController {
   }
 
   // добавляем новые посты в ощий репозиторий
-  // @Cron('0 */6 * * * *')
+  @Cron('0 */10 * * * *')
   @Get('/addNewPosts')
   addNewPostsVk() {
     return this.postsService.processGroups(`2`)

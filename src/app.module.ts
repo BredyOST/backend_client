@@ -13,7 +13,7 @@ import { MailerModule } from '@nestjs-modules/mailer'
 import { CategoriesModule } from './additionalRepositories/categories/categories.module'
 import { CategoryEntity } from './additionalRepositories/categories/entities/category.entity'
 import { ScheduleModule } from '@nestjs/schedule'
-import * as process from 'process'
+// import * as process from 'process'
 import { NotificationsModule } from './additionalRepositories/notifications/notifications.module'
 import { NotificationEntity } from './additionalRepositories/notifications/entities/notification.entity'
 import { PostsModule } from './posts/posts.module'
@@ -43,6 +43,8 @@ import { HandymanAndBuilderModule } from './AllCategoriesForSearch/handyman-and-
 import { DesignersModule } from './designers/designers.module'
 import { RedisModule } from './redis/redis.module'
 import { RedisService } from './redis/redis.service'
+import * as dotenv from 'dotenv'
+dotenv.config()
 
 @Module({
   imports: [

@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import * as fs from 'fs';
-import { createClient, RedisClientType } from 'redis';
-import { reviveFromBase64Representation } from '@neshca/json-replacer-reviver';
-// import * as process from 'process';
-
+import { Injectable } from '@nestjs/common'
+import * as fs from 'fs'
+import { createClient, RedisClientType } from 'redis'
+import { reviveFromBase64Representation } from '@neshca/json-replacer-reviver'
+import * as dotenv from 'dotenv'
+dotenv.config()
 @Injectable()
 export class RedisService {
     private readonly client: RedisClientType;
@@ -17,7 +17,7 @@ export class RedisService {
             socket: {
                 tls: true,
                 rejectUnauthorized: true,
-                ca: [fs.readFileSync('/var/www/ClientBack/.redis/root.crt').toString()],
+                ca: [fs.readFileSync(process.env["PATH_REDIS"]).toString()],
             }
         };
         this.client = createClient(config);

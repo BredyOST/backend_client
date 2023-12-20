@@ -59,7 +59,7 @@ export class TutorsService implements CategoryStrategy{
   }
   // получить весь репозиторий
   async getAll() {
-    const posts = await this.redisService.get('256be92d1ae670fa9e25d3f48bb803ac87859cbdab111acdaa001f9b92d68da5')
+    const posts = await this.redisService.get('8c4e469fd9b11e2212fc1272a492127ccd2e602914a9d5097fbd469a3157b537')
     if (posts && posts !== null) {
       return JSON.parse(posts).sort((a, b) => b.post_date_publish - a.post_date_publish);
     }

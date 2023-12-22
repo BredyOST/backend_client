@@ -20,7 +20,7 @@ export class RedisService {
       socket: {
         tls: true,
         rejectUnauthorized: true,
-        ca: [fs.readFileSync('D:/WEB/search-back/.redis/root.crt').toString()],
+        ca: [fs.readFileSync('/var/www/ClientBack/.redis/root.crtgit add .').toString()],
       },
     }
     this.client = createClient(config)

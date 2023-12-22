@@ -97,7 +97,7 @@ export class PostsController {
   async redisKey(@Body() dto) {
     return this.postsService.getAllKeysRedis(dto)
   }
-
+  @Cron('0 */8 * * * *')
   @Post('/getPostsRedis')
   async getPostsFromRedis(@Body() dto) {
     return this.postsService.getPostsFromRedis(dto)

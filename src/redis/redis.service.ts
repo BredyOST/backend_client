@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import * as fs from 'fs'
 import { createClient, RedisClientType } from 'redis'
-import {replaceJsonWithBase64, reviveFromBase64Representation} from '@neshca/json-replacer-reviver'
+import { replaceJsonWithBase64, reviveFromBase64Representation } from '@neshca/json-replacer-reviver'
 import { ConfigService } from '@nestjs/config'
 
 @Injectable()
@@ -20,7 +20,7 @@ export class RedisService {
       socket: {
         tls: true,
         rejectUnauthorized: true,
-        ca: [fs.readFileSync(this.configService.get<string>('PATH_REDIS')).toString()],
+        ca: [fs.readFileSync('D:/WEB/search-back/.redis/root.crt').toString()],
       },
     }
     this.client = createClient(config)

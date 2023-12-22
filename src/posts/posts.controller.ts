@@ -93,4 +93,14 @@ export class PostsController {
   //   return this.postsService.addName()
   // }
 
+  @Post('/redisKeys')
+  async redisKey(@Body() dto) {
+    return this.postsService.getAllKeysRedis(dto)
+  }
+
+  @Post('/getPostsRedis')
+  async getPostsFromRedis(@Body() dto) {
+    return this.postsService.getPostsFromRedis(dto)
+  }
+
 }

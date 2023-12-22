@@ -20,6 +20,7 @@ import {TutorsService} from "../AllCategoriesForSearch/tutors/tutors.service";
 import {NanniesService} from "../AllCategoriesForSearch/nannies/nannies.service";
 import {ChatsFromTelegramService} from "../groupsAndChats/chats-from-telegram/chats-from-telegram.service";
 import {GroupsFromVkService} from "../groupsAndChats/groups-from-vk/groups-from-vk.service";
+import {RedisService} from "../redis/redis.service";
 
 
 const input = require('input')
@@ -53,7 +54,22 @@ export class PostsService {
       @InjectRepository(PostEntity)
       private repository: Repository<PostEntity>,
       private readonly httpService: HttpService,
+      private redisService: RedisService,
   ) {
+  }
+
+  async getAllKeysRedis(dto) {
+    const pattern = await this.redisService.getAllKeys(`id:${dto.id}*`)
+    return pattern
+  }
+  async getPostsFromRedis(dto) {
+    const posts = await this.redisService.get(dto.str)
+    return posts;
+    console.log(posts)
+    // if (posts && posts !== null) {
+    //   // return posts.sort((a, b) => b.post_date_publish - a.post_date_publish)
+    //   return JSON.parse(posts).sort((a, b) => b.post_date_publish - a.post_date_publish);
+    // }
   }
 
   // получить все

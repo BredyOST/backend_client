@@ -19,10 +19,15 @@ export class TutorsController {
   async getAllSortedPosts(@Body() dto: PaginationDto) {
     return this.tutorsService.getAllSortedPosts(dto)
   }
-
+  // для статики - 50 постов
   @Get('/getPostForStatic')
   async getPostForStatic() {
     return this.tutorsService.getPostForStatic()
+  }
+
+  @Get('forRedis')
+  async savePostsToRedis() {
+    return this.tutorsService.savePostsToRedis()
   }
 
   @Get('/all')

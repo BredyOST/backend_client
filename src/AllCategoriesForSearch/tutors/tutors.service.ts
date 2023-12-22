@@ -59,18 +59,55 @@ export class TutorsService implements CategoryStrategy{
   }
   // получить весь репозиторий
   async getAll() {
-    const posts = await this.redisService.get('8c4e469fd9b11e2212fc1272a492127ccd2e602914a9d5097fbd469a3157b537')
+    const posts = await this.redisService.get('1dd67c02cf41f00cde6819e97c3752d91b742a1b99c8bc209252ad028c35bbba')
     if (posts && posts !== null) {
       return JSON.parse(posts).sort((a, b) => b.post_date_publish - a.post_date_publish);
     }
   }
-  // получить посты при первичной сборке проекта
+  // получить посты при первичной сборке проекта  - 50 постов
   async getPostForStatic() {
+
+    const queryBuilder = this.repository.createQueryBuilder('posts');
+    const sortedPosts = await queryBuilder
+        .orderBy('posts.post_date_publish', 'DESC')
+        .take(50) // Возвращает только первые 50 записей
+        .getMany();
+    return sortedPosts;
+
+  }
+
+  // const a = await this.redisService.getAllKeys('id:1*')
+  // // console.log(a)
+  // return a
+  //    await this.redisService.deleteKeysByPattern('id:1*');
+  // сохраняем по ключам все в редис
+  async savePostsToRedis() {
+
+    const postCountInKey = 300
     const queryBuilder = this.repository.createQueryBuilder('posts');
     const sortedPosts = await queryBuilder
         .orderBy('posts.post_date_publish', 'DESC')
         .getMany();
-    return sortedPosts;
+
+    for (let i = 0; i < sortedPosts.length; i += postCountInKey) {
+      const groupBatch = sortedPosts.slice(i, i + postCountInKey);
+
+      if (groupBatch.length === 0) {
+        continue;
+      }
+
+      const firstPostDate = new Date(parseInt(groupBatch[0].post_date_publish) * 1000);
+      const month = firstPostDate.toISOString().substring(0, 7);
+      const key = `id:1-${month}:batch-${i}`;
+      const tempKey = `temp:id:1-${i}-${i+postCountInKey}`;
+      const mainKey = `id:1-${i}-${i+postCountInKey}`;
+
+      // Сначала сохраняем во временный ключ
+      await this.redisService.set(tempKey, groupBatch, 600);
+
+      // Атомарно заменяем основной ключ временным
+      await this.redisService.rename(tempKey, mainKey);
+    }
   }
 
   async create(identificator, item) {

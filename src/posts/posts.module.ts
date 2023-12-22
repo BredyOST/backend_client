@@ -22,6 +22,7 @@ import { NanniesModule } from '../AllCategoriesForSearch/nannies/nannies.module'
 import { CategoriesModule } from '../additionalRepositories/categories/categories.module'
 import { GroupsFromVkModule } from '../groupsAndChats/groups-from-vk/groups-from-vk.module'
 import { ChatsFromTelegramModule } from '../groupsAndChats/chats-from-telegram/chats-from-telegram.module'
+import {RedisService} from "../redis/redis.service";
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { ChatsFromTelegramModule } from '../groupsAndChats/chats-from-telegram/c
     RepositoryPostsAdd,
     RepositoryTutorsAdd,
     RepositoryNanniesAdd,
+    RedisService,
   ],
   exports: [PostsService],
 })

@@ -63,6 +63,7 @@ export class NanniesService implements CategoryStrategy{
     const queryBuilder = this.repository.createQueryBuilder('posts');
     const sortedPosts = await queryBuilder
         .orderBy('posts.post_date_publish', 'DESC')
+        .take(50)
         .getMany();
     return sortedPosts;
   }

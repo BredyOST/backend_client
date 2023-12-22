@@ -5,7 +5,7 @@ import { LocalAuthGuard } from './guards/local.guard'
 import { RefreshTokenDto } from '../users/dto/refresh-token.dto'
 import { SessionAuthService } from './session-auth/session-auth.service'
 import * as dotenv from 'dotenv'
-import {ConfigService} from "@nestjs/config";
+import { ConfigService } from '@nestjs/config'
 dotenv.config()
 
 

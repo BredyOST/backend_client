@@ -37,7 +37,7 @@ export class RedisService {
         console.error('Redis connection error:', err)
       })
   }
-
+//re
   async get(key: string): Promise<string | null> {
 
     if (!this.isConnected) {

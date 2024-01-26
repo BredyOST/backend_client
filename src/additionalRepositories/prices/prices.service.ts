@@ -2,8 +2,8 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { PriceEntity } from './entities/price.entity'
 import { Repository } from 'typeorm'
 import { InjectRepository } from '@nestjs/typeorm'
-import { LogsServiceOtherErrors } from '../../otherServices/loggerService/logger.service'
 import { UsersService } from '../../users/users.service'
+import { LogsService } from '../../otherServices/loggerService/logger.service'
 
 @Injectable()
 export class PricesService {
@@ -11,7 +11,7 @@ export class PricesService {
     @InjectRepository(PriceEntity)
     private repository: Repository<PriceEntity>,
     private readonly usersService: UsersService,
-    private logsServiceForOtherErrors: LogsServiceOtherErrors, // сервис для создания общих уведомления и ошибок
+    private LogsService: LogsService, // сервис для создания общих уведомления и ошибок
   ) {}
 
   // получить все
@@ -24,9 +24,14 @@ export class PricesService {
       identificatorId,
     })
   }
+  async findOneById(id) {
+    return await this.repository.findOneBy({
+      id,
+    })
+  }
   // обновить прайс
-  async saveUpdateOne(identificatorId, newPrice) {
-    await this.repository.update(identificatorId, newPrice)
+  async saveUpdateOne(id, newPrice) {
+    await this.repository.update(id, newPrice)
   }
   // создание прайса
   async create(id, dto) {
@@ -36,7 +41,7 @@ export class PricesService {
       if (!user.isMainAdmin) throw new HttpException('У вас нет доступа', HttpStatus.UNAUTHORIZED)
 
       return await this.repository.save({
-        identificatorId: dto.identidicatorId,
+        identificatorId: dto.identificatorId,
         title: dto.title,
         price: dto.price,
         period: dto.period,
@@ -47,13 +52,13 @@ export class PricesService {
     } catch (err) {
       // console.log(err)
       if (err.response === 'Пользователь не найден') {
-        await this.logsServiceForOtherErrors.error(`добавление прайса`, `Пользователь не найден ${dto.email}`, `no trace`)
+        await this.LogsService.error(`добавление прайса`, `Пользователь не найден ${dto.email}`)
         throw err
       } else if (err.response === 'Не достаточно прав доступа') {
-        await this.logsServiceForOtherErrors.error(`добавление прайса`, `нет доступа ${dto.email}`, `no trace`)
+        await this.LogsService.error(`добавление прайса`, `нет доступа ${dto.email}`)
         throw err
       } else {
-        await this.logsServiceForOtherErrors.error(`добавление прайса`, `ошибка ${dto.email}`, `${err}`)
+        await this.LogsService.error(`добавление прайса`, `ошибка ${dto.email} ${err}`)
         throw new HttpException('Ошибка при создании прайса', HttpStatus.UNAUTHORIZED)
       }
     }
@@ -68,13 +73,13 @@ export class PricesService {
       return await this.getAllPrices()
     } catch (err) {
       if (err.response === 'Пользователь не найден') {
-        await this.logsServiceForOtherErrors.error(`получение прайсов для всех`, `Пользователь не найден ${id}`, `no trace`)
+        await this.LogsService.error(`получение прайсов для всех`, `Пользователь не найден ${id}`)
         throw err
       } else if (err.response === 'Не достаточно прав доступа') {
-        await this.logsServiceForOtherErrors.error(`получение прайсов для всех`, `нет доступа ${id}`, `no trace`)
+        await this.LogsService.error(`получение прайсов для всех`, `нет доступа ${id}`)
         throw err
       } else {
-        await this.logsServiceForOtherErrors.error(`получение прайсов для всех`, `ошибка ${id}`, `${err}`)
+        await this.LogsService.error(`получение прайсов для всех`, `ошибка ${id}`)
         throw new HttpException('Ошибка при получении', HttpStatus.UNAUTHORIZED)
       }
     }
@@ -84,7 +89,7 @@ export class PricesService {
     try {
       return await this.getAllPrices()
     } catch (err) {
-      await this.logsServiceForOtherErrors.error(`получение прайсов для всех`, `ошибка`, `${err}`)
+      await this.LogsService.error(`получение прайсов для всех`, `ошибка ${err}`)
       throw new HttpException('Ошибка при получении прайсов для незарегестрированного', HttpStatus.UNAUTHORIZED)
     }
   }
@@ -95,7 +100,8 @@ export class PricesService {
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
       if (!user.isMainAdmin) throw new HttpException('У вас нет доступа', HttpStatus.UNAUTHORIZED)
       let changedPrice = false
-      const priceBlock = await this.findOneByIdentificatorId(dto.identificatorId)
+      const priceBlock = await this.findOneById(dto.id)
+
       if (!priceBlock) throw new HttpException('Категория не найдена', HttpStatus.UNAUTHORIZED)
 
       if (dto.title && dto.title != priceBlock.title) {
@@ -123,24 +129,28 @@ export class PricesService {
         if (!changedPrice) changedPrice = true
       }
 
-      if (changedPrice) throw new HttpException('Вы не внесли изменения', HttpStatus.UNAUTHORIZED)
+      await this.saveUpdateOne(dto.id, priceBlock)
 
-      return await this.saveUpdateOne(dto.identificatorId, priceBlock)
+      if (!changedPrice) throw new HttpException('Вы не внесли изменения', HttpStatus.UNAUTHORIZED)
+      return {
+        text:'внесены изменения'
+      }
+
     } catch (err) {
       if (err.response === 'Пользователь не найден') {
-        await this.logsServiceForOtherErrors.error(`обновление прайса`, `Пользователь не найден ${id}`, `no trace`)
+        await this.LogsService.error(`обновление прайса`, `Пользователь не найден ${id}`)
         throw err
       } else if (err.response === 'Не достаточно прав доступа') {
-        await this.logsServiceForOtherErrors.error(`обновление прайса`, `нет доступа ${id}`, `no trace`)
+        await this.LogsService.error(`обновление прайса`, `нет доступа ${id}`)
         throw err
       } else if (err.response === 'Категория не найдена') {
-        await this.logsServiceForOtherErrors.error(`обновление прайса`, `категория не найдена ${id}`, `no trace`)
+        await this.LogsService.error(`обновление прайса`, `категория не найдена ${id}`)
         throw err
       } else if (err.response === 'Вы не внесли изменения') {
-        await this.logsServiceForOtherErrors.error(`обновление прайса`, `Вы не внесли изменения ${id}`, `no trace`)
+        await this.LogsService.error(`обновление прайса`, `Вы не внесли изменения ${id}`)
         throw err
       } else {
-        await this.logsServiceForOtherErrors.error(`обновление прайса`, `ошибка ${id}`, `${err}`)
+        await this.LogsService.error(`обновление прайса`, `ошибка ${id} ${err}`)
         throw new HttpException('Ошибка при обновлении прайса, попробуйте позже', HttpStatus.UNAUTHORIZED)
       }
     }
@@ -157,16 +167,16 @@ export class PricesService {
       await this.repository.delete(dto.identificatorId)
     } catch (err) {
       if (err.response === 'Пользователь не найден') {
-        await this.logsServiceForOtherErrors.error(`удаление прайса`, `Пользователь не найден ${dto.email}`, `no trace`)
+        await this.LogsService.error(`удаление прайса`, `Пользователь не найден ${dto.email}`)
         throw err
       } else if (err.response === 'Не достаточно прав доступа') {
-        await this.logsServiceForOtherErrors.error(`удаление прайса`, `нет доступа ${dto.email}`, `no trace`)
+        await this.LogsService.error(`удаление прайса`, `нет доступа ${dto.email}`)
         throw err
       } else if (err.response === 'Не достаточно прав доступа') {
-        await this.logsServiceForOtherErrors.error(`удаление прайса`, `прайс не найден ${dto.email}`, `no trace`)
+        await this.LogsService.error(`удаление прайса`, `прайс не найден ${dto.email}`)
         throw err
       } else {
-        await this.logsServiceForOtherErrors.error(`удаление прайса`, `ошибка ${dto.email}`, `${err}`)
+        await this.LogsService.error(`удаление прайса`, `ошибка ${dto.email} ${err}`)
         throw new HttpException('Ошибка при удалении прайса', HttpStatus.UNAUTHORIZED)
       }
     }

@@ -4,9 +4,10 @@ import { UserEntity } from '../users/entities/user.entity'
 import { LocalAuthGuard } from './guards/local.guard'
 import { RefreshTokenDto } from '../users/dto/refresh-token.dto'
 import { SessionAuthService } from './session-auth/session-auth.service'
-import * as dotenv from 'dotenv'
+// import * as dotenv from 'dotenv'
+import * as process from 'process';
 import { ConfigService } from '@nestjs/config'
-dotenv.config()
+// dotenv.config()
 
 
 export type createUserType = {
@@ -46,8 +47,9 @@ export class AuthController {
 
   // КОГДА ПЕРЕШЛИ ПО ССЫЛКЕ АКТИВАЦИИ
   @Get('activate/:link')
-  @Redirect('http://5.35.12.33:7777', 200)
+  @Redirect(`${process.env['CLIENT_URL']}`, 200)
   async activate(@Request() req: any) {
+
     return this.authService.activate(req.params.link)
   }
 

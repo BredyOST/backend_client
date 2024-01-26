@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, Logger} from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { UserEntity } from './entities/user.entity'
@@ -10,10 +10,9 @@ import { AxiosError } from 'axios/index'
 import { AppService } from '../app.service'
 import { MailerService } from '@nestjs-modules/mailer'
 import { HttpService } from '@nestjs/axios'
-import { LogsServiceOtherErrors } from '../otherServices/loggerService/logger.service'
 import { email } from '../auth/auth.controller'
 import { codeForNewEmailType, codeForNewPhone, codeType, fullNAmeType, phoneType } from './users.controller'
-import {ConfigService} from "@nestjs/config";
+import { LogsService } from '../otherServices/loggerService/logger.service'
 
 export type createUSerWithLink = {
   email: string
@@ -28,9 +27,8 @@ export class UsersService {
     @InjectRepository(UserEntity)
     private repository: Repository<UserEntity>,
     private readonly mailerService: MailerService,
-    private logsServiceForOtherErrors: LogsServiceOtherErrors, // сервис для создания общих уведомления и ошибок
+    private LogsService: LogsService, // сервис для создания общих уведомления и ошибок
     private readonly httpService: HttpService,
-
   ) {}
 
   // блоки получения пользователей по параметрам
@@ -77,13 +75,12 @@ export class UsersService {
       const { activationLink, activationNumber, id: idVk, password, ip, updateAt, deletedAt, sessionToken, ...other } = user
 
       return { ...other, identificator: 'получено' }
-
     } catch (err) {
       if (err.response === 'Пользователь не найден') {
-        await this.logsServiceForOtherErrors.error(`получение пользователя`, `Не найден пользователь ${id}`, `no trace`)
+        await this.LogsService.error(`получение пользователя`, `Не найден пользователь ${id} no trace`)
         throw err
       } else {
-        await this.logsServiceForOtherErrors.error(`получение пользователя`, `Ошибка при получении данных пользователя ${id}`, `${err}`)
+        await this.LogsService.error(`получение пользователя`, `Ошибка при получении данных пользователя ${id} ${err}`)
         throw new HttpException('Ошибка при получении данных пользователя', HttpStatus.FORBIDDEN)
       }
     }
@@ -92,15 +89,13 @@ export class UsersService {
   async saveUpdatedUser(id, user) {
     try {
       await this.repository.update(id, user)
-
     } catch (err) {
-      await this.logsServiceForOtherErrors.error(`Обновление пользователя #`, `Ошибка ${id}`, `${err}`)
+      await this.LogsService.error(`Обновление пользователя #`, `Ошибка ${id} ${err}`)
       throw new HttpException('Ошибка при обновлении пользователя', HttpStatus.FORBIDDEN)
     }
   }
   // код для подтверждения нового email
   async updateEmailСode(id: number, dto: codeForNewEmailType) {
-
     try {
       const user = await this.findById(+id)
       // проверям не прислал ли нам пользователь свой же email
@@ -119,7 +114,6 @@ export class UsersService {
           await this.saveUpdatedUser(id, user)
         }
       }
-
       if (user.timeSendMessageVerify) {
         const timeSinceLastRequest = new Date().getTime() - user.timeSendMessageVerify.getTime()
         const twoMinutesInMillis = 2 * 60 * 1000
@@ -132,31 +126,27 @@ export class UsersService {
 
       user.timeSendMessageVerify = new Date()
       await this.saveUpdatedUser(user.id, user)
-
-
-
       await this.sendActivationCodeForNewEmail(user, dto)
 
       return {
         text: 'Код подтверждения направен на указанную почту',
       }
-
     } catch (err) {
       if (err.response === 'Вы уже ипользуете этот email') {
-        await this.logsServiceForOtherErrors.error(`обновление почты`, `Вы уже ипользуете этот email ${dto.email}`, `no trace`)
+        await this.LogsService.error(`обновление почты`, `Вы уже ипользуете этот email ${dto.email} no trace`)
         throw err
       } else if (err.response === 'Такой Email уже зарегистрирован') {
-        await this.logsServiceForOtherErrors.error(`обновление почты`, `уже существует ${dto.email}`, `no trace`)
+        await this.LogsService.error(`обновление почты`, `уже существует ${dto.email} no trace`)
         throw err
       } else if (err.response === `Ошибка отправки сообщения об активации, проверьте почту`) {
-        await this.logsServiceForOtherErrors.error(`обновление почты`, `ошибка отправки кода ${dto.email}`, `no trace`)
+        await this.LogsService.error(`обновление почты`, `ошибка отправки кода ${dto.email} no trace`)
         throw err
       } else if (err.response === 'Email уже добавлен во временное хранилище, проверьте ваш Email') {
         throw err
       } else if (err.response === 'Запросы можно делать не более 1 раза в 2 минуты') {
         throw err
       } else {
-        await this.logsServiceForOtherErrors.error(`обновление почты`, `ошибка ${dto.email}`, `${err}`)
+        await this.LogsService.error(`обновление почты`, `ошибка ${dto.email} ${err}`)
         throw new HttpException('Ошибка при обновлении email - получение кода', HttpStatus.FORBIDDEN)
       }
     }
@@ -180,13 +170,13 @@ export class UsersService {
       }
     } catch (err) {
       if (err.response === 'Пользователь не найден, проверьте еще раз код или запросите новый') {
-        await this.logsServiceForOtherErrors.error(`обновление почты`, `ользователь не найден ${id}`, `no trace`)
+        await this.LogsService.error(`обновление почты`, `ользователь не найден ${id} no trace`)
         throw err
       } else if (err.response === 'Ошибка при обновлении пользователя') {
-        await this.logsServiceForOtherErrors.error(`обновление почты`, `ошибка при обнволении пользователя ${id}`, `no trace`)
+        await this.LogsService.error(`обновление почты`, `ошибка при обнволении пользователя ${id} no trace`)
         throw err
       } else {
-        await this.logsServiceForOtherErrors.error(`обновление почты`, `ошибка ${id}}`, `${err}`)
+        await this.LogsService.error(`обновление почты`, `ошибка ${id}} ${err}`)
         throw new HttpException('Ошибка при обновлении email', HttpStatus.FORBIDDEN)
       }
     }
@@ -211,13 +201,13 @@ export class UsersService {
 
     } catch (err) {
       if (err.response === 'Вы уже ипользуете это имя') {
-        await this.logsServiceForOtherErrors.error(`обновление имени`, `Вы уже ипользуете этот email ${dto.fullName}`, `no trace`)
+        await this.LogsService.error(`обновление имени`, `Вы уже ипользуете этот email ${dto.fullName} no trace`)
         throw err
       } else if (err.response === `Ошибка при обновлении пользователя`) {
-        await this.logsServiceForOtherErrors.error(`обновление имени`, `ошибка у ${id}`, `no trace`)
+        await this.LogsService.error(`обновление имени`, `ошибка у ${id} no trace`)
         throw err
       } else {
-        await this.logsServiceForOtherErrors.error(`обновление имени`, `ошибка у ${id}`, `${err}`)
+        await this.LogsService.error(`обновление имени`, `ошибка у ${id} ${err}`)
         throw new HttpException('Ошибка при обновлении данных имени', HttpStatus.FORBIDDEN)
       }
     }
@@ -253,22 +243,21 @@ export class UsersService {
       }
     } catch (err) {
       if (err.response === 'Вы уже ипользуете этот телефон') {
-        await this.logsServiceForOtherErrors.error(`обновление номера`, `Вы уже ипользуете этот телефон ${id}`, `no trace`)
+        await this.LogsService.error(`обновление номера`, `Вы уже ипользуете этот телефон ${id} no trace`)
         throw err
       } else if (err.response === 'Такой телефон уже зарегестрирован') {
-        await this.logsServiceForOtherErrors.error(`обновление номера`, `Такой телефон уже зарегестрирован ${id}`, `no trace`)
+        await this.LogsService.error(`обновление номера`, `Такой телефон уже зарегестрирован ${id} no trace`)
         throw err
       } else if (err.response === 'Телефон уже добавлен во временное хранилище, нажмите "Подтвердить телефон') {
         throw err
       } else {
-        await this.logsServiceForOtherErrors.error(`обновление номера`, `ошибка ${id}`, `${err}`)
+        await this.LogsService.error(`обновление номера`, `ошибка ${id} ${err}`)
         throw new HttpException('Ошибка при обновлении телефона', HttpStatus.FORBIDDEN)
       }
     }
   }
   // обновление пароля
   async updatePassword(id: number, dto: any) {
-
     try {
       if (dto.passwordNew !== dto.passwordNewTwo) throw new HttpException('Введенные новые пароли не совпадают', HttpStatus.UNAUTHORIZED)
 
@@ -290,19 +279,18 @@ export class UsersService {
       return {
         text: 'Пароль успешно обновлен',
       }
-
     } catch (err) {
       if (err.response === 'Введенные новые пароли не совпадают') {
-        await this.logsServiceForOtherErrors.error(`обновление пароля`, `Ошибка при обновлении пароля ${id}`, `no trace`)
+        await this.LogsService.error(`обновление пароля`, `Ошибка при обновлении пароля ${id} no trace`)
         throw err
       } else if (err.response === 'Не верный текущий пароль') {
-        await this.logsServiceForOtherErrors.error(`обновление пароля`, `Не верный текущий пароль ${id}`, `no trace`)
+        await this.LogsService.error(`обновление пароля`, `Не верный текущий пароль ${id} no trace`)
         throw err
       } else if ('Вы уже используете этот пароль') {
-        await this.logsServiceForOtherErrors.error(`обновление пароля`, `Вы уже используете этот пароль ${id}`, `no trace`)
+        await this.LogsService.error(`обновление пароля`, `Вы уже используете этот пароль ${id} no trace`)
         throw err
       } else {
-        await this.logsServiceForOtherErrors.error(`обновление пароля`, `Ошибка при обновлении пароля ${id}`, `${err}`)
+        await this.LogsService.error(`обновление пароля`, `Ошибка при обновлении пароля ${id} ${err}`)
         throw new HttpException('Ошибка при обновлении пароля', HttpStatus.FORBIDDEN)
       }
     }
@@ -364,12 +352,12 @@ export class UsersService {
       } catch (err) {
         console.log(err)
         retries--
-        await this.logsServiceForOtherErrors.error(`repeatSendMessage`, `${to}`, `${err}`)
+        await this.LogsService.error(`repeatSendMessage`, `${to} ${err}`)
       }
     }
 
     if (!success) {
-      await this.logsServiceForOtherErrors.error(`ссылка активации`, `Ошибка при отправке пароля после повтора ${to}`, `no trace`)
+      await this.LogsService.error(`ссылка активации`, `Ошибка при отправке пароля после повтора ${to} no trace`)
       throw new HttpException('Ошибка отправки сообщения об активации, проверьте почту', HttpStatus.FORBIDDEN)
     }
   }
@@ -416,12 +404,12 @@ export class UsersService {
 
       } catch (err) {
         retries--
-        await this.logsServiceForOtherErrors.error(`сообщение об активации`, `${to}`, `${err}`)
+        await this.LogsService.error(`сообщение об активации`, `${to} ${err}`)
       }
     }
 
     if (!success) {
-      await this.logsServiceForOtherErrors.error(`Ошибка отправки сообщения об успешной активации`, `Ошибка при отправке пароля после повтора ${to}`, `no trace`)
+      await this.LogsService.error(`Ошибка отправки сообщения об успешной активации`, `Ошибка при отправке пароля после повтора ${to} no trace`)
       throw new HttpException('Ошибка отправки сообщения об успешной активации', HttpStatus.FORBIDDEN)
     }
   }
@@ -482,12 +470,12 @@ export class UsersService {
         success = true
       } catch (err) {
         retries--
-        await this.logsServiceForOtherErrors.error(`Смена почты`, `с ${user.email} на ${dto.email}`, `${err}`)
+        await this.LogsService.error(`Смена почты`, `с ${user.email} на ${dto.email} ${err}`)
       }
     }
 
     if (!success) {
-      await this.logsServiceForOtherErrors.error(`Смена почты`, `Ошибка при отправке`, `no trace`)
+      await this.LogsService.error(`Смена почты`, `Ошибка при отправке no trace`)
       throw new HttpException('Ошибка отправки сообщения об активации, проверьте почту', HttpStatus.FORBIDDEN)
     }
   }
@@ -514,11 +502,11 @@ export class UsersService {
         success = true
       } catch (err) {
         retries--
-        await this.logsServiceForOtherErrors.error(`новый пароль`, `Ошибка при отправке пароля  ${to}`, `${err}`)
+        await this.LogsService.error(`новый пароль`, `Ошибка при отправке пароля  ${to} ${err}`)
       }
 
       if (!success) {
-        await this.logsServiceForOtherErrors.error(`новый пароль`, `Ошибка при отправке пароля после повтора ${to}`, `no trace`)
+        await this.LogsService.error(`новый пароль`, `Ошибка при отправке пароля после повтора ${to} no trace`)
         throw new HttpException('Ошибка отправки сообщения с новым паролем', HttpStatus.FORBIDDEN)
       }
     }
@@ -534,7 +522,7 @@ export class UsersService {
       }
       return result
     } catch (err) {
-      await this.logsServiceForOtherErrors.error(`randomPassword`, `Ошибка`, `${err}`)
+      await this.LogsService.error(`randomPassword`, `Ошибка ${err}`)
       throw new HttpException('Ошибка при генерации пароля', HttpStatus.FORBIDDEN)
     }
   }
@@ -583,16 +571,16 @@ export class UsersService {
       }
     } catch (err) {
       if (err.response === 'Пользователь не найден') {
-        await this.logsServiceForOtherErrors.error(`верификация номера - звонок`, `Пользователь не найден`, `no trace`)
+        await this.LogsService.error(`верификация номера - звонок`, `Пользователь не найден no trace`)
         throw err
       } else if (err.response === 'Пользователь с таким номером телефона не найден. Нажмите кнопку "Изменить номер" перед запросом') {
-        await this.logsServiceForOtherErrors.error(`верификация номера - звонок`, `Пользователь с таким номером телефона не найден`, `no trace`)
+        await this.LogsService.error(`верификация номера - звонок`, `Пользователь с таким номером телефона не найден no trace`)
         throw err
       } else if (err.response === 'Запросы можно делать не более 1 раза в 2 минуты') {
-        await this.logsServiceForOtherErrors.error(`верификация номера - звонок`, `частый запрос`, `no trace`)
+        await this.LogsService.error(`верификация номера - звонок`, `частый запрос no trace`)
         throw err
       } else {
-        await this.logsServiceForOtherErrors.error(`верификация номера - звонок`, `Ошибка`, `${err}`)
+        await this.LogsService.error(`верификация номера - звонок`, `Ошибка ${err}`)
         throw new HttpException('запрос завершился неуспешно, если ен поступит звонок, повторите запрос', HttpStatus.UNAUTHORIZED)
       }
     }
@@ -617,13 +605,13 @@ export class UsersService {
       }
     } catch (err) {
       if (err.response === 'Пользователь не найден') {
-        await this.logsServiceForOtherErrors.error(`верификация номера-код`, `Пользователь не найден`, `no trace`)
+        await this.LogsService.error(`верификация номера-код`, `Пользователь не найден no trace`)
         throw err
       } else if (err.response === 'Код не совадает, проверьте еще раз последние 4 цифры номера') {
-        await this.logsServiceForOtherErrors.error(`верификация номера-код`, `Код не совадает, проверьте еще раз последние 4 цифры номера`, `no trace`)
+        await this.LogsService.error(`верификация номера-код`, `Код не совадает, проверьте еще раз последние 4 цифры номера no trace`)
         throw err
       } else {
-        await this.logsServiceForOtherErrors.error(`верификация номера-код`, `ошибка`, `${err}`)
+        await this.LogsService.error(`верификация номера-код`, `ошибка ${err}`)
         throw new HttpException('ошибка при отправке кода, попробуйте повторить запрос', HttpStatus.UNAUTHORIZED)
       }
     }
@@ -651,25 +639,24 @@ export class UsersService {
       return {
         text: 'Сообщение c новым паролем направлено на email',
       }
-
     } catch (err) {
       if (err.response === 'Аккаунт не найден') {
-        await this.logsServiceForOtherErrors.error(`выслать пароль`, `Аккаунт не найден  ${dto.email}`, `no trace`)
+        await this.LogsService.error(`выслать пароль`, `Аккаунт не найден  ${dto.email} no trace`)
         throw err
       } else if (err.response === 'Аккаунт не активирован') {
-        await this.logsServiceForOtherErrors.error(`выслать пароль`, `Аккаунт не активирован  ${dto.email}`, `no trace`)
+        await this.LogsService.error(`выслать пароль`, `Аккаунт не активирован  ${dto.email} no trace`)
         throw err
       } else if (err.response === 'Ошибка при обновлении пользователя') {
-        await this.logsServiceForOtherErrors.error(`выслать пароль`, `ошибка приобновлении пользователя ${dto.email}`, `no trace`)
+        await this.LogsService.error(`выслать пароль`, `ошибка приобновлении пользователя ${dto.email} no trace`)
         throw err
       } else if (err.response === '= randomPassword') {
-        await this.logsServiceForOtherErrors.error(`выслать пароль`, `randomPassword error  ${dto.email}`, `no trace`)
+        await this.LogsService.error(`выслать пароль`, `randomPassword error  ${dto.email} no trace`)
         throw err
       } else if (err.response === 'Ошибка при отправке пароля') {
-        await this.logsServiceForOtherErrors.error(`выслать пароль`, `Ошибка при отправке пароля  ${dto.email}`, `no trace`)
+        await this.LogsService.error(`выслать пароль`, `Ошибка при отправке пароля  ${dto.email} no trace`)
         throw err
       } else {
-        await this.logsServiceForOtherErrors.error(`выслать пароль`, `Ошибка при генерации пароля ${dto.email}`, `no trace`)
+        await this.LogsService.error(`выслать пароль`, `Ошибка при генерации пароля ${dto.email} no trace`)
         throw new HttpException('Ошибка при генерации пароля', HttpStatus.FORBIDDEN)
       }
     }
@@ -691,20 +678,18 @@ export class UsersService {
       return {
         text: 'Успешная активация'
       }
-
     } catch (err) {
       if (err.response === 'Некорректная ссылка активации, запросите повторно в окне авторизации') {
-        await this.logsServiceForOtherErrors.error(`аквтивация ак`, `некорректная ссылка активации`, `no trace`)
+        await this.LogsService.error(`аквтивация ак`, `некорректная ссылка активации no trace`)
         throw err
       } else {
-        await this.logsServiceForOtherErrors.error(`активация ак`, `ошибка`, `${err}`)
+        await this.LogsService.error(`активация ак`, `ошибка ${err}`)
         throw new HttpException('Ошибка при активации аккаунта', HttpStatus.BAD_REQUEST)
       }
     }
   }
   // повторно направить письмо с ссылкой активации
   async activateRepeat(dto: email) {
-
     try {
       const user = await this.findByEmail(dto.email)
       if (!user) throw new HttpException('Аккаунт не найден', HttpStatus.UNAUTHORIZED)
@@ -720,16 +705,15 @@ export class UsersService {
       return {
         text: 'Сообщение направлено',
       }
-
     } catch (err) {
       if (err.response === 'Аккаунт не найден') {
-        await this.logsServiceForOtherErrors.error(`отправить повторно ссылку активации`, `Аккаунт не найден`, `no trace`)
+        await this.LogsService.error(`отправить повторно ссылку активации`, `Аккаунт не найден no trace`)
         throw err
       } else if (err.response === 'Ваш аккаунт уже активирован') {
-        await this.logsServiceForOtherErrors.error(`отправить повторно ссылку активации`, `Ваш аккаунт уже активирован`, `no trace`)
+        await this.LogsService.error(`отправить повторно ссылку активации`, `Ваш аккаунт уже активирован no trace`)
         throw err
       } else {
-        await this.logsServiceForOtherErrors.error(`отправить повторно ссылку активации`, `ошибка`, `${err}`)
+        await this.LogsService.error(`отправить повторно ссылку активации`, `ошибка ${err}`)
         throw new HttpException('Ошибка при регистрации', HttpStatus.FORBIDDEN)
       }
     }

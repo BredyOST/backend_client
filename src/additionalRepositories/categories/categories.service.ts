@@ -4,6 +4,7 @@ import { Repository } from 'typeorm'
 import { CategoryEntity } from './entities/category.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { UsersService } from '../../users/users.service'
+import {category} from "./categories.controller";
 
 @Injectable()
 export class CategoriesService {
@@ -33,19 +34,9 @@ export class CategoriesService {
   }
   async getAllCategories() {
     try {
-      // const user = await this.usersService.findById(+id);
-      // if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED);
-      // if (!user.isMainAdmin) throw new HttpException('У вас нет доступа', HttpStatus.UNAUTHORIZED);
-
       return await this.findAll()
     } catch (err) {
-      if (err.response === 'Пользователь не найден') {
-        throw err
-      } else if (err.response === 'У вас нет доступа') {
-        throw err
-      } else {
         throw new HttpException('Ошибка получении всех категорий', HttpStatus.FORBIDDEN)
-      }
     }
   }
   async createCategory(id: number, dto: CreateCategoryDto) {
@@ -86,11 +77,14 @@ export class CategoriesService {
       }
     }
   }
-  async updateCategory(id: number, dto: { id: number; id_category: string; name: string; description: string }) {
+  async updateCategory(id: number, dto: category) {
     try {
+
       let indicatorID = false
       let indicatorName = false
       let indicatorDescription = false
+      let positiveWords = false
+      let negativeWords = false
 
       const user = await this.usersService.findById(+id)
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
@@ -99,7 +93,7 @@ export class CategoriesService {
       const categoryId = await this.findByIdCategory(`${dto.id}`)
       if (!categoryId) throw new HttpException('id категории не найден', HttpStatus.BAD_REQUEST)
 
-      if (dto.name.length && categoryId.name != dto.name) {
+      if (dto?.name?.length && categoryId.name != dto.name) {
         const isSameCategoryName = await this.findByName(dto.name)
         if (!isSameCategoryName) {
           indicatorName = true
@@ -107,7 +101,7 @@ export class CategoriesService {
         }
       }
 
-      if (dto.id_category && dto.id_category != categoryId.id_category) {
+      if (dto?.id_category && dto.id_category != categoryId.id_category) {
         const isSameIdCategory = await this.findById_category(+dto.id)
         if (!isSameIdCategory) {
           indicatorID = true
@@ -115,20 +109,32 @@ export class CategoriesService {
         }
       }
 
-      if (dto.description && dto.description != categoryId.description) {
+      if (dto?.description && dto.description != categoryId.description) {
         indicatorDescription = true
         categoryId.description = dto.description
       }
 
-      if (indicatorID || indicatorName || indicatorDescription) await this.repository.update(dto.id, categoryId)
+      if (dto?.positiveWords?.length) {
+        categoryId.positiveWords = dto.positiveWords
+        positiveWords = true
+      }
+      if (dto?.negativeWords?.length) {
+        categoryId.negativeWords = dto.negativeWords
+        negativeWords = true
+      }
 
-      if (!indicatorID && !indicatorName && !indicatorDescription) {
+
+      if (indicatorID || indicatorName || indicatorDescription || negativeWords || positiveWords) await this.repository.update(dto.id, categoryId)
+
+      if (!indicatorID && !indicatorName && !indicatorDescription && !negativeWords && !positiveWords) {
         throw new HttpException('категория не изменена', HttpStatus.BAD_REQUEST)
       } else {
         return {
-          text: `${indicatorID ? 'id обновлен,' : 'id не обновлен,'} ${indicatorName ? 'имя обновлено,' : 'имя не обновлено,'} ${
-            indicatorDescription ? 'описание обновлено' : 'описание не обновлено'
-          }`,
+          text: `${indicatorID ? 'id обновлен,' : 'id не обновлен,'} 
+          ${indicatorName ? 'имя обновлено,' : 'имя не обновлено,'} 
+          ${indicatorDescription ? 'описание обновлено' : 'описание не обновлено'}
+          ${positiveWords ? 'позитив обновлено' : 'позитив не обновлен'}
+          ${negativeWords ? 'негатив обновлено' : 'негатив не обновлен'}`,
         }
       }
     } catch (err) {

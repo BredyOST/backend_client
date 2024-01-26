@@ -3,11 +3,11 @@ import { PricesService } from './prices.service'
 import { PricesController } from './prices.controller'
 import { MailerModule } from '@nestjs-modules/mailer'
 import { SessionAuthModule } from '../../auth/session-auth/session-auth.module'
-import { RepositoryOtherAdd } from '../../otherServices/loggerService/logger.module'
-import { LogsServiceOtherErrors } from '../../otherServices/loggerService/logger.service'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { PriceEntity } from './entities/price.entity'
 import { UsersModule } from '../../users/users.module'
+import { RepositoryAllAdd } from '../../otherServices/loggerService/logger.module'
+import { LogsService } from '../../otherServices/loggerService/logger.service'
 
 @Module({
   imports: [
@@ -27,6 +27,6 @@ import { UsersModule } from '../../users/users.module'
     UsersModule,
   ],
   controllers: [PricesController],
-  providers: [PricesService, RepositoryOtherAdd, LogsServiceOtherErrors],
+  providers: [PricesService, RepositoryAllAdd, LogsService],
 })
 export class PricesModule {}

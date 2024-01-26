@@ -9,10 +9,10 @@ import { v4 as uuidv4 } from 'uuid'
 import { MailerService } from '@nestjs-modules/mailer'
 import { AppService } from '../app.service'
 import { AuthorizationsService } from '../additionalRepositories/authorizations/authorizations.service'
-import { LogsServiceOtherErrors } from '../otherServices/loggerService/logger.service'
+import { LogsService } from '../otherServices/loggerService/logger.service'
 import { createUserType, email } from './auth.controller'
 import { SessionAuthService } from './session-auth/session-auth.service'
-import {ConfigService} from "@nestjs/config";
+import { ConfigService } from '@nestjs/config'
 
 @Injectable()
 export class AuthService {
@@ -21,7 +21,7 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private sessionAuthService: SessionAuthService,
-    private logsServiceForOtherErrors: LogsServiceOtherErrors,
+    private LogsService: LogsService,
     private readonly authorizationsService: AuthorizationsService,
     private readonly mailerService: MailerService,
     private configService: ConfigService,
@@ -29,7 +29,6 @@ export class AuthService {
 
   // регистрация
   async register(dto: createUserType) {
-
     try {
       // проверяем совпадают ли пароли, основной и проверочный
       if (dto.password !== dto.passwordCheck) throw new HttpException('Не совпадают введенные пароли', HttpStatus.BAD_REQUEST)
@@ -56,21 +55,20 @@ export class AuthService {
       return {
         text: 'Регистрация завершена. На Ваш Email направлено сообщение для активации аккаунта',
       }
-
     } catch (err) {
       if (err.response === 'Не совпадают введенные пароли') {
         throw err
       } else if (err.response === 'Пользователь c таким email зарегистрирован') {
-        await this.logsServiceForOtherErrors.error(`Регистрация`, `Пользователь уже существует ${dto.email}`, `no trace`)
+        await this.LogsService.error(`Регистрация`, `Пользователь уже существует ${dto.email} no trace`)
         throw err
       } else if (err.response === 'Ошибка при создании учетной записи, обновите страницу и попробуйте еще раз') {
-        await this.logsServiceForOtherErrors.error(`Регистрация`, `Ошибка создания ${dto.email}`, `no trace`)
+        await this.LogsService.error(`Регистрация`, `Ошибка создания ${dto.email} no trace`)
         throw err
       } else if (err.response === `Ошибка отправки сообщения об активации, проверьте почту`) {
-        await this.logsServiceForOtherErrors.error(`Регистрация`, `sendActivationMail ${dto.email}`, `no trace`)
+        await this.LogsService.error(`Регистрация`, `sendActivationMail ${dto.email} no trace`)
         throw err
       } else {
-        await this.logsServiceForOtherErrors.error(`Регистрация`, `Ошибка при регистрации ${dto.email}`, `${err}`)
+        await this.LogsService.error(`Регистрация`, `Ошибка при регистрации ${dto.email} ${err}`)
         throw new HttpException('Ошибка при регистрации', HttpStatus.FORBIDDEN)
       }
     }
@@ -113,19 +111,19 @@ export class AuthService {
       }
     } catch (err) {
       if (err.response === 'Нудачная попытка входа в учетную запись, обновите страницу браузера') {
-        await this.logsServiceForOtherErrors.error(`вход`, `не получен токен или токены доступа ${user.email}`, `no trace`)
+        await this.LogsService.error(`вход`, `не получен токен или токены доступа ${user.email} no trace`)
         throw err
       } else if (err.response === 'Нудачная попытка входа в учетную запись по сессии, обновите страницу браузера и попробуйте еще раз') {
-        await this.logsServiceForOtherErrors.error(`вход`, `не получен токен сессии ${user.email}`, `no trace`)
+        await this.LogsService.error(`вход`, `не получен токен сессии ${user.email} no trace`)
         throw err
       } else if (err.response === `Ошибка в создании сессии, обновите страницу браузера и попробуйте еще раз`) {
-        await this.logsServiceForOtherErrors.error(`вход`, `не получен токен сессии ${user.email}`, `no trace`)
+        await this.LogsService.error(`вход`, `не получен токен сессии ${user.email} no trace`)
         throw err
       } else if (err.response === `Ошибка в получении токенов доступа, обновите страницу браузера и попробуйте еще раз`) {
-        await this.logsServiceForOtherErrors.error(`вход`, `не получен токен доступа ${user.email}`, `no trace`)
+        await this.LogsService.error(`вход`, `не получен токен доступа ${user.email} no trace`)
         throw err
       } else {
-        await this.logsServiceForOtherErrors.error(`Вход в учетную запись`, `Ошибка при входе в учетную запись email:${user.email} phone:${user.phoneNumber}`, `${err}`)
+        await this.LogsService.error(`Вход в учетную запись`, `Ошибка при входе в учетную запись email:${user.email} phone:${user.phoneNumber} ${err}`)
         throw new HttpException('Ошибка при входе в учетную запись', HttpStatus.FORBIDDEN)
       }
     }
@@ -148,7 +146,7 @@ export class AuthService {
         }
       } catch (err) {
         retries--
-        await this.logsServiceForOtherErrors.error(`Ошибка в получении токенов доступа, обновите страницу браузера и попробуйте еще раз`, `повтор для ${id}`, `${err}`)
+        await this.LogsService.error(`Ошибка в получении токенов доступа, обновите страницу браузера и попробуйте еще раз`, `повтор для ${id} ${err}`)
       }
     }
 
@@ -163,14 +161,13 @@ export class AuthService {
 
     while (retries > 0 && !success) {
       try {
-
         // создаем токен
         const sessionToken = await this.sessionAuthService.createToken(id)
 
         return sessionToken
       } catch (err) {
         retries--
-        await this.logsServiceForOtherErrors.error(`Создание токена сессии`, `ошибка ${id}`, `${err}`)
+        await this.LogsService.error(`Создание токена сессии`, `ошибка ${id} ${err}`)
       }
 
       if (!success) {
@@ -202,19 +199,18 @@ export class AuthService {
         const { password, ...result } = user
         return result
       }
-
     } catch (err) {
       if (err.response === 'Не верный логин или пароль') {
-        await this.logsServiceForOtherErrors.error(`Валидация`, `Не верный логин или пароль ${request?.email && request.email} ${request?.phoneNumber && request.phoneNumber}`, `no trace`)
+        await this.LogsService.error(`Валидация`, `Не верный логин или пароль ${request?.email && request.email} ${request?.phoneNumber && request.phoneNumber} no trace`)
         throw err
       } else if (err.response === 'Необходимо подтвердить email') {
-        await this.logsServiceForOtherErrors.error(`Валидация`, `Необходимо подтвердить email ${request?.email && request.email} ${request?.phoneNumber && request.phoneNumber}`, `no trace`)
+        await this.LogsService.error(`Валидация`, `Необходимо подтвердить email ${request?.email && request.email} ${request?.phoneNumber && request.phoneNumber} no trace`)
         throw err
       } else if (err.response === 'Пользователь не найден') {
-        await this.logsServiceForOtherErrors.error(`Валидация`, `Пользователь не найден ${request?.email && request.email} ${request?.phoneNumber && request.phoneNumber}`, `no trace`)
+        await this.LogsService.error(`Валидация`, `Пользователь не найден ${request?.email && request.email} ${request?.phoneNumber && request.phoneNumber} no trace`)
         throw err
       } else {
-        await this.logsServiceForOtherErrors.error(`Валидация`, ` ошибка ${request?.email && request.email} ${request?.phoneNumber && request.phoneNumber}`, `${err}`)
+        await this.LogsService.error(`Валидация`, ` ошибка ${request?.email && request.email} ${request?.phoneNumber && request.phoneNumber} ${err}`)
         throw new HttpException('validateUser', HttpStatus.FORBIDDEN)
       }
     }
@@ -251,43 +247,41 @@ export class AuthService {
       }
     } catch (err) {
       if (err.response === 'Пожалуйста выполните вход') {
-        await this.logsServiceForOtherErrors.error(`gettokens`, `Пожалуйста выполните вход`, `no trace`)
+        await this.LogsService.error(`gettokens`, `Пожалуйста выполните вход no trace`)
         throw err
       } else if (err.response === 'Не действительный токен доступа') {
-        await this.logsServiceForOtherErrors.error(`gettokens`, `Не действительный токен доступа`, `no trace`)
+        await this.LogsService.error(`gettokens`, `Не действительный токен доступа no trace`)
         throw err
       } else {
-        await this.logsServiceForOtherErrors.error(`gettokens`, `Ошибка при генерации токена`, `${err}`)
+        await this.LogsService.error(`gettokens`, `Ошибка при генерации токена ${err}`)
         throw new HttpException('Ошибка при генерации токена, перезайдите в учетную запись', HttpStatus.FORBIDDEN)
       }
     }
   }
   // изменения пароля
   async changePassword(dto: email) {
-
     try {
       const message = await this.usersService.changePassword(dto)
 
       return message
-
     } catch (err) {
       if (err.response === 'Аккаунт не найден') {
-        await this.logsServiceForOtherErrors.error(`выслать пароль`, `Аккаунт не найден`, `no trace`)
+        await this.LogsService.error(`выслать пароль`, `Аккаунт не найден  no trace`)
         throw err
       } else if (err.response === 'Аккаунт не активирован') {
-        await this.logsServiceForOtherErrors.error(`выслать пароль`, `Аккаунт не активирован`, `no trace`)
+        await this.LogsService.error(`выслать пароль`, `Аккаунт не активирован`)
         throw err
       } else if (err.response === 'Ошибка при генерации пароля') {
-        await this.logsServiceForOtherErrors.error(`выслать пароль`, `Ошибка при генерации пароля`, `no trace`)
+        await this.LogsService.error(`выслать пароль`, `Ошибка при генерации пароля`)
         throw err
       } else if (err.response === '= randomPassword') {
-        await this.logsServiceForOtherErrors.error(`выслать пароль`, `randomPassword error`, `no trace`)
+        await this.LogsService.error(`выслать пароль`, `randomPassword error`)
         throw err
       } else if (err.response === 'Ошибка отправки сообщения с новым паролем') {
-        await this.logsServiceForOtherErrors.error(`выслать пароль`, `Ошибка при отправке пароля`, `no trace`)
+        await this.LogsService.error(`выслать пароль`, `Ошибка при отправке пароля`)
         throw err
       } else {
-        await this.logsServiceForOtherErrors.error(`отправка пароля`, `Ошибка отправки сообщения`, `${err}`)
+        await this.LogsService.error(`отправка пароля`, `Ошибка отправки сообщения ${err}`)
         throw new HttpException('ошибка отправки сообщения на почту', HttpStatus.FORBIDDEN)
       }
     }
@@ -304,16 +298,15 @@ export class AuthService {
       return {
         text: 'Сообщение направлено',
       }
-
     } catch (err) {
       if (err.response === 'Ваш аккаунт уже активирован') {
-        await this.logsServiceForOtherErrors.error(`отправить повторно ссылку активации`, `Ваш аккаунт уже активирован`, `no trace`)
+        await this.LogsService.error(`отправить повторно ссылку активации`, `Ваш аккаунт уже активирован`)
         throw err
       } else if (err.response === 'Аккаунт не найден') {
-        await this.logsServiceForOtherErrors.error(`отправить повторно ссылку активации`, `Аккаунт не найден`, `no trace`)
+        await this.LogsService.error(`отправить повторно ссылку активации`, `Аккаунт не найден`)
         throw err
       } else {
-        await this.logsServiceForOtherErrors.error(`отправить повторно ссылку активации`, `ошибка ${dto.email}`, `${err}`)
+        await this.LogsService.error(`отправить повторно ссылку активации`, `ошибка ${dto.email} ${err}`)
         throw new HttpException('Ошибка при запросе ссылки активации, попробуйте обновить страницу и попровобовать еще раз', HttpStatus.FORBIDDEN)
       }
     }

@@ -12,8 +12,8 @@ import { CustomSessionModule } from '../middleware/session.middleware'
 import { AuthorizationsModule } from '../additionalRepositories/authorizations/authorizations.module'
 import { SessionTokenStrategy } from './strategies/session.strategy'
 import { SessionAuthModule } from './session-auth/session-auth.module'
-import { LogsServiceOtherErrors } from '../otherServices/loggerService/logger.service'
-import { RepositoryOtherAdd } from '../otherServices/loggerService/logger.module'
+import {RepositoryAllAdd} from "../otherServices/loggerService/logger.module";
+import {LogsService} from "../otherServices/loggerService/logger.service";
 
 @Module({
   imports: [
@@ -40,8 +40,8 @@ import { RepositoryOtherAdd } from '../otherServices/loggerService/logger.module
     LocalStrategy,
     JwtStrategy,
     SessionTokenStrategy,
-    RepositoryOtherAdd,
-    LogsServiceOtherErrors,
+    RepositoryAllAdd,
+    LogsService,
   ],
   controllers: [AuthController],
   exports: [SessionTokenStrategy],

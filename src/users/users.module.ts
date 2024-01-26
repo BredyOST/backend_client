@@ -6,18 +6,13 @@ import { UserEntity } from './entities/user.entity'
 import { HttpModule } from '@nestjs/axios'
 import { PassportModule } from '@nestjs/passport'
 import { SessionAuthModule } from '../auth/session-auth/session-auth.module'
-import { RepositoryOtherAdd } from '../otherServices/loggerService/logger.module'
-import { LogsServiceOtherErrors } from '../otherServices/loggerService/logger.service'
+import { LogsService } from '../otherServices/loggerService/logger.service'
+import { RepositoryAllAdd } from '../otherServices/loggerService/logger.module'
 
 @Module({
-  imports: [
-    HttpModule,
-    TypeOrmModule.forFeature([UserEntity]),
-    PassportModule,
-    SessionAuthModule,
-  ],
+  imports: [HttpModule, TypeOrmModule.forFeature([UserEntity]), PassportModule, SessionAuthModule],
   exports: [UsersService],
   controllers: [UsersController],
-  providers: [UsersService, RepositoryOtherAdd, LogsServiceOtherErrors],
+  providers: [UsersService, RepositoryAllAdd, LogsService],
 })
 export class UsersModule {}

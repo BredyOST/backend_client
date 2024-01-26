@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import * as fs from 'fs'
+import * as process from 'process';
 import { createClient, RedisClientType } from 'redis'
 import { replaceJsonWithBase64, reviveFromBase64Representation } from '@neshca/json-replacer-reviver'
 import { ConfigService } from '@nestjs/config'
@@ -13,15 +14,17 @@ export class RedisService {
 
     const password = encodeURIComponent(this.configService.get<string>('PASSWORD_REDIS'))
     const redisPath = this.configService.get<string>('PATH_REDIS')
+    // const redisPath = process.env['PATH_REDIS']
     const redisAddress = this.configService.get<string>('ADRESS_REDIS')
+    console.log(redisPath)
 
     const config = {
-      url: `rediss://:${password}@master.5a8ea7e5-5c92-4bc2-822f-94bf61acf9c9.c.dbaas.selcloud.ru:6380`,
+      url: `rediss://:${password}${redisAddress}`,
       socket: {
         tls: true,
         rejectUnauthorized: true,
-        ca: [fs.readFileSync('/var/www/ClientBack/.redis/root.crt').toString()],
-      },
+        ca: [fs.readFileSync(`${redisPath}`).toString()],
+        },
     }
     this.client = createClient(config)
     this.client
@@ -36,27 +39,24 @@ export class RedisService {
   }
 
   async get(key: string): Promise<string | null> {
+
     if (!this.isConnected) {
       console.warn('Redis client is not connected.')
       return null
     }
 
-
-
     try {
       const result = (await this.client.get(key)) ?? null;
-
       if (!result) {
         return null;
       }
 
-      // use reviveFromBase64Representation to restore binary data from Base64
       return JSON.parse(result, reviveFromBase64Representation);
     } catch (error) {
       console.error('cache.get', error);
       return null;
     }
-    //
+
     // try {
     //   const product = await this.client.get(key)
     //   const encodedBody = JSON.parse(product, reviveFromBase64Representation)
@@ -67,8 +67,6 @@ export class RedisService {
     //     const decodedBody = Buffer.from(encodedBody?.value?.data?.body, 'base64').toString('utf-8')
     //     return decodedBody
     //   }
-    //
-    //
     // } catch (err) {
     //   console.error('Redis get error:', err)
     //   return null
@@ -103,13 +101,14 @@ export class RedisService {
   async getAllKeys(pattern) {
     let cursor = 0
     let keys = []
+
     do {
       const reply = await this.client.scan(cursor, {
         MATCH: pattern,
         COUNT: 100
       });
       cursor = reply.cursor // Прямое присваивание, так как cursor уже является числом
-      console.log(cursor)
+
       keys.push(...reply.keys)
     } while (cursor !== 0)
 

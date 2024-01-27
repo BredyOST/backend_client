@@ -11,19 +11,17 @@ async function bootstrap() {
     origin: [`${process.env['CLIENT_URL']}`],
   })
 
-  // app.enableCors({ credentials: true, origin: true });
-  // app.setGlobalPrefix('api');
   app.use('/uploads', express.static(join(__dirname, '..', 'uploads')))
 
   const config = new DocumentBuilder().setTitle('Клиент.ру').setVersion('1.0').addBearerAuth().build()
 
   const document = SwaggerModule.createDocument(app, config)
 
-  SwaggerModule.setup('swagger', app, document, {
-    swaggerOptions: {
-      persistAuthorization: true,
-    },
-  })
+  // SwaggerModule.setup('swagger', app, document, {
+  //   swaggerOptions: {
+  //     persistAuthorization: true,
+  //   },
+  // })
 
   await app.listen(7777)
 }

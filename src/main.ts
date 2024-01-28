@@ -18,7 +18,7 @@ async function bootstrap() {
     session({
       resave: false,
       saveUninitialized: false,
-      secret: 'your-secret-key',
+      secret: process.env['SECRET_KEY_TWO'],
     }),
   )
 

@@ -47,9 +47,8 @@ export class AuthController {
 
   // КОГДА ПЕРЕШЛИ ПО ССЫЛКЕ АКТИВАЦИИ
   @Get('activate/:link')
-  @Redirect(`${process.env['CLIENT_URL']}`, 200)
+  @Redirect(process.env['CLIENT_URL'], 200)
   async activate(@Request() req: any) {
-
     return this.authService.activate(req.params.link)
   }
 

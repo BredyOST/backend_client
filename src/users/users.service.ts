@@ -339,7 +339,9 @@ export class UsersService {
                         cursor: pointer;
                         text-decoration: none;
                         color: white;">
-                        <a href="${link}" style="text-decoration: none; color: white;">${link}</a>
+                      <a href="${link}" style="text-decoration: none; color: white;">
+                        Кликните здесь, чтобы активировать аккаунт
+                      </a>
                     </div>
                     <h2 style="font-size: 24px;">
                      Если вы не производили регистрацию на сайте Клиенты.com, то проигнорируйте это сообщение
@@ -350,7 +352,6 @@ export class UsersService {
         })
         success = true
       } catch (err) {
-        console.log(err)
         retries--
         await this.LogsService.error(`repeatSendMessage`, `${to} ${err}`)
       }

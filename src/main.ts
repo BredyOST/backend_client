@@ -6,11 +6,9 @@ import { join } from 'path'
 import * as process from 'process'
 import * as session from 'express-session';
 async function bootstrap() {
-  // const app = await NestFactory.create(AppModule, { cors: false });
   const app = await NestFactory.create(AppModule)
   app.enableCors({
-    // origin: [`${process.env['CLIENT_URL']}`],
-    origin: `https://xn--e1affem4a4d.com`,
+    origin: ['https://xn--e1affem4a4d.com', `${process.env['API_IP']}`],
   })
 
   app.use(
@@ -22,9 +20,6 @@ async function bootstrap() {
       secret: process.env['SECRET_KEY_TWO'],
     }),
   )
-
-  const config = new DocumentBuilder().setTitle('Клиент.ру').setVersion('1.0').addBearerAuth().build()
-
   await app.listen(7777)
 }
 bootstrap()

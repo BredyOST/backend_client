@@ -7,7 +7,7 @@ import * as session from 'express-session';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   app.enableCors({
-    origin: ['https://xn--e1affem4a4d.com'],
+    origin: 'https://xn--e1affem4a4d.com'
   })
 
   app.use(

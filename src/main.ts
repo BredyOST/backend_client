@@ -4,11 +4,16 @@ import * as express from 'express'
 import { join } from 'path'
 import * as process from 'process'
 import * as session from 'express-session'
+import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
-  app.enableCors({
-    origin: 'xn--e1affem4a4d.com'
-  })
+    const corsOptions: CorsOptions = {
+        origin: false,
+    };
+    app.enableCors(corsOptions);
+  // app.enableCors({
+  //   origin: 'xn--e1affem4a4d.com'
+  // })
 
   app.use(
     '/uploads',

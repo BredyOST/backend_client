@@ -3,11 +3,11 @@ import { AppModule } from './app.module'
 import * as express from 'express'
 import { join } from 'path'
 import * as process from 'process'
-import * as session from 'express-session';
+import * as session from 'express-session'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   app.enableCors({
-    origin: 'https://xn--e1affem4a4d.com'
+    origin: 'xn--e1affem4a4d.com'
   })
 
   app.use(

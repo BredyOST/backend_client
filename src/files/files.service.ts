@@ -37,7 +37,7 @@ export class FilesService {
     try {
 
       await this.repository.save({
-        filename: file.originalname,
+        filename: file.filename,
         originalName: file.originalname,
         size: file.size,
         mimetype: file.mimetype,
@@ -55,8 +55,10 @@ export class FilesService {
     })
   }
   async delete(id, dto: any) {
+
     try {
       const fileToDelete = await this.findById(+dto.id)
+
       if (!fileToDelete) throw new HttpException('Файл не найден', HttpStatus.FORBIDDEN)
       if (fileToDelete) {
         unlinkSync(`./uploads/${fileToDelete.filename}`)

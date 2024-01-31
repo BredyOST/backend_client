@@ -13,6 +13,7 @@ export class FilesService {
   async getAll(id) {
     return this.repository.find()
   }
+
   async findAll(id: number, fileType: FileType) {
     try {
       const qb = await this.repository.createQueryBuilder('file')
@@ -34,8 +35,10 @@ export class FilesService {
   }
   async create(file: Express.Multer.File, id: number) {
     try {
+      const timestamp = new Date().toISOString().replace(/[-:T.]/g, '');
+
       await this.repository.save({
-        filename: file.filename,
+        filename: `${file.originalname}_${timestamp}`,
         originalName: file.originalname,
         size: file.size,
         mimetype: file.mimetype,
@@ -53,9 +56,11 @@ export class FilesService {
     })
   }
   async delete(id, dto: any) {
+    console.log(id)
     try {
       const fileToDelete = await this.findById(+dto.id)
-      if (!fileToDelete) throw new HttpException('Файл не найдент', HttpStatus.FORBIDDEN)
+      console.log(fileToDelete)
+      if (!fileToDelete) throw new HttpException('Файл не найден', HttpStatus.FORBIDDEN)
       if (fileToDelete) {
         unlinkSync(`./uploads/${fileToDelete.filename}`)
         await this.repository.remove(fileToDelete)

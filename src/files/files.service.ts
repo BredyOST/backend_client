@@ -37,7 +37,7 @@ export class FilesService {
     try {
 
       await this.repository.save({
-        filename: file.filename,
+        filename: file.originalname,
         originalName: file.originalname,
         size: file.size,
         mimetype: file.mimetype,

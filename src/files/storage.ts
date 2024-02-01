@@ -8,7 +8,6 @@ const generateId = () =>
 
 const normalizeFileName = (req, file, callback) => {
   const fileExtName = file.originalname.split('.').pop()
-
   callback(null, `${generateId()}.${fileExtName}`)
 }
 

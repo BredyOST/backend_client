@@ -34,6 +34,9 @@ export class FilesService {
     }
   }
   async create(file: Express.Multer.File, id: number) {
+
+    console.log(1)
+    console.log(file)
     try {
 
       await this.repository.save({

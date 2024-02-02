@@ -58,6 +58,7 @@ export class CategoriesService {
         description: dto.description,
         positiveWords: dto.positiveWords,
         negativeWords: dto.negativeWords,
+        salary: +dto.salary,
       })
 
       return {
@@ -85,6 +86,7 @@ export class CategoriesService {
       let indicatorDescription = false
       let positiveWords = false
       let negativeWords = false
+      let salary = false
 
       const user = await this.usersService.findById(+id)
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
@@ -122,11 +124,14 @@ export class CategoriesService {
         categoryId.negativeWords = dto.negativeWords
         negativeWords = true
       }
+      if (dto?.salary) {
+        categoryId.salary = +dto.salary
+        salary = true
+      }
 
+      if (indicatorID || indicatorName || indicatorDescription || negativeWords || positiveWords || salary) await this.repository.update(dto.id, categoryId)
 
-      if (indicatorID || indicatorName || indicatorDescription || negativeWords || positiveWords) await this.repository.update(dto.id, categoryId)
-
-      if (!indicatorID && !indicatorName && !indicatorDescription && !negativeWords && !positiveWords) {
+      if (!indicatorID && !indicatorName && !indicatorDescription && !negativeWords && !positiveWords && !salary) {
         throw new HttpException('категория не изменена', HttpStatus.BAD_REQUEST)
       } else {
         return {
@@ -227,11 +232,13 @@ export class CategoriesService {
       if (!dto.length) throw new HttpException('Необходимо выбрать категории', HttpStatus.UNAUTHORIZED)
       if (user.activatedFreePeriod) throw new HttpException('Вы уже используете бесплатный период', HttpStatus.UNAUTHORIZED)
       if (user.endFreePeriod) throw new HttpException('Вы уже использовали бесплатный период', HttpStatus.UNAUTHORIZED)
+      if (dto.length >= 2) throw new HttpException('Для бесплатного периода доступна одна категория', HttpStatus.UNAUTHORIZED)
+      const days = 1
 
       const categories = []
       const purchaseDate = new Date() // Дата покупки
       const endDate = new Date(purchaseDate) // Создаем новый объект Date, чтобы не изменять оригинальный
-      endDate.setDate(purchaseDate.getDate() + 2) // Устанавливаем дату окончания на 2 дня после даты покупки
+      endDate.setDate(purchaseDate.getDate() + days) // Устанавливаем дату окончания на 1 дня после даты покупки
 
       for (const item of dto) {
         const nameCategory = await this.findById_category(item.id)
@@ -240,7 +247,7 @@ export class CategoriesService {
           name: nameCategory.name,
           purchaseBuyDate: purchaseDate, // Дата покупки
           purchaseEndDate: endDate, // Дата окончания подписки
-          purchasePeriod: 2, // Период подписки в днях
+          purchasePeriod: days, // Период подписки в днях
         }
         categories.push(obj)
       }
@@ -262,6 +269,8 @@ export class CategoriesService {
       } else if (err.response === `Необходимо выбрать категории`) {
         throw err
       } else if (err.response === `Вы уже использовали бесплатный период`) {
+        throw err
+      } else if (err.response === `Для бесплатного периода доступна одна категория`) {
         throw err
       } else {
         throw new HttpException('Ошибка при получении бесплатного периода', HttpStatus.FORBIDDEN)

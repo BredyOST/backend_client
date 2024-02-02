@@ -663,32 +663,63 @@ export class UsersService {
     }
   }
   // активация аккаунта
-  async activate(activationLink) {
+  // async activate(activationLink) {
+  //   try {
+  //     // находим пользователя с такой ссылкой
+  //     const user = await this.findByActivateLink(activationLink)
+  //
+  //     if (!user) {
+  //       throw new HttpException('Некорректная ссылка активации, запросите повторно в окне авторизации', HttpStatus.BAD_REQUEST)
+  //     }
+  //     // если есть то ставим флаг об активации и обновляем его
+  //     user.isActivatedEmail = true
+  //     await this.saveUpdatedUser(user.id, user)
+  //     await this.sendMessageAboutActivated(user.email)
+  //
+  //     return {
+  //       text: `Успешная активация, перейдите по ссылке ${process.env['CLIENT_URL']}`,
+  //     }
+  //   } catch (err) {
+  //     if (err.response === 'Некорректная ссылка активации, запросите повторно в окне авторизации') {
+  //       await this.LogsService.error(`аквтивация ак`, `некорректная ссылка активации no trace`)
+  //       throw err
+  //     } else {
+  //       await this.LogsService.error(`активация ак`, `ошибка ${err}`)
+  //       throw new HttpException('Ошибка при активации аккаунта', HttpStatus.BAD_REQUEST)
+  //     }
+  //   }
+  // }
+
+  async activate(activationLink: string) {
+    console.log(activationLink)
     try {
-      // находим пользователя с такой ссылкой
-      const user = await this.findByActivateLink(activationLink)
+      const user = await this.findByActivateLink(activationLink);
 
       if (!user) {
-        throw new HttpException('Некорректная ссылка активации, запросите повторно в окне авторизации', HttpStatus.BAD_REQUEST)
+        throw new HttpException('Некорректная ссылка активации, запросите повторно в окне авторизации', HttpStatus.BAD_REQUEST);
       }
-      // если есть то ставим флаг об активации и обновляем его
-      user.isActivatedEmail = true
-      await this.saveUpdatedUser(user.id, user)
-      await this.sendMessageAboutActivated(user.email)
+
+      user.isActivatedEmail = true;
+      await this.saveUpdatedUser(user.id, user);
+      await this.sendMessageAboutActivated(user.email);
 
       return {
         text: 'Успешная активация'
-      }
+      };
+
     } catch (err) {
       if (err.response === 'Некорректная ссылка активации, запросите повторно в окне авторизации') {
-        await this.LogsService.error(`аквтивация ак`, `некорректная ссылка активации no trace`)
-        throw err
+        await this.LogsService.error(`аквтивация ак`, `некорректная ссылка активации no trace`);
+        throw err;
       } else {
-        await this.LogsService.error(`активация ак`, `ошибка ${err}`)
-        throw new HttpException('Ошибка при активации аккаунта', HttpStatus.BAD_REQUEST)
+        await this.LogsService.error(`активация ак`, `ошибка ${err}`);
+        throw new HttpException('Ошибка при активации аккаунта', HttpStatus.BAD_REQUEST);
       }
     }
   }
+
+
+
   // повторно направить письмо с ссылкой активации
   async activateRepeat(dto: email) {
     try {

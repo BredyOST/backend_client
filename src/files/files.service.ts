@@ -14,6 +14,10 @@ export class FilesService {
     return this.repository.find()
   }
 
+  async getAllStart() {
+    return this.repository.find()
+  }
+
   async findAll(id: number, fileType: FileType) {
     try {
       const qb = await this.repository.createQueryBuilder('file')
@@ -35,8 +39,6 @@ export class FilesService {
   }
   async create(file: Express.Multer.File, id: number) {
 
-    console.log(1)
-    console.log(file)
     try {
 
       await this.repository.save({

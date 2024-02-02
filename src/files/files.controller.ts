@@ -8,7 +8,7 @@ import { UserId } from '../decorators/user-id.decorator'
 
 @Controller('files')
 @ApiTags('files')
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
@@ -22,6 +22,10 @@ export class FilesController {
   @UseGuards(JwtAuthGuard)
   getAll(@UserId() id: number) {
     return this.filesService.getAll(id)
+  }
+  @Get('/getAllStart')
+  getAllStart() {
+    return this.filesService.getAllStart()
   }
 
   @Post()

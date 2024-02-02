@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, Request, Body, Get, Redirect} from '@nestjs/common'
+import {Controller, Post, UseGuards, Request, Body, Get, Redirect, Param, Res} from '@nestjs/common'
 import { AuthService } from './auth.service'
 import { UserEntity } from '../users/entities/user.entity'
 import { LocalAuthGuard } from './guards/local.guard'
@@ -46,12 +46,17 @@ export class AuthController {
   }
 
   // КОГДА ПЕРЕШЛИ ПО ССЫЛКЕ АКТИВАЦИИ
+  // @Get('activate/:link')
+  // @Redirect(process.env['CLIENT_URL'], 200)
+  // async activate(@Request() req: any) {
+  //   return this.authService.activate(req.params.link)
+  // }
   @Get('activate/:link')
-  @Redirect(process.env['CLIENT_URL'], 200)
-  async activate(@Request() req: any) {
-    return this.authService.activate(req.params.link)
+  @Redirect('https://xn--e1affem4a4d.com', 301)
+  async activate(@Param('link') activationLink: string, @Res() res: Response) {
+    await this.authService.activate(activationLink);
+    return { url: 'https://xn--e1affem4a4d.com/dashboard/profile' };
   }
-
   // ЗАПРОС ПОВТОРНОЙ АКТИВАЦИИ
   @Post('/activateRepeat')
   async activateRepeat(@Body() dto: email) {

@@ -15,6 +15,7 @@ export type category = {
 	description: string
 	positiveWords: string[]
 	negativeWords: string[]
+	salary:string
 }
 
 @Controller('categories')

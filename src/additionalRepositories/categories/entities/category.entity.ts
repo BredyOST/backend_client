@@ -14,6 +14,8 @@ export class CategoryEntity {
   positiveWords: string[]
   @Column('jsonb', { array: false, default: [] })
   negativeWords: string[]
+  @Column({ default: 2500})
+  salary: number
   @CreateDateColumn()
   createdAt: Date
   @UpdateDateColumn()

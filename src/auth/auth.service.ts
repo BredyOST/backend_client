@@ -296,9 +296,9 @@ export class AuthService {
     try {
       await this.usersService.activateRepeat(dto)
 
-      return {
-        text: 'Сообщение направлено',
-      }
+      // return {
+      //   text: 'Сообщение направлено',
+      // }
     } catch (err) {
       if (err.response === 'Ваш аккаунт уже активирован') {
         await this.LogsService.error(`отправить повторно ссылку активации`, `Ваш аккаунт уже активирован`)

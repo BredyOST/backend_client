@@ -305,7 +305,7 @@ export class UsersService {
         await this.mailerService.sendMail({
           from: process.env['FROM_SEND_MAIL'],
           to: to,
-          subject: `Активация аккаунта на сайте ${process.env['API_URL']}`,
+          subject: `Активация аккаунта на сайте ${process.env['CLIENT_URL']}`,
           text: '',
           html: `
           <div style="
@@ -382,21 +382,21 @@ export class UsersService {
         await this.mailerService.sendMail({
           from: process.env['FROM_SEND_MAIL'],
           to: to,
-          subject: `Успешная активация аккаунта на сайте ${process.env['API_URL']}`,
+          subject: `Успешная активация аккаунта на сайте ${process.env['CLIENT_URL']}`,
           text: '',
           html: `
 <div style="
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 18px;
     background-color: #f0f0f0;
-    padding: 30px;
+    padding: 20px;
     border-radius: 10px;
     width: 100%;
     text-align: center;">
     <h1 style="
         background-color: #ab5e4d;
-        font-size: 35px;
+        font-size: 18px;
         font-weight: 800;
         padding: 10px;
         color: white;
@@ -404,7 +404,7 @@ export class UsersService {
         Клиенты.com
     </h1>
     <div style="padding: 10px;">
-        <h2 style="font-size: 28px;">
+        <h2 style="font-size: 18px;">
             Ваш аккаунт на сайте Клиенты.com успешно активирован
         </h2>
     </div>
@@ -701,7 +701,7 @@ export class UsersService {
   // }
 
   async activate(activationLink: string) {
-    console.log(activationLink)
+
     try {
       const user = await this.findByActivateLink(activationLink);
 

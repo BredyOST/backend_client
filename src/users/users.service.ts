@@ -315,6 +315,7 @@ export class UsersService {
                   padding: 5px;
                   border-radius: 10px;
                   width: 100%;
+                  column-gap: 10px;
                   text-align: center;">
              <h1 style="
                       background-color: #806d6a;
@@ -322,7 +323,11 @@ export class UsersService {
                       font-weight: 400;
                       padding: 10px;
                       color: white;
+                      align-items: center;
+                      justify-content: center;
+                      text-align: center;
                       border-radius: 10px;">
+             
                  Клиенты.com
              </h1>
              <div style="padding: 0px;">

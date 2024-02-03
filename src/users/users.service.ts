@@ -305,7 +305,7 @@ export class UsersService {
         await this.mailerService.sendMail({
           from: process.env['FROM_SEND_MAIL'],
           to: to,
-          subject: `Активация аккаунта на сайте ${process.env['CLIENT_URL']}`,
+          subject: `Активация аккаунта на сайте клиенты.com`,
           text: '',
           html: `
           <div style="
@@ -382,7 +382,7 @@ export class UsersService {
         await this.mailerService.sendMail({
           from: process.env['FROM_SEND_MAIL'],
           to: to,
-          subject: `Успешная активация аккаунта на сайте ${process.env['CLIENT_URL']}`,
+          subject: `Успешная активация аккаунта на сайте клиенты.com`,
           text: '',
           html: `
 <div style="

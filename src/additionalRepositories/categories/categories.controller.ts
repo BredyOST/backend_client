@@ -48,7 +48,7 @@ export class CategoriesController {
 	}
 
 	// ПОЛУЧИТЬ ВСЕ КАТЕГОРИИ
-	// @Get('/getAll')
+	// @Get('/getAllAuth')
 	// @UseGuards(JwtAuthGuard)
 	// async getAllCategories(@UserId() id: number) {
 	//   return this.categoriesService.getAllCategories(id);
@@ -64,14 +64,14 @@ export class CategoriesController {
 	// работа с пользователем
 	@Post('/freePeriod')
 	@UseGuards(JwtAuthGuard)
-	async activateFreePeriod(@UserId() id: number, @Request() req, @Body() dto: number) {
+  async activateFreePeriod(@UserId() id: number, @Request() req, @Body() dto: number) {
 		// передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
-		const result = await this.sessionAuthService.validateSessionToken(req.session)
+    const result = await this.sessionAuthService.validateSessionToken(req.session)
 		// если возвращается false то сессия истекла
 		if (!result) {
 			return {
-				text: 'Ваша сессия истекла, выполните повторный вход',
-			}
+        text: 'Ваша сессия истекла, выполните повторный вход',
+      }
 		}
 		return this.categoriesService.activateFreePeriod(id, dto)
 	}

@@ -308,42 +308,47 @@ export class UsersService {
           subject: `Активация аккаунта на сайте ${process.env['API_URL']}`,
           text: '',
           html: `
-            <div style="
+          <div style="
                   display: flex;
                   flex-direction: column;
-                  gap: 25px;
                   background-color: #f0f0f0;
-                  padding: 30px;
+                  padding: 5px;
                   border-radius: 10px;
                   width: 100%;
-                  /*margin: auto;*/
                   text-align: center;">
              <h1 style="
-                      background-color: #ab5e4d;
-                      font-size: 35px;
-                      font-weight: 800;
+                      background-color: #806d6a;
+                      font-size: 20px;
+                      font-weight: 400;
                       padding: 10px;
                       color: white;
                       border-radius: 10px;">
                  Клиенты.com
              </h1>
-             <div style="padding: 10px;">
-                    <h2 style="font-size: 28px;">
+             <div style="padding: 0px;">
+                    <h2 style="
+                    font-size: 16px; 
+                    font-weight: 400;">
                         Для завершения процедуры регистрации на сайте и верификации email-адреса перейдите по данной ссылке:
                     </h2>
                     <div style="
-                        background-color: #2626d0;
+                        background-color: #b46c60;
                         padding: 10px;
-                        font-size: 24px;
+                        font-weight: 400;
+                        font-size: 16px;
                         border-radius: 5px;
                         cursor: pointer;
                         text-decoration: none;
                         color: white;">
-                      <a href="${link}" style="text-decoration: none; color: white;">
+                      <a href="${link}" style="
+                      text-decoration: none; 
+                      color: white;
+                     
+                      ">
                         Кликните здесь, чтобы активировать аккаунт
                       </a>
                     </div>
-                    <h2 style="font-size: 24px;">
+                    <h2 style="font-size: 16px; font-weight: 400;">
                      Если вы не производили регистрацию на сайте Клиенты.com, то проигнорируйте это сообщение
                  </h2>
                 </div>

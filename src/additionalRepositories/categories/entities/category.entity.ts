@@ -16,6 +16,12 @@ export class CategoryEntity {
   negativeWords: string[]
   @Column({ default: 2500})
   salary: number
+  @Column({ default: false })
+  show: boolean
+  @Column({ default: false })
+  create: boolean
+  @Column({ default: true })
+  disabled: boolean
   @CreateDateColumn()
   createdAt: Date
   @UpdateDateColumn()

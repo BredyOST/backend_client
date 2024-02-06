@@ -14,8 +14,10 @@ export class CategoryEntity {
   positiveWords: string[]
   @Column('jsonb', { array: false, default: [] })
   negativeWords: string[]
-  @Column({ default: 2500})
+  @Column({ default: 2500 })
   salary: number
+  @Column({ default: 0 })
+  percentSale: number
   @Column({ default: false })
   show: boolean
   @Column({ default: false })

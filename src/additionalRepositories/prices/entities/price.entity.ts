@@ -9,15 +9,9 @@ export class PriceEntity {
   @Column()
   title: string
   @Column()
-  price: number
-  @Column()
   period: number
   @Column()
   description: string
-  @Column()
-  sale: boolean
-  @Column()
-  percentForSale: number
   @CreateDateColumn()
   createdAt: Date
   @UpdateDateColumn()

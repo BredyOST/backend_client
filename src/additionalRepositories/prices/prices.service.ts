@@ -108,24 +108,12 @@ export class PricesService {
         priceBlock.title = dto.title
         if (!changedPrice) changedPrice = true
       }
-      if (dto.price && dto.price != priceBlock.price) {
-        priceBlock.price = dto.price
-        if (!changedPrice) changedPrice = true
-      }
       if (dto.period && dto.period != priceBlock.period) {
         priceBlock.period = dto.period
         if (!changedPrice) changedPrice = true
       }
       if (dto.description && dto.description != priceBlock.description) {
         priceBlock.description = dto.description
-        if (!changedPrice) changedPrice = true
-      }
-      if (dto.sale && dto.sale != priceBlock.sale) {
-        priceBlock.sale = dto.sale
-        if (!changedPrice) changedPrice = true
-      }
-      if (dto.percentForSale && dto.percentForSale != priceBlock.percentForSale) {
-        priceBlock.percentForSale = dto.percentForSale
         if (!changedPrice) changedPrice = true
       }
 

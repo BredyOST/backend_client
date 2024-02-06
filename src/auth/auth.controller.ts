@@ -30,8 +30,9 @@ export class AuthController {
 
   // РЕГИСТРАЦИЯ
   @Post('register')
-  async register(@Body() dto: createUserType) {
-    return this.authService.register(dto)
+  async register(@Request() req, @Body() dto: createUserType) {
+    const clientIp = req.clientIp
+    return this.authService.register(dto, clientIp)
   }
 
   // ВХОД В УЧЕТКУ

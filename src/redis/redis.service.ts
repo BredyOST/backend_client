@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common'
 import * as fs from 'fs'
-import * as process from 'process';
 import { createClient, RedisClientType } from 'redis'
 import { replaceJsonWithBase64, reviveFromBase64Representation } from '@neshca/json-replacer-reviver'
 import { ConfigService } from '@nestjs/config'
@@ -37,16 +36,17 @@ export class RedisService {
         console.error('Redis connection error:', err)
       })
   }
-//re
-  async get(key: string): Promise<string | null> {
 
+  async get(key: string): Promise<string | null> {
     if (!this.isConnected) {
       console.warn('Redis client is not connected.')
       return null
     }
-
     try {
-      const result = (await this.client.get(key)) ?? null;
+      let result;
+      if(key) {
+        result = (await this.client.get(key)) ?? null;
+      }
       if (!result) {
         return null;
       }

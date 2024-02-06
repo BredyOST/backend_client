@@ -18,6 +18,7 @@ export type createUSerWithLink = {
   email: string
   password: string
   activationLink: string
+  ip: string
 }
 
 @Injectable()

@@ -13,6 +13,7 @@ import { LogsService } from '../otherServices/loggerService/logger.service'
 import { createUserType, email } from './auth.controller'
 import { SessionAuthService } from './session-auth/session-auth.service'
 import { ConfigService } from '@nestjs/config'
+import axios from "axios";
 
 @Injectable()
 export class AuthService {
@@ -28,8 +29,29 @@ export class AuthService {
   ) {}
 
   // регистрация
-  async register(dto: createUserType) {
+  async register(dto: createUserType, clientIp: string) {
     try {
+      // const allowedDomains = [
+      //   'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'aol.com',
+      //   'mail.com', 'protonmail.com', 'icloud.com', 'zoho.com', 'yandex.ru',
+      //   'bk.ru', 'inbox.ru', 'list.ru', 'rambler.ru', 'mail.ru', 'tut.by',
+      //   'yandex.com', 'fastmail.com', 'gmx.com', 'comcast.net', 'yahoo.co.uk',
+      //   'ymail.com', 'live.com', 'rocketmail.com', 'googlemail.com', 'me.com',
+      //   'outlook.co.th', 'abv.bg', 'seznam.cz', 'centrum.cz', 'wp.pl', 'onet.pl',
+      //   'interia.pl', 'o2.pl', 'yahoo.fr', 'orange.fr', 'free.fr', 'laposte.net',
+      // ];
+      //
+      // try {
+      //   const response = await axios.get(`https://apilayer.com/mailboxlayer?check=${dto.email}`);
+      //   console.log(response)
+      // } catch (err)
+      //     return
+      // Проверяем, является ли почтовый домен не временным
+      // const emailDomain = dto.email.split('@')[1];
+      // if (!allowedDomains.includes(emailDomain)) {
+      //   throw new HttpException('Использование временных почтовых адресов запрещено', HttpStatus.BAD_REQUEST);
+      // }
+
       // проверяем совпадают ли пароли, основной и проверочный
       if (dto.password !== dto.passwordCheck) throw new HttpException('Не совпадают введенные пароли', HttpStatus.BAD_REQUEST)
       // проверяем email в базе данных, если существует в базе данных то выдаем ошибку
@@ -45,13 +67,13 @@ export class AuthService {
         email: dto.email,
         password: password,
         activationLink: activationLink,
+        ip: clientIp,
       }
       // создаем нового пользователя
       const newUserDate = await this.usersService.create(newUser)
       if (!newUserDate || !newUserDate.email) throw new HttpException('Ошибка при создании учетной записи, обновите страницу и попробуйте еще раз', HttpStatus.BAD_REQUEST)
       // отправляем ссылку активации на указанный при регистрации email
       await this.usersService.sendActivationMail(dto.email, `${this.configService.get<string>('API_URL')}/auth/activate/${activationLink}`)
-      // await this.usersService.sendActivationMail(dto.email, `${this.configService.get<string>('CLIENT_URL')}`)
 
       return {
         text: 'Регистрация завершена. На Ваш Email направлено сообщение для активации аккаунта',
@@ -67,6 +89,9 @@ export class AuthService {
         throw err
       } else if (err.response === `Ошибка отправки сообщения об активации, проверьте почту`) {
         await this.LogsService.error(`Регистрация`, `sendActivationMail ${dto.email} no trace`)
+        throw err
+      } else if (err.response === `Использование временных почтовых адресов запрещено`) {
+        await this.LogsService.error(`Регистрация`, `Использование временных почтовых адресов запрещено ${dto.email} no trace`)
         throw err
       } else {
         await this.LogsService.error(`Регистрация`, `Ошибка при регистрации ${dto.email} ${err}`)
@@ -296,9 +321,9 @@ export class AuthService {
     try {
       await this.usersService.activateRepeat(dto)
 
-      // return {
-      //   text: 'Сообщение направлено',
-      // }
+      return {
+        text: 'Сообщение направлено',
+      }
     } catch (err) {
       if (err.response === 'Ваш аккаунт уже активирован') {
         await this.LogsService.error(`отправить повторно ссылку активации`, `Ваш аккаунт уже активирован`)

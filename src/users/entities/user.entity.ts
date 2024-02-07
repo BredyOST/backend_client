@@ -42,6 +42,8 @@ export class UserEntity {
 
   @Column({ default: '' })
   ip: string
+  @Column({ default: null })
+  lastVisit: null | Date
 
   @Column({ default: '' })
   activationLink: string

@@ -114,6 +114,7 @@ export class AuthService {
       if (!sessionToken) throw new HttpException('Нудачная попытка входа в учетную запись по сессии, обновите страницу браузера и попробуйте еще раз', HttpStatus.BAD_REQUEST)
       // записываем новый токен сессии пользователю
       user.sessionToken = sessionToken
+      user.lastVisit = new Date()
       //обновляем пользователя
       await this.usersService.saveUpdatedUser(user.id, user)
       // создаем сессиию для добавления в репозиторий авторизации

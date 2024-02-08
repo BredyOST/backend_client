@@ -425,7 +425,6 @@ export class UsersService {
       throw new HttpException('Ошибка отправки сообщения об успешной активации', HttpStatus.FORBIDDEN)
     }
   }
-
   // отправить код активации при смене почты
   async sendActivationCodeForNewEmail(user, dto) {
     let retries = 3 // количество повторных попыток
@@ -491,6 +490,39 @@ export class UsersService {
       throw new HttpException('Ошибка отправки сообщения об активации, проверьте почту', HttpStatus.FORBIDDEN)
     }
   }
+  // отправить сообщение от пользователя
+  async sendMessage(dto: any) {
+
+    let retries = 3 // количество повторных попыток
+    let success = false // флаг успешной отправки
+
+    while (retries > 0 && !success) {
+      try {
+        await this.mailerService.sendMail({
+          from: process.env['FROM_SEND_MAIL'],
+          to: process.env['FROM_SEND_MAIL'],
+          subject: `Вопрос от пользователя ${dto.name} ${dto.email}`,
+          text: `${dto.message}`,
+          html: ``,
+        })
+        success = true
+
+        return {
+          text: 'Сообщение успешно направлено, ожидайте ответа'
+        }
+
+      } catch (err) {
+        retries--
+        await this.LogsService.error(`сообщение об активации`, ` ${err}`)
+      }
+    }
+
+    if (!success) {
+      await this.LogsService.error(`Ошибка отправки сообщения`, `Ошибка при отправке пароля после повтора no trace`)
+      throw new HttpException('Ошибка отправки сообщения', HttpStatus.FORBIDDEN)
+    }
+  }
+
 
   // отправить нвоый пароль - запрос
   async sendChangePassword(to: string, password: string) {

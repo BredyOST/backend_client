@@ -142,4 +142,9 @@ export class UsersController {
     }
     return this.usersService.verifyPhoneCode(id, dto)
   }
+
+  @Post('/sendMessage')
+  async sendMessage(@UserId() id: number, @Request() req, @Body() dto: any) {
+    return this.usersService.sendMessage(dto)
+  }
 }

@@ -21,16 +21,8 @@ export class TransactionService {
     })
   }
 
-  async addNewTransaction(id, dto: TransactionEntity) {
-    const newTransaction = {
-      title: dto.title,
-      type: dto.type,
-      user_id: id,
-      category: dto.category,
-    }
-
-    if (!newTransaction) throw new HttpException('Неудачная транзакиця оплаты на покупк', HttpStatus.UNAUTHORIZED)
-
-    await this.repository.save(newTransaction)
+  async addNewTransaction(id, dto) {
+    if (!dto) throw new HttpException('Неудачная транзакиця оплаты на покупк', HttpStatus.UNAUTHORIZED)
+    await this.repository.save(dto)
   }
 }

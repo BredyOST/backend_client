@@ -8,12 +8,14 @@ import { UsersModule } from '../../users/users.module'
 import { SessionAuthModule } from '../../auth/session-auth/session-auth.module'
 import { RepositoryAllAdd } from '../../otherServices/loggerService/logger.module'
 import { LogsService } from '../../otherServices/loggerService/logger.service'
+import { TransactionModule } from "../transaction/transaction.module";
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([CategoryEntity]),
     UsersModule,
-    SessionAuthModule
+    SessionAuthModule,
+    TransactionModule,
   ],
   exports: [CategoriesService],
   controllers: [CategoriesController],

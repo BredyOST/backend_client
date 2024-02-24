@@ -4,7 +4,6 @@ import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedCol
 export class UserEntity {
   @PrimaryGeneratedColumn()
   id: number
-
   @Column({ unique: true })
   email: string
   @Column({ default: '' })

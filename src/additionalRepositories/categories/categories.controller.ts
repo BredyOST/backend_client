@@ -7,7 +7,6 @@ import { CategoryEntity } from './entities/category.entity'
 import { SessionAuthService } from '../../auth/session-auth/session-auth.service'
 
 
-
 export type category = {
 	id: number
 	id_category: string
@@ -23,7 +22,8 @@ export type category = {
 export class CategoriesController {
 	constructor(
 		private readonly categoriesService: CategoriesService,
-		private readonly sessionAuthService: SessionAuthService
+		private readonly sessionAuthService: SessionAuthService,
+
 	) { }
 
 	// СОЗДАНИЕ КАТЕГОРИИ
@@ -76,6 +76,21 @@ export class CategoriesController {
 		return this.categoriesService.activateFreePeriod(id, dto)
 	}
 
+	@Post('/payment')
+	@UseGuards(JwtAuthGuard)
+	async payment(@UserId() id: number, @Request() req, @Body() dto: any) {
+		// передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
+		const result = await this.sessionAuthService.validateSessionToken(req.session)
+		// если возвращается false то сессия истекла
+		if (!result) {
+			return {
+				text: 'Ваша сессия истекла, выполните повторный вход',
+			}
+		}
+		const link =  await this.categoriesService.createPay(id, dto)
+		return { url: `${link}` };
+	}
+
 	// получить категорию по id
 	@Get('/findById')
 	async findById(id: number) {
@@ -93,6 +108,23 @@ export class CategoriesController {
 	async findByIdOther(@Body() body: { id: number }) {
 		const { id } = body;
 		return this.categoriesService.findById_category(id);
+	}
+	@Get('/getPayment')
+	async getPayment() {
+		return this.categoriesService.getPayment('2d6beb3d-000f-5000-9000-1a4686d97366');
+	}
+
+	@Get('/capturePayment')
+	async capturePayment() {
+		return this.categoriesService.capturePayment('2d6beb3d-000f-5000-9000-1a4686d97366');
+	}
+
+	@Post('/payment/status')
+	handlePaymentStatus(@Body() paymentStatusDto) {
+		console.log(paymentStatusDto)
+		// Обработайте уведомление о статусе платежа
+		// Обновите статус платежа в вашей системе
+		// Выполните другие необходимые действия
 	}
 
 }

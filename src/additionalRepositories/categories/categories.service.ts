@@ -1,44 +1,59 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { CreateCategoryDto } from './dto/create-category.dto'
-import { Repository } from 'typeorm'
+import { Repository } from "typeorm";
 import { CategoryEntity } from './entities/category.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { UsersService } from '../../users/users.service'
-import {category} from "./categories.controller";
+import { category } from './categories.controller'
+import * as uuid from 'uuid'
+import admin from 'firebase-admin'
+import axios from "axios";
+import { TransactionService } from "../transaction/transaction.service";
+import * as process from "process";
+
+admin.initializeApp();
+
 
 @Injectable()
 export class CategoriesService {
   constructor(
     @InjectRepository(CategoryEntity)
     private repository: Repository<CategoryEntity>,
+    private transactionService: TransactionService,
     private usersService: UsersService,
-  ) {}
+  ) {
+  }
 
   async findByIdCategory(id_category: string) {
     return this.repository.findOneBy({
       id_category,
     })
   }
+
   async findById_category(id: number) {
     return this.repository.findOneBy({
       id,
     })
   }
+
   async findByName(name: string) {
     return this.repository.findOneBy({
       name,
     })
   }
+
   async findAll() {
     return await this.repository.find()
   }
+
   async getAllCategories() {
     try {
       return await this.findAll()
     } catch (err) {
-        throw new HttpException('Ошибка получении всех категорий', HttpStatus.FORBIDDEN)
+      throw new HttpException('Ошибка получении всех категорий', HttpStatus.FORBIDDEN)
     }
   }
+
   async createCategory(id: number, dto: CreateCategoryDto) {
     try {
       const user = await this.usersService.findById(+id)
@@ -78,9 +93,9 @@ export class CategoriesService {
       }
     }
   }
+
   async updateCategory(id: number, dto: category) {
     try {
-
       let indicatorID = false
       let indicatorName = false
       let indicatorDescription = false
@@ -156,6 +171,7 @@ export class CategoriesService {
       }
     }
   }
+
   async deleteCategory(id: number, dto: { id: number }) {
     try {
       const user = await this.usersService.findById(+id)
@@ -182,6 +198,7 @@ export class CategoriesService {
       }
     }
   }
+
   async getOneCategory(id: number, dto: { id: number }) {
     try {
       const user = await this.usersService.findById(+id)
@@ -200,10 +217,9 @@ export class CategoriesService {
       }
     }
   }
-  async getWordsPositiveAndNegative(id: number, dto:{id:number, indicator: 1 | 2}) {
 
+  async getWordsPositiveAndNegative(id: number, dto: { id: number; indicator: 1 | 2 }) {
     try {
-
       const user = await this.usersService.findById(+id)
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
 
@@ -211,21 +227,17 @@ export class CategoriesService {
       if (!category) throw new HttpException('id категории не найден', HttpStatus.BAD_REQUEST)
 
       if (dto.indicator == 1) {
-        return category.positiveWords;
+        return category.positiveWords
       }
       if (dto.indicator == 2) {
-        return category.negativeWords;
+        return category.negativeWords
       }
-
-
     } catch (err) {
       throw new HttpException(`Ошибка при получении позитивных слов в категории ${id}`, HttpStatus.FORBIDDEN)
     }
-
   }
 
   async activateFreePeriod(id: number, dto) {
-
     try {
       const user = await this.usersService.findById(+id)
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
@@ -260,7 +272,6 @@ export class CategoriesService {
       return {
         text: 'Бесплатный период активирован',
       }
-
     } catch (err) {
       if (err.response === 'Пользователь не найден') {
         throw err
@@ -277,4 +288,174 @@ export class CategoriesService {
       }
     }
   }
+  async createPay(id, dto) {
+
+    try {
+
+    const user = await this.usersService.findById(+id)
+    if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
+    if (dto.categ.length <= 0) throw new HttpException('Необходимо выбрать категории', HttpStatus.UNAUTHORIZED)
+
+    const shopId = process.env['SHOP_ID']
+    const secretKey = process.env['SECRET_KEY_SHOP']
+    const idempotenceKey = uuid.v4();
+
+      const days = +dto.period
+      const categories = []
+      const purchaseDate = new Date()
+      const endDate = new Date(purchaseDate)
+      let price;
+
+      if (dto.title === 'Посуточный') {
+        endDate.setDate(purchaseDate.getDate() + days);
+      } else if (dto.title === 'Погрузись в работу') {
+        endDate.setMonth(endDate.getMonth() + days);
+      }
+
+      for (const item of dto.categ) {
+        const nameCategory = await this.findById_category(item.id)
+        if (dto.title === 'Посуточный') {
+          price = Math.round(((+nameCategory.salary * 2.5) / 30) * +days)
+        } else if (dto.title === 'Погрузись в работу') {
+          price = +nameCategory.salary * +days
+        }
+
+        const obj = {
+          id: item.id,
+          category: nameCategory.name,
+          purchaseBuyDate: purchaseDate,
+          purchaseEndDate: endDate,
+          purchasePeriod: days,
+          price: price
+        }
+        categories.push(obj)
+      }
+
+    const url = 'https://api.yookassa.ru/v3/payments';
+    const authorization = `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString('base64')}`;
+
+    const data = {
+      "amount": {
+        "value": `${price}`,
+        "currency": "RUB"
+      },
+      "payment_method_data": {
+        "type": "bank_card"
+      },
+      "confirmation": {
+        "type": "redirect",
+        "return_url": process.env['API_URL']
+      },
+      "capture": false,
+      "description": "Оплата подписки на сайте клиенты.com"
+    };
+
+    const headers = {
+      'Authorization': authorization,
+      'Idempotence-Key': idempotenceKey,
+      'Content-Type': 'application/json'
+    };
+
+    try {
+      const response = await axios.post(url, data, { headers });
+
+      const confirmationUrl = response.data?.confirmation?.confirmation_url;
+
+      if(response.data?.confirmation?.confirmation_url) {
+        const newTransaction = {
+          title: dto.title,
+          type: response.data.status,
+          user_id: id,
+          amount: dto.price,
+          category: categories,
+          id_payment: response.data.id,
+          payment_method: response.data.payment_method.type,
+          status: response.data.status,
+          createdAt: new Date(), // текущая дата и время
+        }
+        this.transactionService.addNewTransaction(id, newTransaction)
+      }
+      return confirmationUrl;
+
+    } catch (error) {
+      console.error('Error:', error.response.data);
+      // Обработка ошибки, если не удалось создать платеж
+      throw new Error('Failed to create payment');
+    }
+
+    } catch (err) {
+
+    }
+  }
+
+  async getPayment(paymentId: string) {
+    const url = `https://api.yookassa.ru/v3/payments/${paymentId}`
+    const shopId = process.env['SHOP_ID']
+    const secretKey = process.env['SECRET_KEY_SHOP']
+    const authorization = `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString('base64')}`
+    const headers = {
+      'Authorization': authorization,
+    };
+
+    try {
+      const response = await axios.get(url, { headers });
+      console.log(response)
+      // return response;
+    } catch (error) {
+    console.log(error)
+      // throw new Error('Failed to get payment information');
+    }
+  }
+
+  async cancelPayemnt (payment_id) {
+    const url = `https://api.yookassa.ru/v3/payments/${payment_id}/cancel`
+    const shopId = process.env['SHOP_ID']
+    const secretKey = process.env['SECRET_KEY_SHOP']
+    const authorization = `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString('base64')}`
+    const headers = {
+      'Authorization': authorization,
+    };
+
+    try {
+      const response = await axios.post(url, { headers });
+      console.log(response)
+      // return response;
+    } catch (error) {
+      console.log(error)
+      // throw new Error('Failed to get payment information');
+    }
+  }
+
+  async capturePayment (payment_id) {
+
+    const url = `https://api.yookassa.ru/v3/payments/${payment_id}/capture`
+    const shopId = process.env['SHOP_ID']
+    const secretKey = process.env['SECRET_KEY_SHOP']
+    const authorization = `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString('base64')}`
+    const idempotenceKey = uuid.v4();
+    const headers = {
+      'Authorization': authorization,
+      'Idempotence-Key': idempotenceKey,
+      'Content-Type': 'application/json',
+    };
+
+    const data = {
+      "amount": {
+        "value": `167`,
+        "currency": "RUB"
+      },
+    };
+
+    try {
+      const response = await axios.post(url, data,{ headers });
+      console.log(response)
+      // return response;
+    } catch (error) {
+      console.log(error)
+      // throw new Error('Failed to get payment information');
+    }
+  }
+
+
+
 }

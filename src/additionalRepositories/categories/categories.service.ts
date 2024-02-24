@@ -6,12 +6,11 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { UsersService } from '../../users/users.service'
 import { category } from './categories.controller'
 import * as uuid from 'uuid'
-import admin from 'firebase-admin'
 import axios from "axios";
 import { TransactionService } from "../transaction/transaction.service";
 import * as process from "process";
 
-admin.initializeApp();
+// admin.initializeApp();
 
 
 @Injectable()

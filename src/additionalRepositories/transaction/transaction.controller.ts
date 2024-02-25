@@ -19,4 +19,9 @@ export class TransactionController {
   async getUserTransactions(@UserId() id: string) {
     return this.transactionService.findAll(id)
   }
+
+  @Post('/getAll')
+  async changeTransaction(dto) {
+    return this.transactionService.changeTransaction(dto)
+  }
 }

@@ -1,17 +1,16 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { CreateCategoryDto } from './dto/create-category.dto'
-import { Repository } from "typeorm";
+import { Repository } from 'typeorm'
 import { CategoryEntity } from './entities/category.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { UsersService } from '../../users/users.service'
 import { category } from './categories.controller'
 import * as uuid from 'uuid'
-import axios from "axios";
-import { TransactionService } from "../transaction/transaction.service";
-import * as process from "process";
+import axios from 'axios'
+import { TransactionService } from '../transaction/transaction.service'
+import * as process from 'process'
 
 // admin.initializeApp();
-
 
 @Injectable()
 export class CategoriesService {
@@ -20,8 +19,7 @@ export class CategoriesService {
     private repository: Repository<CategoryEntity>,
     private transactionService: TransactionService,
     private usersService: UsersService,
-  ) {
-  }
+  ) {}
 
   async findByIdCategory(id_category: string) {
     return this.repository.findOneBy({
@@ -288,27 +286,25 @@ export class CategoriesService {
     }
   }
   async createPay(id, dto) {
-
     try {
+      const user = await this.usersService.findById(+id)
+      if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
+      if (dto.categ.length <= 0) throw new HttpException('Необходимо выбрать категории', HttpStatus.UNAUTHORIZED)
 
-    const user = await this.usersService.findById(+id)
-    if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
-    if (dto.categ.length <= 0) throw new HttpException('Необходимо выбрать категории', HttpStatus.UNAUTHORIZED)
-
-    const shopId = process.env['SHOP_ID']
-    const secretKey = process.env['SECRET_KEY_SHOP']
-    const idempotenceKey = uuid.v4();
+      const shopId = process.env['SHOP_ID']
+      const secretKey = process.env['SECRET_KEY_SHOP']
+      const idempotenceKey = uuid.v4()
 
       const days = +dto.period
       const categories = []
       const purchaseDate = new Date()
       const endDate = new Date(purchaseDate)
-      let price;
+      let price
 
       if (dto.title === 'Посуточный') {
-        endDate.setDate(purchaseDate.getDate() + days);
+        endDate.setDate(purchaseDate.getDate() + days)
       } else if (dto.title === 'Погрузись в работу') {
-        endDate.setMonth(endDate.getMonth() + days);
+        endDate.setMonth(endDate.getMonth() + days)
       }
 
       for (const item of dto.categ) {
@@ -325,98 +321,92 @@ export class CategoriesService {
           purchaseBuyDate: purchaseDate,
           purchaseEndDate: endDate,
           purchasePeriod: days,
-          price: price
+          price: price,
         }
         categories.push(obj)
       }
 
-    const url = 'https://api.yookassa.ru/v3/payments';
-    const authorization = `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString('base64')}`;
+      const url = 'https://api.yookassa.ru/v3/payments'
+      const authorization = `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString('base64')}`
 
-    const data = {
-      "amount": {
-        "value": `${price}`,
-        "currency": "RUB"
-      },
-      "payment_method_data": {
-        "type": "bank_card"
-      },
-      "confirmation": {
-        "type": "redirect",
-        "return_url": process.env['API_URL']
-      },
-      "capture": false,
-      "description": "Оплата подписки на сайте клиенты.com"
-    };
-
-    const headers = {
-      'Authorization': authorization,
-      'Idempotence-Key': idempotenceKey,
-      'Content-Type': 'application/json'
-    };
-
-    try {
-      const response = await axios.post(url, data, { headers });
-
-      const confirmationUrl = response.data?.confirmation?.confirmation_url;
-
-      if(response.data?.confirmation?.confirmation_url) {
-        const newTransaction = {
-          title: dto.title,
-          type: response.data.status,
-          user_id: id,
-          amount: dto.price,
-          category: categories,
-          id_payment: response.data.id,
-          payment_method: response.data.payment_method.type,
-          status: response.data.status,
-          createdAt: new Date(), // текущая дата и время
-        }
-        this.transactionService.addNewTransaction(id, newTransaction)
+      const data = {
+        amount: {
+          value: `${price}`,
+          currency: 'RUB',
+        },
+        payment_method_data: {
+          type: 'bank_card',
+        },
+        confirmation: {
+          type: 'redirect',
+          return_url: process.env['API_URL'],
+        },
+        capture: false,
+        description: 'Оплата подписки на сайте клиенты.com',
       }
-      return confirmationUrl;
 
-    } catch (error) {
-      console.error('Error:', error.response.data);
-      // Обработка ошибки, если не удалось создать платеж
-      throw new Error('Failed to create payment');
-    }
+      const headers = {
+        Authorization: authorization,
+        'Idempotence-Key': idempotenceKey,
+        'Content-Type': 'application/json',
+      }
 
-    } catch (err) {
+      try {
+        const response = await axios.post(url, data, { headers })
 
-    }
+        const confirmationUrl = response.data?.confirmation?.confirmation_url
+
+        if (response.data?.confirmation?.confirmation_url) {
+          const newTransaction = {
+            title: dto.title,
+            type: response.data.status,
+            user_id: id,
+            amount: dto.price,
+            category: categories,
+            id_payment: response.data.id,
+            payment_method: response.data.payment_method.type,
+            status: response.data.status,
+            createdAt: new Date(), // текущая дата и время
+          }
+          this.transactionService.addNewTransaction(id, newTransaction)
+        }
+        return confirmationUrl
+      } catch (error) {
+        throw new HttpException('Failed to create payment', HttpStatus.FORBIDDEN)
+      }
+    } catch (err) {}
   }
 
-  async getPayment(paymentId: string) {
-    const url = `https://api.yookassa.ru/v3/payments/${paymentId}`
+  async getPayment(paymentStatusDto: string) {
+    const url = `https://api.yookassa.ru/v3/payments/${paymentStatusDto}`
     const shopId = process.env['SHOP_ID']
     const secretKey = process.env['SECRET_KEY_SHOP']
     const authorization = `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString('base64')}`
     const headers = {
-      'Authorization': authorization,
-    };
+      Authorization: authorization,
+    }
 
     try {
-      const response = await axios.get(url, { headers });
+      const response = await axios.get(url, { headers })
       console.log(response)
       // return response;
     } catch (error) {
-    console.log(error)
+      console.log(error)
       // throw new Error('Failed to get payment information');
     }
   }
 
-  async cancelPayemnt (payment_id) {
+  async cancelPayemnt(payment_id) {
     const url = `https://api.yookassa.ru/v3/payments/${payment_id}/cancel`
     const shopId = process.env['SHOP_ID']
     const secretKey = process.env['SECRET_KEY_SHOP']
     const authorization = `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString('base64')}`
     const headers = {
-      'Authorization': authorization,
-    };
+      Authorization: authorization,
+    }
 
     try {
-      const response = await axios.post(url, { headers });
+      const response = await axios.post(url, { headers })
       console.log(response)
       // return response;
     } catch (error) {
@@ -425,36 +415,40 @@ export class CategoriesService {
     }
   }
 
-  async capturePayment (payment_id) {
+  async capturePayment(paymentStatusDto) {
+    console.log(paymentStatusDto)
+    console.log('1111111111111111111111')
+    console.log(paymentStatusDto.object)
 
-    const url = `https://api.yookassa.ru/v3/payments/${payment_id}/capture`
+    const url = `https://api.yookassa.ru/v3/payments/${paymentStatusDto.object.id}/capture`
     const shopId = process.env['SHOP_ID']
     const secretKey = process.env['SECRET_KEY_SHOP']
     const authorization = `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString('base64')}`
-    const idempotenceKey = uuid.v4();
+    const idempotenceKey = uuid.v4()
     const headers = {
-      'Authorization': authorization,
+      Authorization: authorization,
       'Idempotence-Key': idempotenceKey,
       'Content-Type': 'application/json',
-    };
+    }
 
     const data = {
-      "amount": {
-        "value": `167`,
-        "currency": "RUB"
+      amount: {
+        value: `${paymentStatusDto.object.value}`,
+        currency: `${paymentStatusDto.object.currency}`,
       },
-    };
+    }
 
     try {
-      const response = await axios.post(url, data,{ headers });
+      const response = await axios.post(url, data, { headers });
+      console.log('22')
       console.log(response)
-      // return response;
+      if(response.data) {
+        this.transactionService.changeTransaction(paymentStatusDto.object.id)
+      }
+      return { statusCode: HttpStatus.OK, data: response.data };
     } catch (error) {
       console.log(error)
-      // throw new Error('Failed to get payment information');
+      throw new Error('Failed to get payment information');
     }
   }
-
-
-
 }

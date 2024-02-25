@@ -486,10 +486,9 @@ export class CategoriesService {
 
     try {
       const response = await axios.post(url, data, { headers });
-      console.log('22')
-      console.log(response)
       if(response?.data && response?.status == 200 && response.data.status == 'succeeded') {
         const trans = await this.transactionService.changeTransaction(response)
+        console.log(trans)
         if (trans) {
           this.activatePayment(trans)
         }

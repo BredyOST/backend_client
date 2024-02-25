@@ -285,6 +285,53 @@ export class CategoriesService {
       }
     }
   }
+  async activatePayment(dto) {
+    try {
+      const user = await this.usersService.findById(+dto.user_id) // находим юзера
+      if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
+
+      if (user?.categoriesHasBought?.length == 0) {
+        user.categoriesHasBought.push(dto.category);
+      } else {
+        for (const item of dto.category) {
+          const existingCategoryIndex = user.categoriesHasBought.findIndex(category => category.id === item.id);
+          if (existingCategoryIndex !== -1) {
+            // Обновляем существующую категорию, добавляя новый период и увеличив срок окончания подписки
+            user.categoriesHasBought[existingCategoryIndex].purchasePeriod += item.purchasePeriod;
+            const existingEndDate = new Date(user.categoriesHasBought[existingCategoryIndex].purchaseEndDate);
+            if (dto.title === 'Посуточный') {
+              existingEndDate.setDate(existingEndDate.getDate() + item.purchasePeriod);
+            } else if (dto.title === 'Погрузись в работу') {
+              existingEndDate.setMonth(existingEndDate.getMonth() + item.purchasePeriod);
+            }
+            user.categoriesHasBought[existingCategoryIndex].purchaseEndDate = existingEndDate;
+          } else {
+            // Добавляем новую категорию, если она еще не была куплена ранее
+            user.categoriesHasBought.push(item);
+          }
+        }
+      }
+
+      user.activatedFreePeriod = false
+      user.categoriesFreePeriod = []
+      user.endFreePeriod = true
+
+      await this.usersService.saveUpdatedUser(user.id, user)
+
+      return {
+        text: 'Подписка оформлена',
+      }
+    } catch (err) {
+      if (err.response === 'Пользователь не найден') {
+        throw err
+      } else {
+        throw new HttpException('Ошибка при получении бесплатного периода', HttpStatus.FORBIDDEN)
+      }
+    }
+  }
+
+
+
   async createPay(id, dto) {
     try {
       const user = await this.usersService.findById(+id)
@@ -322,6 +369,7 @@ export class CategoriesService {
           purchaseEndDate: endDate,
           purchasePeriod: days,
           price: price,
+          title: dto.title,
         }
         categories.push(obj)
       }
@@ -331,7 +379,8 @@ export class CategoriesService {
 
       const data = {
         amount: {
-          value: `${price}`,
+          // value: `${price}`,
+          value: `10`,
           currency: 'RUB',
         },
         payment_method_data: {
@@ -339,7 +388,7 @@ export class CategoriesService {
         },
         confirmation: {
           type: 'redirect',
-          return_url: process.env['API_URL'],
+          return_url: process.env['CLIENT_URL'],
         },
         capture: false,
         description: 'Оплата подписки на сайте клиенты.com',
@@ -416,9 +465,6 @@ export class CategoriesService {
   }
 
   async capturePayment(paymentStatusDto) {
-    console.log(paymentStatusDto)
-    console.log('1111111111111111111111')
-    console.log(paymentStatusDto.object)
 
     const url = `https://api.yookassa.ru/v3/payments/${paymentStatusDto.object.id}/capture`
     const shopId = process.env['SHOP_ID']
@@ -442,12 +488,14 @@ export class CategoriesService {
       const response = await axios.post(url, data, { headers });
       console.log('22')
       console.log(response)
-      if(response.data) {
-        this.transactionService.changeTransaction(paymentStatusDto.object.id)
+      if(response?.data && response?.status == 200 && response.data.status == 'succeeded') {
+        const trans = await this.transactionService.changeTransaction(response)
+        if (trans) {
+          this.activatePayment(trans)
+        }
       }
       return { statusCode: HttpStatus.OK, data: response.data };
     } catch (error) {
-      console.log(error)
       throw new Error('Failed to get payment information');
     }
   }

@@ -165,9 +165,8 @@ export class CategoriesController {
 
 	@Post('/payment/status')
 	async handlePaymentStatus(@Body() paymentStatusDto:PaymentNotificationDto) {
-		console.log('change')
-		const response = await this.categoriesService.capturePayment(paymentStatusDto);
-		return response.data; // Возвращаем данные из ответа API ЮKassa
+		const response = await this.categoriesService.capturePayment(paymentStatusDto.object.id);
+		return response.data;
 	}
 
 }

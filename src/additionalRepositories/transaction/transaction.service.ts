@@ -21,19 +21,19 @@ export class TransactionService {
     })
   }
 
-  async changeTransaction(dto) {
+  async changeTransaction(response) {
     const transaction = await this.repository.findOne({
       where: {
-        id_payment: dto,
+        id_payment: response.data.id,
       }
     });
     if (transaction) {
-      transaction.status = 'success';
-      await this.repository.save(transaction);
-      return transaction;
+      transaction.status = 'success'
+      transaction.paymentAt = response.captured_at
+      await this.repository.save(transaction)
+      return transaction
     } else {
-      // Обработка случая, когда транзакция не найдена
-      throw new Error('Transaction not found');
+      throw new HttpException('Неудачное обновление транзакции', HttpStatus.UNAUTHORIZED)
     }
   }
 

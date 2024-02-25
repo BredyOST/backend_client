@@ -8,6 +8,8 @@ export class TransactionEntity {
   user_id: string
   @Column()
   id_payment: string
+  @Column({ default: null })
+  titleCard: string
   @Column()
   payment_method: string
   @Column()
@@ -20,6 +22,8 @@ export class TransactionEntity {
   type: string
   @Column('jsonb', { array: false, default: [] })
   category: PurchasedCategory[]
+  @CreateDateColumn({ default: null })
+  paymentAt: Date
   @CreateDateColumn()
   createdAt: Date
 }

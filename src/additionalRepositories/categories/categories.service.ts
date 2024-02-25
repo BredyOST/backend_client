@@ -286,31 +286,60 @@ export class CategoriesService {
     }
   }
   async activatePayment(dto) {
+    console.log(dto.category)
     try {
       const user = await this.usersService.findById(+dto.user_id) // находим юзера
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
 
+
+
       if (user?.categoriesHasBought?.length == 0) {
-        user.categoriesHasBought.push(dto.category);
+        user.categoriesHasBought = dto.category
       } else {
         for (const item of dto.category) {
-          const existingCategoryIndex = user.categoriesHasBought.findIndex(category => category.id === item.id);
-          if (existingCategoryIndex !== -1) {
+          const existingCategory = user.categoriesHasBought.find(category => category.id === item.id);
+          if (existingCategory) {
             // Обновляем существующую категорию, добавляя новый период и увеличив срок окончания подписки
-            user.categoriesHasBought[existingCategoryIndex].purchasePeriod += item.purchasePeriod;
-            const existingEndDate = new Date(user.categoriesHasBought[existingCategoryIndex].purchaseEndDate);
+            existingCategory.purchasePeriod += item.purchasePeriod;
+            existingCategory.purchaseEndDate = new Date(existingCategory.purchaseEndDate);
+
             if (dto.title === 'Посуточный') {
-              existingEndDate.setDate(existingEndDate.getDate() + item.purchasePeriod);
+              existingCategory.purchaseEndDate.setDate(existingCategory.purchaseEndDate.getDate() + item.purchasePeriod);
             } else if (dto.title === 'Погрузись в работу') {
-              existingEndDate.setMonth(existingEndDate.getMonth() + item.purchasePeriod);
+              existingCategory.purchaseEndDate.setMonth(existingCategory.purchaseEndDate.getMonth() + item.purchasePeriod);
             }
-            user.categoriesHasBought[existingCategoryIndex].purchaseEndDate = existingEndDate;
+
+            const noExistingCategory = user.categoriesHasBought.filter(category => category.id !== item.id);
+            user.categoriesHasBought = [...noExistingCategory, existingCategory]
+
           } else {
             // Добавляем новую категорию, если она еще не была куплена ранее
-            user.categoriesHasBought.push(item);
+            user.categoriesHasBought = [...user.categoriesHasBought, item]
           }
         }
       }
+
+      // if (user?.categoriesHasBought?.length == 0) {
+      //   user.categoriesHasBought = dto.category
+      // } else {
+      //   for (const item of dto.category) {
+      //     const existingCategoryIndex = user.categoriesHasBought.findIndex(category => category.id === item.id);
+      //     if (existingCategoryIndex !== -1) {
+      //       // Обновляем существующую категорию, добавляя новый период и увеличив срок окончания подписки
+      //       user.categoriesHasBought[existingCategoryIndex].purchasePeriod += item.purchasePeriod;
+      //       const existingEndDate = new Date(user.categoriesHasBought[existingCategoryIndex].purchaseEndDate);
+      //       if (dto.title === 'Посуточный') {
+      //         existingEndDate.setDate(existingEndDate.getDate() + item.purchasePeriod);
+      //       } else if (dto.title === 'Погрузись в работу') {
+      //         existingEndDate.setMonth(existingEndDate.getMonth() + item.purchasePeriod);
+      //       }
+      //       user.categoriesHasBought[existingCategoryIndex].purchaseEndDate = existingEndDate;
+      //     } else {
+      //       // Добавляем новую категорию, если она еще не была куплена ранее
+      //       user.categoriesHasBought.push(item);
+      //     }
+      //   }
+      // }
 
       user.activatedFreePeriod = false
       user.categoriesFreePeriod = []
@@ -488,7 +517,6 @@ export class CategoriesService {
       const response = await axios.post(url, data, { headers });
       if(response?.data && response?.status == 200 && response.data.status == 'succeeded') {
         const trans = await this.transactionService.changeTransaction(response)
-        console.log(trans)
         if (trans) {
           this.activatePayment(trans)
         }

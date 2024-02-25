@@ -408,8 +408,8 @@ export class CategoriesService {
 
       const data = {
         amount: {
-          // value: `${price}`,
-          value: `10`,
+          value: `${price}`,
+          // value: `10`,
           currency: 'RUB',
         },
         payment_method_data: {

@@ -433,8 +433,8 @@ export class CategoriesService {
 
     const data = {
       amount: {
-        value: `${paymentStatusDto.object.value}`,
-        currency: `${paymentStatusDto.object.currency}`,
+        value: `${paymentStatusDto.object.amount.value}`,
+        currency: `${paymentStatusDto.object.amount.currency}`,
       },
     }
 

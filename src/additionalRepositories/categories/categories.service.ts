@@ -294,15 +294,19 @@ export class CategoriesService {
 
       if (user?.categoriesHasBought?.length == 0) {
         user.categoriesHasBought = dto.category
+        console.log(1)
       } else {
         for (const item of dto.category) {
+          console.log(2)
           let existingCategory = user.categoriesHasBought.find((category) => category.id === item.id);
           // если есть категория у пользователя
           if (existingCategory) {
+            console.log(3)
             const dateCategoryEnd = new Date(existingCategory.purchaseEndDate)
             const actualDate = currentDate.getTime() <= dateCategoryEnd.getDate()
 
             if (actualDate) {
+              console.log(4)
               // Обновляем существующую категорию, добавляя новый период и увеличив срок окончания подписки
               existingCategory.purchasePeriod += item.purchasePeriod;
               existingCategory.purchaseEndDate = new Date(existingCategory.purchaseEndDate);
@@ -317,10 +321,12 @@ export class CategoriesService {
               user.categoriesHasBought = [...noExistingCategory, existingCategory]
             }
             if (!actualDate) {
+              console.log(5)
               const noExistingCategory = user.categoriesHasBought.filter((category )=> category.id !== item.id);
               user.categoriesHasBought = [...noExistingCategory, item]
             }
           } else if (!existingCategory) {
+            console.log(6)
             user.categoriesHasBought = [...user.categoriesHasBought, item]
           }
         }
@@ -391,8 +397,8 @@ export class CategoriesService {
 
       const data = {
         amount: {
-          value: `${price}`,
-          // value: `10`,
+          // value: `${price}`,
+          value: `2`,
           currency: 'RUB',
         },
         payment_method_data: {

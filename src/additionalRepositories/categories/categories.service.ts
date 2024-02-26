@@ -303,6 +303,7 @@ export class CategoriesService {
           if (existingCategory) {
             console.log(3)
             const dateCategoryEnd = new Date(existingCategory.purchaseEndDate)
+            console.log(dateCategoryEnd)
             const actualDate = currentDate.getTime() <= dateCategoryEnd.getTime()
 
             if (actualDate) {
@@ -310,13 +311,14 @@ export class CategoriesService {
               // Обновляем существующую категорию, добавляя новый период и увеличив срок окончания подписки
               existingCategory.purchasePeriod += item.purchasePeriod;
               existingCategory.purchaseEndDate = new Date(existingCategory.purchaseEndDate);
+              console.log(existingCategory.purchaseEndDate)
 
               if (dto.title === 'Посуточный') {
                 existingCategory.purchaseEndDate.setDate(existingCategory.purchaseEndDate.getDate() + item.purchasePeriod);
               } else if (dto.title === 'Погрузись в работу') {
                 existingCategory.purchaseEndDate.setMonth(existingCategory.purchaseEndDate.getMonth() + item.purchasePeriod);
               }
-
+              console.log(existingCategory)
               const noExistingCategory = user.categoriesHasBought.filter((category) => category.id !== item.id);
               user.categoriesHasBought = [...noExistingCategory, existingCategory]
             }

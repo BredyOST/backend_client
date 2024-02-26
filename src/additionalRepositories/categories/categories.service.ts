@@ -303,7 +303,7 @@ export class CategoriesService {
           if (existingCategory) {
             console.log(3)
             const dateCategoryEnd = new Date(existingCategory.purchaseEndDate)
-            const actualDate = currentDate.getTime() <= dateCategoryEnd.getDate()
+            const actualDate = currentDate.getTime() <= dateCategoryEnd.getTime()
 
             if (actualDate) {
               console.log(4)

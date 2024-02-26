@@ -290,56 +290,41 @@ export class CategoriesService {
     try {
       const user = await this.usersService.findById(+dto.user_id) // находим юзера
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
-
-
+      const currentDate = new Date()
 
       if (user?.categoriesHasBought?.length == 0) {
         user.categoriesHasBought = dto.category
       } else {
         for (const item of dto.category) {
-          const existingCategory = user.categoriesHasBought.find(category => category.id === item.id);
+          let existingCategory = user.categoriesHasBought.find((category) => category.id === item.id);
+          // если есть категория у пользователя
           if (existingCategory) {
-            // Обновляем существующую категорию, добавляя новый период и увеличив срок окончания подписки
-            existingCategory.purchasePeriod += item.purchasePeriod;
-            existingCategory.purchaseEndDate = new Date(existingCategory.purchaseEndDate);
+            const dateCategoryEnd = new Date(existingCategory.purchaseEndDate)
+            const actualDate = currentDate.getTime() <= dateCategoryEnd.getDate()
 
-            if (dto.title === 'Посуточный') {
-              existingCategory.purchaseEndDate.setDate(existingCategory.purchaseEndDate.getDate() + item.purchasePeriod);
-            } else if (dto.title === 'Погрузись в работу') {
-              existingCategory.purchaseEndDate.setMonth(existingCategory.purchaseEndDate.getMonth() + item.purchasePeriod);
+            if (actualDate) {
+              // Обновляем существующую категорию, добавляя новый период и увеличив срок окончания подписки
+              existingCategory.purchasePeriod += item.purchasePeriod;
+              existingCategory.purchaseEndDate = new Date(existingCategory.purchaseEndDate);
+
+              if (dto.title === 'Посуточный') {
+                existingCategory.purchaseEndDate.setDate(existingCategory.purchaseEndDate.getDate() + item.purchasePeriod);
+              } else if (dto.title === 'Погрузись в работу') {
+                existingCategory.purchaseEndDate.setMonth(existingCategory.purchaseEndDate.getMonth() + item.purchasePeriod);
+              }
+
+              const noExistingCategory = user.categoriesHasBought.filter((category) => category.id !== item.id);
+              user.categoriesHasBought = [...noExistingCategory, existingCategory]
             }
-
-            const noExistingCategory = user.categoriesHasBought.filter(category => category.id !== item.id);
-            user.categoriesHasBought = [...noExistingCategory, existingCategory]
-
-          } else {
-            // Добавляем новую категорию, если она еще не была куплена ранее
+            if (!actualDate) {
+              const noExistingCategory = user.categoriesHasBought.filter((category )=> category.id !== item.id);
+              user.categoriesHasBought = [...noExistingCategory, item]
+            }
+          } else if (!existingCategory) {
             user.categoriesHasBought = [...user.categoriesHasBought, item]
           }
         }
       }
-
-      // if (user?.categoriesHasBought?.length == 0) {
-      //   user.categoriesHasBought = dto.category
-      // } else {
-      //   for (const item of dto.category) {
-      //     const existingCategoryIndex = user.categoriesHasBought.findIndex(category => category.id === item.id);
-      //     if (existingCategoryIndex !== -1) {
-      //       // Обновляем существующую категорию, добавляя новый период и увеличив срок окончания подписки
-      //       user.categoriesHasBought[existingCategoryIndex].purchasePeriod += item.purchasePeriod;
-      //       const existingEndDate = new Date(user.categoriesHasBought[existingCategoryIndex].purchaseEndDate);
-      //       if (dto.title === 'Посуточный') {
-      //         existingEndDate.setDate(existingEndDate.getDate() + item.purchasePeriod);
-      //       } else if (dto.title === 'Погрузись в работу') {
-      //         existingEndDate.setMonth(existingEndDate.getMonth() + item.purchasePeriod);
-      //       }
-      //       user.categoriesHasBought[existingCategoryIndex].purchaseEndDate = existingEndDate;
-      //     } else {
-      //       // Добавляем новую категорию, если она еще не была куплена ранее
-      //       user.categoriesHasBought.push(item);
-      //     }
-      //   }
-      // }
 
       user.activatedFreePeriod = false
       user.categoriesFreePeriod = []
@@ -358,8 +343,6 @@ export class CategoriesService {
       }
     }
   }
-
-
 
   async createPay(id, dto) {
     try {

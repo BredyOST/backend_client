@@ -286,7 +286,7 @@ export class CategoriesService {
     }
   }
   async activatePayment(dto) {
-    console.log(dto.category)
+    console.log(1)
     try {
       const user = await this.usersService.findById(+dto.user_id) // находим юзера
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
@@ -294,41 +294,41 @@ export class CategoriesService {
 
       if (user?.categoriesHasBought?.length == 0) {
         user.categoriesHasBought = dto.category
-        console.log(1)
+        // console.log(1)
       } else {
         for (const item of dto.category) {
-          console.log(2)
+          // console.log(2)
           let existingCategory = user.categoriesHasBought.find((category) => category.id === item.id);
           // если есть категория у пользователя
           if (existingCategory) {
-            console.log(3)
+            // console.log(3)
             const dateCategoryEnd = new Date(existingCategory.purchaseEndDate)
-            console.log(dateCategoryEnd)
+            // console.log(dateCategoryEnd)
             const actualDate = currentDate.getTime() <= dateCategoryEnd.getTime()
 
             if (actualDate) {
-              console.log(4)
+              // console.log(4)
               // Обновляем существующую категорию, добавляя новый период и увеличив срок окончания подписки
               existingCategory.purchasePeriod += item.purchasePeriod;
               existingCategory.purchaseEndDate = new Date(existingCategory.purchaseEndDate);
-              console.log(existingCategory.purchaseEndDate)
+              // console.log(existingCategory.purchaseEndDate)
 
               if (dto.title === 'Посуточный') {
                 existingCategory.purchaseEndDate.setDate(existingCategory.purchaseEndDate.getDate() + item.purchasePeriod);
               } else if (dto.title === 'Погрузись в работу') {
                 existingCategory.purchaseEndDate.setMonth(existingCategory.purchaseEndDate.getMonth() + item.purchasePeriod);
               }
-              console.log(existingCategory)
+              // console.log(existingCategory)
               const noExistingCategory = user.categoriesHasBought.filter((category) => category.id !== item.id);
               user.categoriesHasBought = [...noExistingCategory, existingCategory]
             }
             if (!actualDate) {
-              console.log(5)
+              // console.log(5)
               const noExistingCategory = user.categoriesHasBought.filter((category )=> category.id !== item.id);
               user.categoriesHasBought = [...noExistingCategory, item]
             }
           } else if (!existingCategory) {
-            console.log(6)
+            // console.log(6)
             user.categoriesHasBought = [...user.categoriesHasBought, item]
           }
         }

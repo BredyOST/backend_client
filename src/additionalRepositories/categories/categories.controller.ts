@@ -165,6 +165,7 @@ export class CategoriesController {
 
 	@Post('/payment/status')
 	async handlePaymentStatus(@Body() paymentStatusDto:PaymentNotificationDto) {
+		console.log(1)
 		const response = await this.categoriesService.capturePayment(paymentStatusDto);
 		return response.data;
 	}

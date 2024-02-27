@@ -131,6 +131,7 @@ export class CategoriesController {
 				text: 'Ваша сессия истекла, выполните повторный вход',
 			}
 		}
+		console.log('statr')
 		const link =  await this.categoriesService.createPay(id, dto)
 		return { url: `${link}` };
 	}
@@ -165,7 +166,8 @@ export class CategoriesController {
 
 	@Post('/payment/status')
 	async handlePaymentStatus(@Body() paymentStatusDto:PaymentNotificationDto) {
-		console.log(1)
+		console.log('attent')
+		console.log(paymentStatusDto)
 		const response = await this.categoriesService.capturePayment(paymentStatusDto);
 		return response.data;
 	}

@@ -286,7 +286,7 @@ export class CategoriesService {
     }
   }
   async activatePayment(dto) {
-    console.log(1)
+    console.log(2)
     try {
       const user = await this.usersService.findById(+dto.user_id) // находим юзера
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)

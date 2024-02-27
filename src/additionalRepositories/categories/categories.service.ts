@@ -457,10 +457,9 @@ export class CategoriesService {
 
     try {
       const response = await axios.get(url, { headers })
-      console.log(response)
-      // return response;
+      return response;
     } catch (error) {
-      console.log(error)
+      // console.log(error)
       // throw new Error('Failed to get payment information');
     }
   }
@@ -486,6 +485,12 @@ export class CategoriesService {
 
   async capturePayment(paymentStatusDto) {
 
+    const receipt = await this.getPayment(paymentStatusDto.object.id)
+    console.log(receipt)
+    console.log(receipt.status)
+    // if (receipt.status !== 'waiting_for_capture')
+
+
     const url = `https://api.yookassa.ru/v3/payments/${paymentStatusDto.object.id}/capture`
     const shopId = process.env['SHOP_ID']
     const secretKey = process.env['SECRET_KEY_SHOP']
@@ -506,6 +511,7 @@ export class CategoriesService {
 
     try {
       const response = await axios.post(url, data, { headers });
+      console.log(response)
       if(response?.data && response?.status == 200 && response.data.status == 'succeeded') {
         const trans = await this.transactionService.changeTransaction(response)
         if (trans) {

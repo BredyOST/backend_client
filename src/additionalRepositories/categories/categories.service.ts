@@ -486,8 +486,11 @@ export class CategoriesService {
   async capturePayment(paymentStatusDto) {
 
     const receipt = await this.getPayment(paymentStatusDto.object.id)
-    console.log(receipt)
-    console.log(receipt.status)
+    console.log('2222222222222')
+    console.log(receipt.data.status)
+    if(receipt.data.status !== 'waiting_for_capture') return
+    // console.log(receipt)
+
     // if (receipt.status !== 'waiting_for_capture')
 
 
@@ -511,7 +514,7 @@ export class CategoriesService {
 
     try {
       const response = await axios.post(url, data, { headers });
-      console.log(response)
+      // console.log(response)
       if(response?.data && response?.status == 200 && response.data.status == 'succeeded') {
         const trans = await this.transactionService.changeTransaction(response)
         if (trans) {

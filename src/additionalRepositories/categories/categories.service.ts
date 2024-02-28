@@ -399,8 +399,7 @@ export class CategoriesService {
 
       const data = {
         amount: {
-          // value: `${price}`,
-          value: `2`,
+          value: `${price}`,
           currency: 'RUB',
         },
         payment_method_data: {
@@ -486,13 +485,7 @@ export class CategoriesService {
   async capturePayment(paymentStatusDto) {
 
     const receipt = await this.getPayment(paymentStatusDto.object.id)
-    console.log('2222222222222')
-    console.log(receipt.data.status)
     if(receipt.data.status !== 'waiting_for_capture') return
-    // console.log(receipt)
-
-    // if (receipt.status !== 'waiting_for_capture')
-
 
     const url = `https://api.yookassa.ru/v3/payments/${paymentStatusDto.object.id}/capture`
     const shopId = process.env['SHOP_ID']

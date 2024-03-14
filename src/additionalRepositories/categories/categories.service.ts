@@ -688,10 +688,10 @@ export class CategoriesService {
       if(response?.data && response?.status == 200 && response.data.status == 'succeeded') {
         const trans = await this.transactionService.changeTransaction(response)
         if (trans) {
-          if (paymentStatusDto.description == 'Оплата подписки на сайте клиенты.com') {
+          if (paymentStatusDto.object.description == 'Оплата подписки на сайте клиенты.com') {
             this.activatePayment(trans)
           }
-          if (paymentStatusDto.description == 'Оплата подписки уведомлений на сайте клиенты.com') {
+          if (paymentStatusDto.object.description == 'Оплата подписки уведомлений на сайте клиенты.com') {
             this.activatePaymentNotification(trans)
           }
         }

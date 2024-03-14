@@ -793,6 +793,7 @@ export class UsersService {
 
   async verifyTg(id, dto) {
 
+    console.log(dto)
     try {
       const user = await this.findById(id)
 

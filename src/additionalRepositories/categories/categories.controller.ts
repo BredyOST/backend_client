@@ -149,7 +149,6 @@ export class CategoriesController {
 
   @Post('/payment/status')
   async handlePaymentStatus(@Body() paymentStatusDto: PaymentNotificationDto) {
-    console.log(paymentStatusDto)
     if (paymentStatusDto.object.status !== 'waiting_for_capture') return
     const response = await this.categoriesService.capturePayment(paymentStatusDto)
     return response.data

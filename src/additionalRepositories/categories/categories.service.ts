@@ -524,7 +524,7 @@ export class CategoriesService {
       const user = await this.usersService.findById(+id)
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
       if (dto.categ.length <= 0) throw new HttpException('Необходимо выбрать категории', HttpStatus.UNAUTHORIZED)
-      if (!user.activationTgNumber) throw new HttpException('Подтвердите номер телефона в профиле', HttpStatus.UNAUTHORIZED)
+      if (!user.isActivatedPhone) throw new HttpException('Подтвердите номер телефона в профиле', HttpStatus.UNAUTHORIZED)
 
       const shopId = process.env['SHOP_ID']
       const secretKey = process.env['SECRET_KEY_SHOP']

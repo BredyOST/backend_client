@@ -239,9 +239,12 @@ export class CategoriesService {
       const user = await this.usersService.findById(+id)
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
       if (!dto.length) throw new HttpException('Необходимо выбрать категории', HttpStatus.UNAUTHORIZED)
-      if (user.activatedFreePeriod) throw new HttpException('Вы уже используете бесплатный период', HttpStatus.UNAUTHORIZED)
       if (user.endFreePeriod) throw new HttpException('Вы уже использовали бесплатный период', HttpStatus.UNAUTHORIZED)
+      if (user.activatedFreePeriod) throw new HttpException('Вы уже используете бесплатный период', HttpStatus.UNAUTHORIZED)
       if (dto.length >= 2) throw new HttpException('Для бесплатного периода доступна одна категория', HttpStatus.UNAUTHORIZED)
+      const sameIp = await this.usersService.findByIp(user.ip)
+      if (sameIp?.activatedFreePeriod || sameIp?.endFreePeriod || sameIp?.categoriesFreePeriod?.length > 0) throw new HttpException('Вы уже использовали бесплатный период1', HttpStatus.UNAUTHORIZED)
+
       const days = 1
 
       const categories = []
@@ -286,7 +289,6 @@ export class CategoriesService {
     }
   }
   async activatePayment(dto) {
-    console.log(2)
     try {
       const user = await this.usersService.findById(+dto.user_id) // находим юзера
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
@@ -351,7 +353,70 @@ export class CategoriesService {
       }
     }
   }
+  async activatePaymentNotification(dto) {
+    try {
+      const user = await this.usersService.findById(+dto.user_id) // находим юзера
+      if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
+      const currentDate = new Date()
 
+      if (user?.notificationsHasBought?.length == 0) {
+        user.notificationsHasBought = dto.category
+      } else {
+        for (const item of dto.category) {
+          // console.log(2)
+          let existingCategory = user.notificationsHasBought.find((category) => category.id === item.id);
+          // если есть категория у пользователя
+          if (existingCategory) {
+            // console.log(3)
+            const dateCategoryEnd = new Date(existingCategory.purchaseEndDate)
+            // console.log(dateCategoryEnd)
+            const actualDate = currentDate.getTime() <= dateCategoryEnd.getTime()
+
+            if (actualDate) {
+              // console.log(4)
+              // Обновляем существующую категорию, добавляя новый период и увеличив срок окончания подписки
+              existingCategory.purchasePeriod += item.purchasePeriod;
+              existingCategory.purchaseEndDate = new Date(existingCategory.purchaseEndDate);
+              // console.log(existingCategory.purchaseEndDate)
+
+              if (dto.title === 'Посуточный') {
+                existingCategory.purchaseEndDate.setDate(existingCategory.purchaseEndDate.getDate() + item.purchasePeriod);
+              } else if (dto.title === 'Погрузись в работу') {
+                existingCategory.purchaseEndDate.setMonth(existingCategory.purchaseEndDate.getMonth() + item.purchasePeriod);
+              }
+              // console.log(existingCategory)
+              const noExistingCategory = user.notificationsHasBought.filter((category) => category.id !== item.id);
+              user.notificationsHasBought = [...noExistingCategory, existingCategory]
+            }
+            if (!actualDate) {
+              // console.log(5)
+              const noExistingCategory = user.notificationsHasBought.filter((category )=> category.id !== item.id);
+              user.notificationsHasBought = [...noExistingCategory, item]
+            }
+          } else if (!existingCategory) {
+            // console.log(6)
+            user.notificationsHasBought = [...user.notificationsHasBought, item]
+          }
+        }
+      }
+
+      user.endFreePeriodNotification = false
+      user.notificationsFreePeriod = []
+      user.endFreePeriodNotification = true
+
+      await this.usersService.saveUpdatedUser(user.id, user)
+
+      return {
+        text: 'Подписка на уведомления оформлена',
+      }
+    } catch (err) {
+      if (err.response === 'Пользователь не найден') {
+        throw err
+      } else {
+        throw new HttpException('Ошибка при получении бесплатного периода', HttpStatus.FORBIDDEN)
+      }
+    }
+  }
   async createPay(id, dto) {
     try {
       const user = await this.usersService.findById(+id)
@@ -399,7 +464,8 @@ export class CategoriesService {
 
       const data = {
         amount: {
-          value: `${price}`,
+          // value: `${price}`,
+          value: `1`,
           currency: 'RUB',
         },
         payment_method_data: {
@@ -442,9 +508,123 @@ export class CategoriesService {
       } catch (error) {
         throw new HttpException('Failed to create payment', HttpStatus.FORBIDDEN)
       }
-    } catch (err) {}
+    } catch (err) {
+      if (err.response === 'Пользователь не найден') {
+        throw err
+      } else if (err.response === 'Необходимо выбрать категории') {
+        throw err
+      } else {
+        throw new HttpException('Ошибка при создании оплаты', HttpStatus.FORBIDDEN)
+      }
+    }
   }
+  // для уведомлений
+  async createPayNotification(id, dto) {
+    try {
+      const user = await this.usersService.findById(+id)
+      if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
+      if (dto.categ.length <= 0) throw new HttpException('Необходимо выбрать категории', HttpStatus.UNAUTHORIZED)
+      if (!user.activationTgNumber) throw new HttpException('Подтвердите номер телефона в профиле', HttpStatus.UNAUTHORIZED)
 
+      const shopId = process.env['SHOP_ID']
+      const secretKey = process.env['SECRET_KEY_SHOP']
+      const idempotenceKey = uuid.v4()
+
+      const days = +dto.period
+      const categories = []
+      const purchaseDate = new Date()
+      const endDate = new Date(purchaseDate)
+      let price
+
+      if (dto.title === 'Посуточный') {
+        endDate.setDate(purchaseDate.getDate() + days)
+      } else if (dto.title === 'Погрузись в работу') {
+        endDate.setMonth(endDate.getMonth() + days)
+      }
+
+      for (const item of dto.categ) {
+        const nameCategory = await this.findById_category(item.id)
+        if (dto.title === 'Посуточный') {
+          price = Math.round(((+nameCategory.salaryChanel * 2.5) / 30) * +days)
+        } else if (dto.title === 'Погрузись в работу') {
+          price = +nameCategory.salaryChanel * +days
+        }
+
+        const obj = {
+          id: item.id,
+          category: nameCategory.name,
+          purchaseBuyDate: purchaseDate,
+          purchaseEndDate: endDate,
+          purchasePeriod: days,
+          price: price,
+          title: dto.title,
+        }
+        categories.push(obj)
+      }
+
+      const url = 'https://api.yookassa.ru/v3/payments'
+      const authorization = `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString('base64')}`
+
+      const data = {
+        amount: {
+          // value: `${price}`,
+          value: `1`,
+          currency: 'RUB',
+        },
+        payment_method_data: {
+          type: 'bank_card',
+        },
+        confirmation: {
+          type: 'redirect',
+          return_url: process.env['CLIENT_URL'],
+        },
+        capture: false,
+        description: 'Оплата подписки уведомлений на сайте клиенты.com',
+      }
+
+      const headers = {
+        Authorization: authorization,
+        'Idempotence-Key': idempotenceKey,
+        'Content-Type': 'application/json',
+      }
+
+      try {
+        const response = await axios.post(url, data, { headers })
+
+        const confirmationUrl = response.data?.confirmation?.confirmation_url
+
+        if (response.data?.confirmation?.confirmation_url) {
+          const newTransaction = {
+            title: dto.title,
+            type: response.data.status,
+            user_id: id,
+            amount: dto.price,
+            category: categories,
+            id_payment: response.data.id,
+            payment_method: response.data.payment_method.type,
+            status: response.data.status,
+            createdAt: new Date(), // текущая дата и время
+          }
+          this.transactionService.addNewTransaction(id, newTransaction)
+        }
+        return confirmationUrl
+      } catch (error) {
+        throw new HttpException('Failed to create payment', HttpStatus.FORBIDDEN)
+      }
+    } catch (err) {
+
+      if (err.response === 'Пользователь не найден') {
+        throw err
+      } else if (err.response === 'Необходимо выбрать категории') {
+        throw err
+      } else if (err.response === 'Подтвердите номер телефона в профиле') {
+        throw err
+      } else {
+        throw new HttpException('Ошибка при создании оплаты', HttpStatus.FORBIDDEN)
+      }
+
+    }
+  }
   async getPayment(paymentStatusDto: string) {
     const url = `https://api.yookassa.ru/v3/payments/${paymentStatusDto}`
     const shopId = process.env['SHOP_ID']
@@ -462,7 +642,6 @@ export class CategoriesService {
       // throw new Error('Failed to get payment information');
     }
   }
-
   async cancelPayemnt(payment_id) {
     const url = `https://api.yookassa.ru/v3/payments/${payment_id}/cancel`
     const shopId = process.env['SHOP_ID']
@@ -481,9 +660,7 @@ export class CategoriesService {
       // throw new Error('Failed to get payment information');
     }
   }
-
   async capturePayment(paymentStatusDto) {
-
     const receipt = await this.getPayment(paymentStatusDto.object.id)
     if(receipt.data.status !== 'waiting_for_capture') return
 
@@ -511,7 +688,12 @@ export class CategoriesService {
       if(response?.data && response?.status == 200 && response.data.status == 'succeeded') {
         const trans = await this.transactionService.changeTransaction(response)
         if (trans) {
-          this.activatePayment(trans)
+          if (paymentStatusDto.description == 'Оплата подписки на сайте клиенты.com') {
+            this.activatePayment(trans)
+          }
+          if (paymentStatusDto.description == 'Оплата подписки уведомлений на сайте клиенты.com') {
+            this.activatePaymentNotification(trans)
+          }
         }
       }
       return { statusCode: HttpStatus.OK, data: response.data };

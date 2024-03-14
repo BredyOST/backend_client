@@ -124,7 +124,6 @@ export class CategoriesController {
         text: 'Ваша сессия истекла, выполните повторный вход',
       }
     }
-    console.log('statr')
     const link = await this.categoriesService.createPay(id, dto)
     return { url: `${link}` }
   }
@@ -147,20 +146,28 @@ export class CategoriesController {
     const { id } = body
     return this.categoriesService.findById_category(id)
   }
-  @Get('/getPayment')
-  async getPayment() {
-    return this.categoriesService.getPayment('2d6beb3d-000f-5000-9000-1a4686d97366')
-  }
-
-  // @Get('/capturePayment')
-  // async capturePayment() {
-  // 	return this.categoriesService.capturePayment('2d6beb3d-000f-5000-9000-1a4686d97366');
-  // }
 
   @Post('/payment/status')
   async handlePaymentStatus(@Body() paymentStatusDto: PaymentNotificationDto) {
+    console.log(paymentStatusDto)
     if (paymentStatusDto.object.status !== 'waiting_for_capture') return
     const response = await this.categoriesService.capturePayment(paymentStatusDto)
     return response.data
   }
+
+  @Post('/notifications')
+  @UseGuards(JwtAuthGuard)
+  async paymentNotifications(@UserId() id: number, @Request() req, @Body() dto: any) {
+    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
+    const result = await this.sessionAuthService.validateSessionToken(req.session)
+    // если возвращается false то сессия истекла
+    if (!result) {
+      return {
+        text: 'Ваша сессия истекла, выполните повторный вход',
+      }
+    }
+    const link = await this.categoriesService.createPayNotification(id, dto)
+    return { url: `${link}` }
+  }
+
 }

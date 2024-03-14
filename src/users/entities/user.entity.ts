@@ -38,28 +38,28 @@ export class UserEntity {
 
   @Column({ default: '' })
   sessionToken: string
-
   @Column({ default: '' })
   ip: string
   @Column({ default: null })
   lastVisit: null | Date
-
   @Column({ default: '' })
   activationLink: string
   @Column({ default: '' })
   activationNumber: string
-
+  @Column({ default: '' })
+  activationTgNumber: string
   @Column('jsonb', { array: false, default: [] })
   categoriesFreePeriod: PurchasedCategory[]
   @Column('jsonb', { array: false, default: [] })
   notificationsFreePeriod: PurchasedCategory[]
   @Column('jsonb', { array: false, default: [] })
   categoriesHasBought: PurchasedCategory[]
+  @Column('jsonb', { array: false, default: [] })
+  notificationsHasBought: PurchasedCategory[]
   @Column({ nullable: true })
   timeCallVerify: Date
   @Column({ nullable: true })
   timeSendMessageVerify: Date
-
   @CreateDateColumn()
   createdAt: Date
   @UpdateDateColumn()

@@ -17,6 +17,8 @@ export class CategoryEntity {
   @Column({ default: 2500 })
   salary: number
   @Column({ default: 0 })
+  salaryChanel: number
+  @Column({ default: 0 })
   percentSale: number
   @Column({ default: false })
   show: boolean
@@ -24,6 +26,8 @@ export class CategoryEntity {
   create: boolean
   @Column({ default: true })
   disabled: boolean
+  @Column({ default: false })
+  channelActive: boolean
   @CreateDateColumn()
   createdAt: Date
   @UpdateDateColumn()

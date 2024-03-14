@@ -147,4 +147,33 @@ export class UsersController {
   async sendMessage(@UserId() id: number, @Request() req, @Body() dto: any) {
     return this.usersService.sendMessage(dto)
   }
+
+  @Post('/sendTg')
+  @UseGuards(JwtAuthGuard)
+  async verifyTg(@UserId() id: number, @Request() req, @Body() dto: any) {
+    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
+    const result = await this.sessionAuthService.validateSessionToken(req.session)
+    // если возвращается false то сессия истекла
+    if (!result) {
+      return {
+        text: 'Ваша сессия истекла, выполните повторный вход',
+      }
+    }
+    return this.usersService.verifyTg(id, dto)
+  }
+
+  @Post('/numberTgActivate')
+  @UseGuards(JwtAuthGuard)
+  async numberTgActivate(@UserId() id: number, @Request() req, @Body() dto: any) {
+    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
+    const result = await this.sessionAuthService.validateSessionToken(req.session)
+    // если возвращается false то сессия истекла
+    if (!result) {
+      return {
+        text: 'Ваша сессия истекла, выполните повторный вход',
+      }
+    }
+    return this.usersService.numberTgActivate(id, dto)
+  }
+
 }

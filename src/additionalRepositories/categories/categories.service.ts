@@ -464,8 +464,8 @@ export class CategoriesService {
 
       const data = {
         amount: {
-          // value: `${price}`,
-          value: `1`,
+          value: `${price}`,
+          // value: `1`,
           currency: 'RUB',
         },
         payment_method_data: {
@@ -567,8 +567,8 @@ export class CategoriesService {
 
       const data = {
         amount: {
-          // value: `${price}`,
-          value: `1`,
+          value: `${price}`,
+          // value: `1`,
           currency: 'RUB',
         },
         payment_method_data: {
@@ -653,10 +653,10 @@ export class CategoriesService {
 
     try {
       const response = await axios.post(url, { headers })
-      console.log(response)
+      // console.log(response)
       // return response;
     } catch (error) {
-      console.log(error)
+      // console.log(error)
       // throw new Error('Failed to get payment information');
     }
   }

@@ -150,7 +150,8 @@ export class UsersController {
 
   @Post('/sendTg')
   @UseGuards(JwtAuthGuard)
-  async verifyTg(@UserId() id: number, @Request() req, @Body() dto: any) {
+  async verifyTg(@UserId() id: number, @Request() req, @Body() dto: any) {1
+    console.log(dto)
     // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
     const result = await this.sessionAuthService.validateSessionToken(req.session)
     // если возвращается false то сессия истекла

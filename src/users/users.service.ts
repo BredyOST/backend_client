@@ -792,8 +792,7 @@ export class UsersService {
   }
 
   async verifyTg(id, dto) {
-
-    console.log(dto)
+    console.log('1')
     try {
       const user = await this.findById(id)
 
@@ -824,6 +823,7 @@ export class UsersService {
             if (error.response && 'data' in error.response && error.response.data != undefined) {
               this.LogsService.error(`отправка кода в тг`, `${error}`)
             }
+            console.log(error)
             throw 'An error happened!'
           }),
         ),

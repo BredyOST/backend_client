@@ -391,12 +391,12 @@ export class CategoriesService {
                 existingCategory.purchaseEndDate.setMonth(existingCategory.purchaseEndDate.getMonth() + item.purchasePeriod);
               }
 
-              const noExistingCategory = user.notificationsHasBought.filter((category) => category.id !== item.id);
+              const noExistingCategory = user.notificationsHasBought.filter((category) => category.chatList !== item.chatList);
               user.notificationsHasBought = [...noExistingCategory, existingCategory]
             }
             if (!actualDate) {
 
-              const noExistingCategory = user.notificationsHasBought.filter((category) => category.id !== item.id)
+              const noExistingCategory = user.notificationsHasBought.filter((category) => category.chatList !== item.chatList)
               user.notificationsHasBought = [...noExistingCategory, item]
               await this.addToChat(user.chatIdTg, item.id, item.chatList)
             }

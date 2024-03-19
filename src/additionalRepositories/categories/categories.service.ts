@@ -374,6 +374,8 @@ export class CategoriesService {
       } else {
         for (const item of dto.category) {
           let existingCategory = user.notificationsHasBought.find((category) => category.chatList === item.chatList);
+          console.log(`item ${item}`)
+          console.log(`existingCategory ${existingCategory}`)
           // если есть категория у пользователя
           if (existingCategory) {
             const dateCategoryEnd = new Date(existingCategory.purchaseEndDate)
@@ -401,6 +403,8 @@ export class CategoriesService {
               await this.addToChat(user.chatIdTg, item.id, item.chatList)
             }
           } else if (!existingCategory) {
+            console.log('11')
+            console.log(existingCategory)
             user.notificationsHasBought = [...user.notificationsHasBought, item]
             await this.addToChat(user.chatIdTg, item.id, item.chatList)
           }
@@ -775,7 +779,7 @@ export class CategoriesService {
   }
 
   async addToChat(userIdTg, categId, chatName) {
-
+    console.log(`send ${chatName}`)
     let chatId;
     if (categId == 1) {
       const categoryFromDb = await this.findByIdCategory(categId);

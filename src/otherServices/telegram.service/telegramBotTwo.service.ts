@@ -5,7 +5,7 @@ import * as process from 'process'
 @Injectable({ scope: Scope.DEFAULT })
 export class TelegramTwoService implements OnApplicationShutdown {
   private readonly bot: Bot
-
+  private isBotRunning = false
   constructor(
       // private readonly userService: UsersService,
       // private readonly categoriesService: CategoriesService,
@@ -134,6 +134,7 @@ export class TelegramTwoService implements OnApplicationShutdown {
 
 
     this.bot.catch((err) => {
+      console.log(`err ${err}`)
       const ctx = err.ctx
       console.error(`Error while handling update ${ctx?.update?.update_id}:`)
       const e = err.error
@@ -147,7 +148,38 @@ export class TelegramTwoService implements OnApplicationShutdown {
     })
 
     // Запуск бота
-    this.bot.start()
+    // Запуск бота
+    this.bot.start().catch((error) => {
+      console.error('Failed to start bot:', error)
+      this.isBotRunning = false // Сбрасываем флаг запуска, если произошла ошибка при запуске
+      // Выполняем повторный запуск бота через некоторое время
+      setTimeout(() => {
+        console.log('Restarting bot...')
+        this.initializeBot()
+      }, 5000) // Повторный запуск через 5 секунд
+    })
+  }
+
+  private initializeBot() {
+    if (this.isBotRunning) {
+      console.log('Bot is already running.') // Логирование сообщения о повторном запуске
+      return
+    }
+    // Инициализация бота и запуск
+    this.bot
+        .start()
+        .then(() => {
+          console.log('Bot started successfully.')
+          this.isBotRunning = true
+        })
+        .catch((error) => {
+          console.error('Failed to start bot:', error)
+          // Повторный запуск бота через некоторое время
+          setTimeout(() => {
+            console.log('Restarting bot...')
+            this.initializeBot()
+          }, 5000) // Повторный запуск через 5 секунд
+        })
   }
 
   async onApplicationShutdown(signal?: string) {

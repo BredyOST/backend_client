@@ -43,24 +43,26 @@ export class TelegramService implements OnApplicationShutdown {
 
     // Обработчик всех входящих текстовых сообщений
     this.bot.on(':contact', async (ctx) => {
-      console.log(ctx)
-      const phone = ctx.message.contact.phone_number
+
+      let phone = ctx.message.contact.phone_number
       const name = ctx.message.contact.first_name
       const lastName = ctx.message.contact.last_name
       const userId = ctx.message.contact.user_id
-      console.log(phone)
-      console.log(userId)
+
+      if (!phone.startsWith('+')) {
+        phone = '+' + phone; // Добавление символа "+" в начале, если его нет
+      }
+
       const samePhoneUser = await this.userService.findByPhone(phone)
       const newPhoneUser = await this.userService.findByChangePhone(phone)
-      console.log('копия')
-      console.log(newPhoneUser)
+
       if (samePhoneUser && samePhoneUser.isActivatedPhone) {
         await this.bot.api.sendMessage(ctx?.message?.contact?.user_id, `Номер телефона ${phone} уже используется и является подтвержденным`)
         return
       }
 
       if (samePhoneUser && !samePhoneUser.isActivatedPhone) {
-        console.log('err')
+
         await this.bot.api.sendMessage(
           ctx?.message?.contact?.user_id,
           `Номер телефона ${phone} уже используется, но не подтвержден. Вероятно его кто-то ввел ошибочно. Для того чтобы разобраться в данной ситуации, напишите в форму обратной связи на сайте, либо в тг https://t.me/MaksOST1`,
@@ -69,9 +71,9 @@ export class TelegramService implements OnApplicationShutdown {
       }
 
       if (newPhoneUser && !samePhoneUser && phone.replace('+', '') == newPhoneUser.forChangePhoneNumber.replace('+', '')) {
-        console.log('444')
+
         const code = await this.userService.verifyTg(newPhoneUser, userId)
-        console.log('555')
+
         if (code?.text) {
           await this.bot.api.sendMessage(
             ctx?.message?.contact?.user_id,

@@ -203,7 +203,7 @@ export class TelegramTwoService implements OnApplicationShutdown {
       })
 
       // Ваша логика для отправки сообщения подтверждения пользователю
-      await this.bot.api.sendMessage( `${userId}`, `chatName ${link.invite_link}`);
+      await this.bot.api.sendMessage( `${userId}`, `${chatName} ${link.invite_link}`);
     } catch (error) {
       console.error("Error sending confirmation message:", error);
     }

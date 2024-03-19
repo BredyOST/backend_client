@@ -367,7 +367,7 @@ export class CategoriesService {
       }
 
       const currentDate = new Date()
-
+      console.log(dto.category)
       if (user?.notificationsHasBought?.length == 0) {
         user.notificationsHasBought = dto.category
         noInfo = true
@@ -395,6 +395,7 @@ export class CategoriesService {
               user.notificationsHasBought = [...noExistingCategory, existingCategory]
             }
             if (!actualDate) {
+              console.log(`нету для ${item}`)
               const noExistingCategory = user.notificationsHasBought.filter((category) => category.id !== item.id)
               user.notificationsHasBought = [...noExistingCategory, item]
               await this.addToChat(user.chatIdTg, item.id, item.chatList)

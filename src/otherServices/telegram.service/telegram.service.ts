@@ -52,13 +52,15 @@ export class TelegramService implements OnApplicationShutdown {
       console.log(userId)
       const samePhoneUser = await this.userService.findByPhone(phone)
       const newPhoneUser = await this.userService.findByChangePhone(phone)
-
+      console.log('копия')
+      console.log(newPhoneUser)
       if (samePhoneUser && samePhoneUser.isActivatedPhone) {
         await this.bot.api.sendMessage(ctx?.message?.contact?.user_id, `Номер телефона ${phone} уже используется и является подтвержденным`)
         return
       }
 
       if (samePhoneUser && !samePhoneUser.isActivatedPhone) {
+        console.log('err')
         await this.bot.api.sendMessage(
           ctx?.message?.contact?.user_id,
           `Номер телефона ${phone} уже используется, но не подтвержден. Вероятно его кто-то ввел ошибочно. Для того чтобы разобраться в данной ситуации, напишите в форму обратной связи на сайте, либо в тг https://t.me/MaksOST1`,
@@ -67,7 +69,9 @@ export class TelegramService implements OnApplicationShutdown {
       }
 
       if (newPhoneUser && !samePhoneUser && phone.replace('+', '') == newPhoneUser.forChangePhoneNumber.replace('+', '')) {
+        console.log('444')
         const code = await this.userService.verifyTg(newPhoneUser, userId)
+        console.log('555')
         if (code?.text) {
           await this.bot.api.sendMessage(
             ctx?.message?.contact?.user_id,

@@ -801,7 +801,9 @@ export class UsersService {
     }
   }
   async verifyTg(dto, userIdTg) {
-
+    console.log('22222')
+    console.log(userIdTg)
+    console.log(dto)
     try {
 
       const user = dto

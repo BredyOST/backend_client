@@ -34,6 +34,10 @@ import { RedisModule } from './redis/redis.module'
 import { RedisService } from './redis/redis.service'
 import * as dotenv from 'dotenv'
 import { PostsFromRedisModule } from './additionalRepositories/posts-from-redis/posts-from-redis.module'
+import { TelegramService } from './otherServices/telegram.service/telegram.service'
+import { TelegramTwoModule } from './otherServices/telegram.service/telegramBotTwo.module'
+import { TelegramTwoService } from './otherServices/telegram.service/telegramBotTwo.service'
+
 dotenv.config()
 
 @Module({
@@ -53,17 +57,7 @@ dotenv.config()
           password: configService.get('DB_PASSWORD'),
           database: configService.get('DB_NAME'),
           synchronize: true,
-          entities: [
-            UserEntity,
-            CategoryEntity,
-            NotificationEntity,
-            GroupsFromVkEntity,
-            TransactionEntity,
-            FileEntity,
-            AuthorizationEntity,
-            PriceEntity,
-            ChatsFromTelegramEntity,
-          ],
+          entities: [UserEntity, CategoryEntity, NotificationEntity, GroupsFromVkEntity, TransactionEntity, FileEntity, AuthorizationEntity, PriceEntity, ChatsFromTelegramEntity],
         }
       },
     }),
@@ -98,7 +92,7 @@ dotenv.config()
     PostsFromRedisModule,
   ],
   controllers: [AppController, IpController],
-  providers: [AppService, IpMiddleware, SessionTokenMiddleware, RedisService],
+  providers: [AppService, IpMiddleware, SessionTokenMiddleware, RedisService, TelegramService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

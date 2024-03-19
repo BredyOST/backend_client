@@ -8,7 +8,8 @@ import { UsersModule } from '../../users/users.module'
 import { SessionAuthModule } from '../../auth/session-auth/session-auth.module'
 import { RepositoryAllAdd } from '../../otherServices/loggerService/logger.module'
 import { LogsService } from '../../otherServices/loggerService/logger.service'
-import { TransactionModule } from "../transaction/transaction.module";
+import {TransactionModule} from "../transaction/transaction.module";
+import {TelegramTwoService} from "../../otherServices/telegram.service/telegramBotTwo.service";
 
 @Module({
   imports: [
@@ -19,6 +20,6 @@ import { TransactionModule } from "../transaction/transaction.module";
   ],
   exports: [CategoriesService],
   controllers: [CategoriesController],
-  providers: [CategoriesService, JwtStrategy, RepositoryAllAdd, LogsService],
+  providers: [CategoriesService, JwtStrategy, RepositoryAllAdd, LogsService, TelegramTwoService],
 })
 export class CategoriesModule {}

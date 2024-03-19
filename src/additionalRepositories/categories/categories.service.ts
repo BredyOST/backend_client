@@ -9,6 +9,7 @@ import * as uuid from 'uuid'
 import axios from 'axios'
 import { TransactionService } from '../transaction/transaction.service'
 import * as process from 'process'
+import {TelegramTwoService} from "../../otherServices/telegram.service/telegramBotTwo.service";
 
 // admin.initializeApp();
 
@@ -19,6 +20,7 @@ export class CategoriesService {
     private repository: Repository<CategoryEntity>,
     private transactionService: TransactionService,
     private usersService: UsersService,
+    private telegramTwoService: TelegramTwoService,
   ) {}
 
   async findByIdCategory(id_category: string) {
@@ -238,12 +240,12 @@ export class CategoriesService {
     try {
       const user = await this.usersService.findById(+id)
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
-      if (!dto.length) throw new HttpException('Необходимо выбрать категории', HttpStatus.UNAUTHORIZED)
+      if (dto.length <= 0) throw new HttpException('Необходимо выбрать категории', HttpStatus.UNAUTHORIZED)
       if (user.endFreePeriod) throw new HttpException('Вы уже использовали бесплатный период', HttpStatus.UNAUTHORIZED)
       if (user.activatedFreePeriod) throw new HttpException('Вы уже используете бесплатный период', HttpStatus.UNAUTHORIZED)
       if (dto.length >= 2) throw new HttpException('Для бесплатного периода доступна одна категория', HttpStatus.UNAUTHORIZED)
       const sameIp = await this.usersService.findByIp(user.ip)
-      if (sameIp?.activatedFreePeriod || sameIp?.endFreePeriod || sameIp?.categoriesFreePeriod?.length > 0) throw new HttpException('Вы уже использовали бесплатный период1', HttpStatus.UNAUTHORIZED)
+      if (sameIp?.activatedFreePeriod || sameIp?.endFreePeriod || sameIp?.categoriesFreePeriod?.length > 0) throw new HttpException('Вы уже использовали бесплатный период', HttpStatus.UNAUTHORIZED)
 
       const days = 1
 
@@ -256,7 +258,7 @@ export class CategoriesService {
         const nameCategory = await this.findById_category(item.id)
         const obj = {
           id: item.id, // id купленной категории
-          name: nameCategory.name,
+          category: nameCategory.name,
           purchaseBuyDate: purchaseDate, // Дата покупки
           purchaseEndDate: endDate, // Дата окончания подписки
           purchasePeriod: days, // Период подписки в днях
@@ -288,6 +290,131 @@ export class CategoriesService {
       }
     }
   }
+  async activateFreePeriodNotification(id: number, dto) {
+
+    try {
+      const user = await this.usersService.findById(+id)
+      if (!user.phoneNumber) throw new HttpException('Необходимо добавить номер телефона', HttpStatus.UNAUTHORIZED)
+      if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
+      if (dto.length <= 0) throw new HttpException('Необходимо выбрать категории', HttpStatus.UNAUTHORIZED)
+      if (user.endFreePeriodNotification) throw new HttpException('Вы уже использовали бесплатный период', HttpStatus.UNAUTHORIZED)
+      if (user.activatedFreePeriodNotification) throw new HttpException('Вы уже используете бесплатный период', HttpStatus.UNAUTHORIZED)
+      if (dto.length >= 2) throw new HttpException('Для бесплатного периода доступна одна категория', HttpStatus.UNAUTHORIZED)
+      const sameIp = await this.usersService.findByIp(user.ip)
+      if (sameIp?.activatedFreePeriodNotification || sameIp?.endFreePeriodNotification || sameIp?.notificationsFreePeriod?.length > 0) throw new HttpException('Вы уже использовали бесплатный период', HttpStatus.UNAUTHORIZED)
+
+      const days = 1
+
+      const categories = []
+      const purchaseDate = new Date() // Дата покупки
+      const endDate = new Date(purchaseDate) // Создаем новый объект Date, чтобы не изменять оригинальный
+      endDate.setDate(purchaseDate.getDate() + days) // Устанавливаем дату окончания на 1 дня после даты покупки
+
+      for (const item of dto) {
+        const nameCategory = await this.findById_category(item.id)
+        const obj = {
+          id: item.id, // id купленной категории
+          category: nameCategory.name,
+          purchaseBuyDate: purchaseDate, // Дата покупки
+          purchaseEndDate: endDate, // Дата окончания подписки
+          purchasePeriod: days, // Период подписки в днях
+        }
+        categories.push(obj)
+      }
+
+      user.activatedFreePeriodNotification = true // делам активным бесплатный период
+      user.notificationsFreePeriod = categories // записываекм пользователю категории для бесплатного периода
+
+      await this.usersService.saveUpdatedUser(user.id, user)
+
+      return {
+        text: 'Бесплатный период для уведомлений активирован',
+      }
+    } catch (err) {
+      if (err.response === 'Пользователь не найден') {
+        throw err
+      } else if (err.response === `Вы уже используете бесплатный период`) {
+        throw err
+      } else if (err.response === `Необходимо выбрать категории`) {
+        throw err
+      } else if (err.response === `Вы уже использовали бесплатный период`) {
+        throw err
+      } else if (err.response === `Для бесплатного периода доступна одна категория`) {
+        throw err
+      } else if (err.response === `Необходимо добавить номер телефона`) {
+        throw err
+      } else {
+        throw new HttpException('Ошибка при получении бесплатного периода', HttpStatus.FORBIDDEN)
+      }
+    }
+  }
+  async activatePaymentNotification(dto) {
+    try {
+      const user = await this.usersService.findById(+dto.user_id) // находим юзера
+      if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
+
+      const currentDate = new Date()
+
+      if (user?.notificationsHasBought?.length == 0) {
+        user.notificationsHasBought = dto.category
+      } else {
+        for (const item of dto.category) {
+          let existingCategory = user.notificationsHasBought.find((category) => category.id === item.id);
+          // если есть категория у пользователя
+          if (existingCategory) {
+            const dateCategoryEnd = new Date(existingCategory.purchaseEndDate)
+            const actualDate = currentDate.getTime() <= dateCategoryEnd.getTime()
+
+            if (actualDate) {
+              // Обновляем существующую категорию, добавляя новый период и увеличив срок окончания подписки
+              existingCategory.purchasePeriod += item.purchasePeriod;
+              existingCategory.purchaseEndDate = new Date(existingCategory.purchaseEndDate);
+              // console.log(existingCategory.purchaseEndDate)
+
+              if (dto.title === 'Посуточный') {
+                existingCategory.purchaseEndDate.setDate(existingCategory.purchaseEndDate.getDate() + item.purchasePeriod);
+              } else if (dto.title === 'Погрузись в работу') {
+                existingCategory.purchaseEndDate.setMonth(existingCategory.purchaseEndDate.getMonth() + item.purchasePeriod);
+              }
+
+              const noExistingCategory = user.notificationsHasBought.filter((category) => category.id !== item.id);
+              user.notificationsHasBought = [...noExistingCategory, existingCategory]
+            }
+            if (!actualDate) {
+              const noExistingCategory = user.notificationsHasBought.filter((category) => category.id !== item.id)
+              user.notificationsHasBought = [...noExistingCategory, item]
+            }
+          } else if (!existingCategory) {
+
+            user.notificationsHasBought = [...user.notificationsHasBought, item]
+          }
+        }
+      }
+
+      user.endFreePeriodNotification = false
+      user.notificationsFreePeriod = []
+      user.endFreePeriodNotification = true
+
+      await this.usersService.saveUpdatedUser(user.id, user)
+
+
+      for (const item of user.notificationsHasBought) {
+        await this.addToChat(user.chatIdTg, item.id, item.chatList)
+      }
+
+      return {
+        text: 'Подписка на уведомления оформлена',
+      }
+    } catch (err) {
+      if (err.response === 'Пользователь не найден') {
+        throw err
+      }  else if (err.response === `Необходимо добавить номер телефона`) {
+        throw err
+      } else {
+        throw new HttpException('Ошибка при получении бесплатного периода', HttpStatus.FORBIDDEN)
+      }
+    }
+  }
   async activatePayment(dto) {
     try {
       const user = await this.usersService.findById(+dto.user_id) // находим юзера
@@ -303,34 +430,27 @@ export class CategoriesService {
           let existingCategory = user.categoriesHasBought.find((category) => category.id === item.id);
           // если есть категория у пользователя
           if (existingCategory) {
-            // console.log(3)
             const dateCategoryEnd = new Date(existingCategory.purchaseEndDate)
-            // console.log(dateCategoryEnd)
             const actualDate = currentDate.getTime() <= dateCategoryEnd.getTime()
 
             if (actualDate) {
-              // console.log(4)
               // Обновляем существующую категорию, добавляя новый период и увеличив срок окончания подписки
               existingCategory.purchasePeriod += item.purchasePeriod;
               existingCategory.purchaseEndDate = new Date(existingCategory.purchaseEndDate);
-              // console.log(existingCategory.purchaseEndDate)
 
               if (dto.title === 'Посуточный') {
                 existingCategory.purchaseEndDate.setDate(existingCategory.purchaseEndDate.getDate() + item.purchasePeriod);
               } else if (dto.title === 'Погрузись в работу') {
                 existingCategory.purchaseEndDate.setMonth(existingCategory.purchaseEndDate.getMonth() + item.purchasePeriod);
               }
-              // console.log(existingCategory)
               const noExistingCategory = user.categoriesHasBought.filter((category) => category.id !== item.id);
               user.categoriesHasBought = [...noExistingCategory, existingCategory]
             }
             if (!actualDate) {
-              // console.log(5)
               const noExistingCategory = user.categoriesHasBought.filter((category )=> category.id !== item.id);
               user.categoriesHasBought = [...noExistingCategory, item]
             }
           } else if (!existingCategory) {
-            // console.log(6)
             user.categoriesHasBought = [...user.categoriesHasBought, item]
           }
         }
@@ -353,76 +473,13 @@ export class CategoriesService {
       }
     }
   }
-  async activatePaymentNotification(dto) {
-    try {
-      const user = await this.usersService.findById(+dto.user_id) // находим юзера
-      if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
-      const currentDate = new Date()
-
-      if (user?.notificationsHasBought?.length == 0) {
-        user.notificationsHasBought = dto.category
-      } else {
-        for (const item of dto.category) {
-          // console.log(2)
-          let existingCategory = user.notificationsHasBought.find((category) => category.id === item.id);
-          // если есть категория у пользователя
-          if (existingCategory) {
-            // console.log(3)
-            const dateCategoryEnd = new Date(existingCategory.purchaseEndDate)
-            // console.log(dateCategoryEnd)
-            const actualDate = currentDate.getTime() <= dateCategoryEnd.getTime()
-
-            if (actualDate) {
-              // console.log(4)
-              // Обновляем существующую категорию, добавляя новый период и увеличив срок окончания подписки
-              existingCategory.purchasePeriod += item.purchasePeriod;
-              existingCategory.purchaseEndDate = new Date(existingCategory.purchaseEndDate);
-              // console.log(existingCategory.purchaseEndDate)
-
-              if (dto.title === 'Посуточный') {
-                existingCategory.purchaseEndDate.setDate(existingCategory.purchaseEndDate.getDate() + item.purchasePeriod);
-              } else if (dto.title === 'Погрузись в работу') {
-                existingCategory.purchaseEndDate.setMonth(existingCategory.purchaseEndDate.getMonth() + item.purchasePeriod);
-              }
-              // console.log(existingCategory)
-              const noExistingCategory = user.notificationsHasBought.filter((category) => category.id !== item.id);
-              user.notificationsHasBought = [...noExistingCategory, existingCategory]
-            }
-            if (!actualDate) {
-              // console.log(5)
-              const noExistingCategory = user.notificationsHasBought.filter((category )=> category.id !== item.id);
-              user.notificationsHasBought = [...noExistingCategory, item]
-            }
-          } else if (!existingCategory) {
-            // console.log(6)
-            user.notificationsHasBought = [...user.notificationsHasBought, item]
-          }
-        }
-      }
-
-      user.endFreePeriodNotification = false
-      user.notificationsFreePeriod = []
-      user.endFreePeriodNotification = true
-
-      await this.usersService.saveUpdatedUser(user.id, user)
-
-      return {
-        text: 'Подписка на уведомления оформлена',
-      }
-    } catch (err) {
-      if (err.response === 'Пользователь не найден') {
-        throw err
-      } else {
-        throw new HttpException('Ошибка при получении бесплатного периода', HttpStatus.FORBIDDEN)
-      }
-    }
-  }
   async createPay(id, dto) {
     try {
       const user = await this.usersService.findById(+id)
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
       if (dto.categ.length <= 0) throw new HttpException('Необходимо выбрать категории', HttpStatus.UNAUTHORIZED)
 
+      const price = user.isMainAdmin ? '1' : dto.price
       const shopId = process.env['SHOP_ID']
       const secretKey = process.env['SECRET_KEY_SHOP']
       const idempotenceKey = uuid.v4()
@@ -431,7 +488,6 @@ export class CategoriesService {
       const categories = []
       const purchaseDate = new Date()
       const endDate = new Date(purchaseDate)
-      let price
 
       if (dto.title === 'Посуточный') {
         endDate.setDate(purchaseDate.getDate() + days)
@@ -441,11 +497,11 @@ export class CategoriesService {
 
       for (const item of dto.categ) {
         const nameCategory = await this.findById_category(item.id)
-        if (dto.title === 'Посуточный') {
-          price = Math.round(((+nameCategory.salary * 2.5) / 30) * +days)
-        } else if (dto.title === 'Погрузись в работу') {
-          price = +nameCategory.salary * +days
-        }
+        // if (dto.title === 'Посуточный') {
+        //   price = Math.round(((+nameCategory.salary * 2) / 30) * +days)
+        // } else if (dto.title === 'Погрузись в работу') {
+        //   price = +nameCategory.salary * +days
+        // }
 
         const obj = {
           id: item.id,
@@ -520,12 +576,14 @@ export class CategoriesService {
   }
   // для уведомлений
   async createPayNotification(id, dto) {
+
     try {
       const user = await this.usersService.findById(+id)
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
       if (dto.categ.length <= 0) throw new HttpException('Необходимо выбрать категории', HttpStatus.UNAUTHORIZED)
       if (!user.isActivatedPhone) throw new HttpException('Подтвердите номер телефона в профиле', HttpStatus.UNAUTHORIZED)
 
+      const price = user.isMainAdmin ? '1' : dto.price
       const shopId = process.env['SHOP_ID']
       const secretKey = process.env['SECRET_KEY_SHOP']
       const idempotenceKey = uuid.v4()
@@ -534,7 +592,6 @@ export class CategoriesService {
       const categories = []
       const purchaseDate = new Date()
       const endDate = new Date(purchaseDate)
-      let price
 
       if (dto.title === 'Посуточный') {
         endDate.setDate(purchaseDate.getDate() + days)
@@ -542,25 +599,25 @@ export class CategoriesService {
         endDate.setMonth(endDate.getMonth() + days)
       }
 
-      for (const item of dto.categ) {
-        const nameCategory = await this.findById_category(item.id)
-        if (dto.title === 'Посуточный') {
-          price = Math.round(((+nameCategory.salaryChanel * 2.5) / 30) * +days)
-        } else if (dto.title === 'Погрузись в работу') {
-          price = +nameCategory.salaryChanel * +days
-        }
+      for (const item of dto.chatList) {
 
-        const obj = {
-          id: item.id,
-          category: nameCategory.name,
-          purchaseBuyDate: purchaseDate,
-          purchaseEndDate: endDate,
-          purchasePeriod: days,
-          price: price,
-          title: dto.title,
+        for (const elem of item.chats) {
+          const nameCategory = await this.findById_category(item.id)
+
+          const obj = {
+            id: nameCategory.id,
+            category: nameCategory.name,
+            purchaseBuyDate: purchaseDate,
+            purchaseEndDate: endDate,
+            purchasePeriod: days,
+            price: dto.price,
+            title: dto.title,
+            chatList: elem,
+          }
+          categories.push(obj)
         }
-        categories.push(obj)
       }
+
 
       const url = 'https://api.yookassa.ru/v3/payments'
       const authorization = `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString('base64')}`
@@ -701,4 +758,25 @@ export class CategoriesService {
       throw new Error('Failed to get payment information');
     }
   }
+
+  async addToChat(userIdTg, categId, chatName) {
+
+    let chatId;
+    if (categId == 1) {
+      const categoryFromDb = await this.findByIdCategory(categId);
+
+      if (chatName.toLowerCase().includes('англ')) chatId = process.env['CHAT_ENG']
+      if (chatName.toLowerCase().includes('мате' || 'алг')) chatId = process.env['CHAT_MATH']
+      if (chatName.toLowerCase().includes('рус')) chatId = process.env['CHAT_RUS']
+      if (chatName.toLowerCase().includes('химия')) chatId = process.env['CHAT_CHEM']
+      if (chatName.toLowerCase().includes('биолог')) chatId = process.env['CHAT_BIOLOGY']
+      if (chatName.toLowerCase().includes('информ')) chatId = process.env['CHAT_INFORM']
+      if (chatName.toLowerCase().includes('физик')) chatId = process.env['CHAT_PHYSIC']
+      if (chatName.toLowerCase().includes('общест')) chatId = process.env['CHAT_SOCIAL']
+      if (chatName.toLowerCase().includes('истор')) chatId = process.env['CHAT_HISTORY']
+      if (chatName.toLowerCase().includes('начал' || '1 класс' || '2 класс')) chatId = process.env['CHAT_ENG']
+    }
+    await this.telegramTwoService.sendlink(userIdTg, `${chatId}`)
+  }
+
 }

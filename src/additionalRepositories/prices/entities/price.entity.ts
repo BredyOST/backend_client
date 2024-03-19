@@ -12,6 +12,8 @@ export class PriceEntity {
   period: number
   @Column()
   description: string
+  @Column({ default: '' })
+  descriptionNotification: string
   @CreateDateColumn()
   createdAt: Date
   @UpdateDateColumn()

@@ -22,6 +22,8 @@ export class TransactionEntity {
   type: string
   @Column('jsonb', { array: false, default: [] })
   category: PurchasedCategory[]
+  @Column('jsonb', { array: false, default: [] })
+  chatList?: string[]
   @CreateDateColumn({ default: null })
   paymentAt: Date
   @CreateDateColumn()
@@ -35,4 +37,5 @@ export interface PurchasedCategory {
   purchaseEndDate: Date // Дата окончания подписки
   purchasePeriod: number
   price: number
+  chatList?: string
 }

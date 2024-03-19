@@ -14,10 +14,10 @@ export class UserEntity {
   forChangePhoneNumber: string
   @Column()
   password: string
-
   @Column({ default: '' })
   fullName: string
-
+  @Column({ default: '' })
+  chatIdTg: string
   @Column({ default: false })
   isAdmin: boolean
   @Column({ default: false })
@@ -30,12 +30,10 @@ export class UserEntity {
   activatedFreePeriod: boolean
   @Column({ default: false })
   endFreePeriod: boolean
-
   @Column({ default: false })
   activatedFreePeriodNotification: boolean
   @Column({ default: false })
   endFreePeriodNotification: boolean
-
   @Column({ default: '' })
   sessionToken: string
   @Column({ default: '' })
@@ -51,11 +49,11 @@ export class UserEntity {
   @Column('jsonb', { array: false, default: [] })
   categoriesFreePeriod: PurchasedCategory[]
   @Column('jsonb', { array: false, default: [] })
-  notificationsFreePeriod: PurchasedCategory[]
+  notificationsFreePeriod: PurchasedCategoryNotifications[]
   @Column('jsonb', { array: false, default: [] })
   categoriesHasBought: PurchasedCategory[]
   @Column('jsonb', { array: false, default: [] })
-  notificationsHasBought: PurchasedCategory[]
+  notificationsHasBought: PurchasedCategoryNotifications[]
   @Column({ nullable: true })
   timeCallVerify: Date
   @Column({ nullable: true })
@@ -74,4 +72,13 @@ export interface PurchasedCategory {
   purchaseBuyDate: Date // Дата покупки
   purchaseEndDate: Date // Дата окончания подписки
   purchasePeriod: number
+}
+
+export interface PurchasedCategoryNotifications {
+  id: number // id купленной категории
+  category: string // Имя купленной категории
+  purchaseBuyDate: Date // Дата покупки
+  purchaseEndDate: Date // Дата окончания подписки
+  purchasePeriod: number
+  chatList: string
 }

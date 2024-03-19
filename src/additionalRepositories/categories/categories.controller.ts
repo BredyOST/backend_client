@@ -15,7 +15,6 @@ export type category = {
   negativeWords: string[]
   salary: string
 }
-
 export type PaymentNotificationDto = {
   type: string
   event: string
@@ -113,6 +112,20 @@ export class CategoriesController {
     return this.categoriesService.activateFreePeriod(id, dto)
   }
 
+  @Post('/freePeriodNotification')
+  @UseGuards(JwtAuthGuard)
+  async activateFreePeriodNotification(@UserId() id: number, @Request() req, @Body() dto: number) {
+    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
+    const result = await this.sessionAuthService.validateSessionToken(req.session)
+    // если возвращается false то сессия истекла
+    if (!result) {
+      return {
+        text: 'Ваша сессия истекла, выполните повторный вход',
+      }
+    }
+    return this.categoriesService.activateFreePeriodNotification(id, dto)
+  }
+
   @Post('/payment')
   @UseGuards(JwtAuthGuard)
   async payment(@UserId() id: number, @Request() req, @Body() dto: any) {
@@ -167,6 +180,12 @@ export class CategoriesController {
     }
     const link = await this.categoriesService.createPayNotification(id, dto)
     return { url: `${link}` }
+  }
+
+  @Get('/getUser')
+  async addToChat() {
+
+    await this.categoriesService.addToChat(722349216, 1,'математика')
   }
 
 }

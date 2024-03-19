@@ -13,8 +13,8 @@ import { HttpService } from '@nestjs/axios'
 import { email } from '../auth/auth.controller'
 import { codeForNewEmailType, codeForNewPhone, codeType, fullNAmeType, phoneType } from './users.controller'
 import { LogsService } from '../otherServices/loggerService/logger.service'
-import { StringSession } from 'telegram/sessions'
-import { Api, TelegramClient } from 'telegram'
+import { TelegramClient } from 'telegram'
+import { Bot } from "grammy";
 
 export type createUSerWithLink = {
   email: string
@@ -47,7 +47,11 @@ export class UsersService {
       phoneNumber,
     })
   }
-
+  async findByIdTg(chatIdTg: string) {
+    return this.repository.findOneBy({
+      chatIdTg,
+    })
+  }
   async findByChangePhone(forChangePhoneNumber: string) {
     return this.repository.findOneBy({
       forChangePhoneNumber,
@@ -221,12 +225,13 @@ export class UsersService {
   }
   // изменение телефона
   async updatePhone(id: number, dto: codeForNewPhone) {
+
     try {
       // получем пользователя
       const user = await this.findById(+id)
       // проверям не прислал ли нам пользователь  номер которой уже использует
-      if (user.phoneNumber === dto.phoneNumber.replace('+', '')) {
-        throw new HttpException('Вы уже ипользуете этот телефон', HttpStatus.UNAUTHORIZED)
+      if (user.phoneNumber.replace('+', '') === dto.phoneNumber.replace('+', '')) {
+        throw new HttpException('Вы уже иcпользуете этот телефон', HttpStatus.UNAUTHORIZED)
       }
       if (user.forChangePhoneNumber === dto.phoneNumber) throw new HttpException('Телефон уже добавлен во временное хранилище, нажмите "Подтвердить телефон', HttpStatus.UNAUTHORIZED)
 
@@ -368,6 +373,7 @@ export class UsersService {
         })
         success = true
       } catch (err) {
+        console.log(err)
         retries--
         await this.LogsService.error(`repeatSendMessage`, `${to} ${err}`)
       }
@@ -733,7 +739,6 @@ export class UsersService {
   //     }
   //   }
   // }
-
   async activate(activationLink: string) {
     try {
       const user = await this.findByActivateLink(activationLink)
@@ -759,7 +764,6 @@ export class UsersService {
       }
     }
   }
-
   // повторно направить письмо с ссылкой активации
   async activateRepeat(dto: email) {
     try {
@@ -790,51 +794,31 @@ export class UsersService {
       }
     }
   }
+  async verifyTg(dto, userIdTg) {
 
-  async verifyTg(id, dto) {
-    console.log('1')
     try {
-      const user = await this.findById(id)
 
-      if (!user) throw new HttpException('Аккаунт не найден', HttpStatus.UNAUTHORIZED)
-      const userPhone = await this.findByChangePhone(dto.phoneNumber)
+      const user = dto
 
-      if (!userPhone) throw new HttpException('Телефон уже используется', HttpStatus.UNAUTHORIZED)
-      const tokenBot = process.env['TOKEN_BOT']
-      const chatId = process.env['CHAT_ID']
-      const url = `https://api.telegram.org/bot${tokenBot}/sendMessage`
-      const newPassword = await this.randomPassword(6)
-      const messageText = [`Верификация аккаунта`, `ваш проверочный код ${newPassword}`]
-      user.activationTgNumber = `${newPassword}`
+      // if (!user) throw new HttpException('Аккаунт не найден', HttpStatus.UNAUTHORIZED)
+      // const userPhone = await this.findByChangePhone(dto.phoneNumber)
+      //
+      // if (!userPhone) throw new HttpException('Телефон уже используется', HttpStatus.UNAUTHORIZED)
+      // const tokenBot = process.env['TOKEN_BOT']
+      // const chatId = process.env['CHAT_ID']
+      // const url = `https://api.telegram.org/bot${tokenBot}/sendMessage`
+      const code = await this.randomPassword(10)
+      // const messageText = [`Верификация аккаунта`, `ваш проверочный код ${newPassword}`]
+      user.activationTgNumber = `${code}`
+      user.chatIdTg = userIdTg
       await this.saveUpdatedUser(user.id, user)
-      let message
-      if (messageText) {
-        message = messageText.filter((line) => line !== null).join('\n')
-      }
-
-      const dataToSend = {
-        chat_id: chatId,
-        text: message,
-      }
-
-      const { data } = await firstValueFrom(
-        this.httpService.post<any>(url, dataToSend).pipe(
-          catchError((error: AxiosError) => {
-            if (error.response && 'data' in error.response && error.response.data != undefined) {
-              this.LogsService.error(`отправка кода в тг`, `${error}`)
-            }
-            console.log(error)
-            throw 'An error happened!'
-          }),
-        ),
-      )
 
       return {
-        text: 'Код направлен на указанный номер телефона',
+        text: code,
       }
 
-
     } catch (err) {
+      console.log(err)
       if (err.response === 'Аккаунт не найден') {
         await this.LogsService.error(`отправить повторно ссылку активации`, `Аккаунт не найден no trace`)
         throw err
@@ -846,10 +830,9 @@ export class UsersService {
       }
     }
   }
-
   async numberTgActivate(id, dto) {
-
     try {
+
       const user = await this.findById(id)
 
       if (!user) throw new HttpException('Аккаунт не найден', HttpStatus.UNAUTHORIZED)
@@ -859,20 +842,22 @@ export class UsersService {
       user.phoneNumber = user.forChangePhoneNumber
       user.forChangePhoneNumber = ''
       user.isActivatedPhone = true
+      user.activationTgNumber = ''
 
       await this.saveUpdatedUser(id, user)
 
       return {
         text: 'Телефон успешно подтвержден',
       }
-
     } catch (err) {
       if (err.response === 'Аккаунт не найден') {
         await this.LogsService.error(`подтверждение номера тг`, `Аккаунт не найден no trace`)
         throw err
       } else if (err.response === 'Не верный код активации') {
         await this.LogsService.error(`подтверждение номера тг`, `не верный код`)
+        throw err
       } else if (err.response === 'Номер подтвержден') {
+        throw err
       } else {
         await this.LogsService.error(`подтверждение номера в телеграмме кодом`, `ошибка ${err}`)
         throw new HttpException('Ошибка при отправке запроса', HttpStatus.FORBIDDEN)

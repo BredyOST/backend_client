@@ -73,6 +73,7 @@ export class AuthService {
       const newUserDate = await this.usersService.create(newUser)
       if (!newUserDate || !newUserDate.email) throw new HttpException('Ошибка при создании учетной записи, обновите страницу и попробуйте еще раз', HttpStatus.BAD_REQUEST)
       // отправляем ссылку активации на указанный при регистрации email
+
       await this.usersService.sendActivationMail(dto.email, `${this.configService.get<string>('API_URL')}/auth/activate/${activationLink}`)
 
       return {

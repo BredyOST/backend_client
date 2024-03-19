@@ -244,8 +244,11 @@ export class CategoriesService {
       if (user.endFreePeriod) throw new HttpException('Вы уже использовали бесплатный период', HttpStatus.UNAUTHORIZED)
       if (user.activatedFreePeriod) throw new HttpException('Вы уже используете бесплатный период', HttpStatus.UNAUTHORIZED)
       if (dto.length >= 2) throw new HttpException('Для бесплатного периода доступна одна категория', HttpStatus.UNAUTHORIZED)
-      const sameIp = await this.usersService.findByIp(user.ip)
-      if (sameIp?.activatedFreePeriod || sameIp?.endFreePeriod || sameIp?.categoriesFreePeriod?.length > 0) throw new HttpException('Вы уже использовали бесплатный период', HttpStatus.UNAUTHORIZED)
+      const sameIp = await this.usersService.findByIp(`${user.ip}`)
+
+      for (const item of sameIp) {
+        if (item?.activatedFreePeriod || item?.endFreePeriod || item?.categoriesFreePeriod?.length > 0) throw new HttpException('Вы уже использовали бесплатный период', HttpStatus.UNAUTHORIZED)
+      }
 
       const days = 1
 
@@ -301,7 +304,10 @@ export class CategoriesService {
       if (user.activatedFreePeriodNotification) throw new HttpException('Вы уже используете бесплатный период', HttpStatus.UNAUTHORIZED)
       if (dto.length >= 2) throw new HttpException('Для бесплатного периода доступна одна категория', HttpStatus.UNAUTHORIZED)
       const sameIp = await this.usersService.findByIp(user.ip)
-      if (sameIp?.activatedFreePeriodNotification || sameIp?.endFreePeriodNotification || sameIp?.notificationsFreePeriod?.length > 0) throw new HttpException('Вы уже использовали бесплатный период', HttpStatus.UNAUTHORIZED)
+
+      for (const item of sameIp) {
+        if (item?.activatedFreePeriod || item?.endFreePeriod || item?.categoriesFreePeriod?.length > 0) throw new HttpException('Вы уже использовали бесплатный период', HttpStatus.UNAUTHORIZED)
+      }
 
       const days = 1
 

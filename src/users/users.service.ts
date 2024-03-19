@@ -64,10 +64,16 @@ export class UsersService {
     })
   }
   async findByIp(ip: string) {
-    return this.repository.findOneBy({
-      ip,
-    })
+    return await this.repository
+        .createQueryBuilder('user')
+        .where('user.ip = :ip', { ip })
+        .getMany();
   }
+
+  async findManyByIp(ip: string) {
+    return await this.repository.find({ where: { ip } });
+  }
+
 
   // по ссылке активации
   async findByActivateLink(activationLink: string) {

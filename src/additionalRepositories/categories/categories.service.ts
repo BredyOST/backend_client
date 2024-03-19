@@ -356,13 +356,24 @@ export class CategoriesService {
   }
   async activatePaymentNotification(dto) {
     try {
+
       const user = await this.usersService.findById(+dto.user_id) // находим юзера
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
+      let noInfo = false;
+
+      const saveInfo = () => {
+        user.endFreePeriodNotification = false
+        user.notificationsFreePeriod = []
+        user.endFreePeriodNotification = true
+        await this.usersService.saveUpdatedUser(user.id, user)
+      }
 
       const currentDate = new Date()
 
       if (user?.notificationsHasBought?.length == 0) {
         user.notificationsHasBought = dto.category
+        noInfo = true;
+        await saveInfo()
       } else {
         for (const item of dto.category) {
           let existingCategory = user.notificationsHasBought.find((category) => category.id === item.id);
@@ -389,25 +400,20 @@ export class CategoriesService {
             if (!actualDate) {
               const noExistingCategory = user.notificationsHasBought.filter((category) => category.id !== item.id)
               user.notificationsHasBought = [...noExistingCategory, item]
+              await this.addToChat(user.chatIdTg, item.id, item.chatList)
             }
           } else if (!existingCategory) {
-
             user.notificationsHasBought = [...user.notificationsHasBought, item]
+            await this.addToChat(user.chatIdTg, item.id, item.chatList)
           }
         }
       }
 
-      user.endFreePeriodNotification = false
-      user.notificationsFreePeriod = []
-      user.endFreePeriodNotification = true
-
-      await this.usersService.saveUpdatedUser(user.id, user)
-
-
-      for (const item of user.notificationsHasBought) {
-        await this.addToChat(user.chatIdTg, item.id, item.chatList)
+      if (noInfo) {
+        for (const item of user.notificationsHasBought) {
+          await this.addToChat(user.chatIdTg, item.id, item.chatList)
+        }
       }
-
       return {
         text: 'Подписка на уведомления оформлена',
       }

@@ -824,7 +824,7 @@ export class UsersService {
       }
 
     } catch (err) {
-      console.log(err)
+
       if (err.response === 'Аккаунт не найден') {
         await this.LogsService.error(`отправить повторно ссылку активации`, `Аккаунт не найден no trace`)
         throw err

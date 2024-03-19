@@ -43,11 +43,13 @@ export class TelegramService implements OnApplicationShutdown {
 
     // Обработчик всех входящих текстовых сообщений
     this.bot.on(':contact', async (ctx) => {
+      console.log(ctx)
       const phone = ctx.message.contact.phone_number
       const name = ctx.message.contact.first_name
       const lastName = ctx.message.contact.last_name
       const userId = ctx.message.contact.user_id
-
+      console.log(phone)
+      console.log(userId)
       const samePhoneUser = await this.userService.findByPhone(phone)
       const newPhoneUser = await this.userService.findByChangePhone(phone)
 

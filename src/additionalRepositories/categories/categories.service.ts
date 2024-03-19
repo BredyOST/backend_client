@@ -783,6 +783,7 @@ export class CategoriesService {
   async addToChat(userIdTg, categId, chatName) {
     console.log('chatname')
     console.log(chatName)
+    console.log(userIdTg)
     let chatId;
     if (categId == 1) {
       const categoryFromDb = await this.findByIdCategory(categId);

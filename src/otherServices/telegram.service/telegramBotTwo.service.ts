@@ -187,7 +187,7 @@ export class TelegramTwoService implements OnApplicationShutdown {
     await this.bot.stop();
   }
 
-  async sendlink(userId, chatId) {
+  async sendlink(userId, chatId, chatName) {
     try {
       // const chatId = process.env['CHAT_MATH']
       const name = 'MyInviteLink'; // Название пригласительной ссылки (необязательно)
@@ -203,7 +203,7 @@ export class TelegramTwoService implements OnApplicationShutdown {
       })
 
       // Ваша логика для отправки сообщения подтверждения пользователю
-      await this.bot.api.sendMessage( `${userId}`, `${link.invite_link}`);
+      await this.bot.api.sendMessage( `${userId}`, `chatName ${link.invite_link}`);
     } catch (error) {
       console.error("Error sending confirmation message:", error);
     }

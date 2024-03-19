@@ -782,7 +782,7 @@ export class CategoriesService {
       if (chatName.toLowerCase().includes('истор')) chatId = process.env['CHAT_HISTORY']
       if (chatName.toLowerCase().includes('начал' || '1 класс' || '2 класс')) chatId = process.env['CHAT_ENG']
     }
-    await this.telegramTwoService.sendlink(userIdTg, `${chatId}`)
+    await this.telegramTwoService.sendlink(userIdTg, `${chatId}`, chatName)
   }
 
 }

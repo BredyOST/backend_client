@@ -361,10 +361,8 @@ export class CategoriesService {
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
       let noInfo = false;
 
-      const saveInfo = () => {
-        user.endFreePeriodNotification = false
-        user.notificationsFreePeriod = []
-        user.endFreePeriodNotification = true
+      const saveInfo = async () => {
+
         await this.usersService.saveUpdatedUser(user.id, user)
       }
 
@@ -372,8 +370,7 @@ export class CategoriesService {
 
       if (user?.notificationsHasBought?.length == 0) {
         user.notificationsHasBought = dto.category
-        noInfo = true;
-        await saveInfo()
+        noInfo = true
       } else {
         for (const item of dto.category) {
           let existingCategory = user.notificationsHasBought.find((category) => category.id === item.id);
@@ -408,6 +405,11 @@ export class CategoriesService {
           }
         }
       }
+
+      user.endFreePeriodNotification = false
+      user.notificationsFreePeriod = []
+      user.endFreePeriodNotification = true
+      await saveInfo()
 
       if (noInfo) {
         for (const item of user.notificationsHasBought) {

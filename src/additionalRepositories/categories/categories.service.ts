@@ -381,7 +381,7 @@ export class CategoriesService {
               existingCategory.purchaseEndDate = new Date(existingCategory.purchaseEndDate);
               // console.log(existingCategory.purchaseEndDate)
 
-              if (dto.title === 'Посуточный') {
+              if (dto.title === 'Недельный') {
                 existingCategory.purchaseEndDate.setDate(existingCategory.purchaseEndDate.getDate() + item.purchasePeriod);
               } else if (dto.title === 'Погрузись в работу') {
                 existingCategory.purchaseEndDate.setMonth(existingCategory.purchaseEndDate.getMonth() + item.purchasePeriod);
@@ -449,7 +449,7 @@ export class CategoriesService {
               existingCategory.purchasePeriod += item.purchasePeriod;
               existingCategory.purchaseEndDate = new Date(existingCategory.purchaseEndDate);
 
-              if (dto.title === 'Посуточный') {
+              if (dto.title === 'Недельный') {
                 existingCategory.purchaseEndDate.setDate(existingCategory.purchaseEndDate.getDate() + item.purchasePeriod);
               } else if (dto.title === 'Погрузись в работу') {
                 existingCategory.purchaseEndDate.setMonth(existingCategory.purchaseEndDate.getMonth() + item.purchasePeriod);
@@ -500,7 +500,7 @@ export class CategoriesService {
       const purchaseDate = new Date()
       const endDate = new Date(purchaseDate)
 
-      if (dto.title === 'Посуточный') {
+      if (dto.title === 'Недельный') {
         endDate.setDate(purchaseDate.getDate() + days)
       } else if (dto.title === 'Погрузись в работу') {
         endDate.setMonth(endDate.getMonth() + days)
@@ -508,7 +508,7 @@ export class CategoriesService {
 
       for (const item of dto.categ) {
         const nameCategory = await this.findById_category(item.id)
-        // if (dto.title === 'Посуточный') {
+        // if (dto.title === 'Недельный') {
         //   price = Math.round(((+nameCategory.salary * 2) / 30) * +days)
         // } else if (dto.title === 'Погрузись в работу') {
         //   price = +nameCategory.salary * +days
@@ -604,7 +604,7 @@ export class CategoriesService {
       const purchaseDate = new Date()
       const endDate = new Date(purchaseDate)
 
-      if (dto.title === 'Посуточный') {
+      if (dto.title === 'Недельный') {
         endDate.setDate(purchaseDate.getDate() + days)
       } else if (dto.title === 'Погрузись в работу') {
         endDate.setMonth(endDate.getMonth() + days)

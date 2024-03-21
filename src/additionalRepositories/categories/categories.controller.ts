@@ -164,14 +164,14 @@ export class CategoriesController {
   async handlePaymentStatus(@Body() paymentStatusDto: PaymentNotificationDto) {
     if (paymentStatusDto.object.status !== 'waiting_for_capture') return
     const response = await this.categoriesService.capturePayment(paymentStatusDto)
-    return response.data
+    return response?.data
   }
 
   @Post('/notifications')
   @UseGuards(JwtAuthGuard)
   async paymentNotifications(@UserId() id: number, @Request() req, @Body() dto: any) {
     // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
-    const result = await this.sessionAuthService.validateSessionToken(req.session)
+    const result = await this.sessionAuthService.validateSessionToken(req?.session)
     // если возвращается false то сессия истекла
     if (!result) {
       return {

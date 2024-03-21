@@ -34,12 +34,12 @@ export class TelegramService implements OnApplicationShutdown {
     })
 
     // Обработчик всех входящих текстовых сообщений
-    this.bot.on('::email', async (ctx) => {
-      const text = ctx.message.text
-      const userId = ctx.message.from.id
-      const chatId = ctx.message.chat.id
-
-      const user = await this.userService.findByEmail(text)
+    // this.bot.on('::email', async (ctx) => {
+    //   const text = ctx.message.text
+    //   const userId = ctx.message.from.id
+    //   const chatId = ctx.message.chat.id
+    //
+    //   const user = await this.userService.findByEmail(text)
 
       // Проверка, содержит ли сообщение email
       // if (isValidEmail(text)) {
@@ -57,7 +57,7 @@ export class TelegramService implements OnApplicationShutdown {
       // }
 
       // await this.handleTextMessage(ctx);
-    })
+    // })
 
     // Обработчик всех входящих текстовых сообщений
     this.bot.on(':contact', async (ctx) => {

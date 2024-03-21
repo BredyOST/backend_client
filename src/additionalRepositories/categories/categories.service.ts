@@ -381,9 +381,9 @@ export class CategoriesService {
               existingCategory.purchaseEndDate = new Date(existingCategory.purchaseEndDate);
               // console.log(existingCategory.purchaseEndDate)
 
-              if (dto.title === 'Недельный') {
+              if (dto.title == 'Недельный') {
                 existingCategory.purchaseEndDate.setDate(existingCategory.purchaseEndDate.getDate() + item.purchasePeriod);
-              } else if (dto.title === 'Погрузись в работу') {
+              } else if (dto.title == 'Погрузись в работу') {
                 existingCategory.purchaseEndDate.setMonth(existingCategory.purchaseEndDate.getMonth() + item.purchasePeriod);
               }
 
@@ -449,9 +449,9 @@ export class CategoriesService {
               existingCategory.purchasePeriod += item.purchasePeriod;
               existingCategory.purchaseEndDate = new Date(existingCategory.purchaseEndDate);
 
-              if (dto.title === 'Недельный') {
+              if (dto.title == 'Недельный') {
                 existingCategory.purchaseEndDate.setDate(existingCategory.purchaseEndDate.getDate() + item.purchasePeriod);
-              } else if (dto.title === 'Погрузись в работу') {
+              } else if (dto.title == 'Погрузись в работу') {
                 existingCategory.purchaseEndDate.setMonth(existingCategory.purchaseEndDate.getMonth() + item.purchasePeriod);
               }
               const noExistingCategory = user.categoriesHasBought.filter((category) => category.id !== item.id);

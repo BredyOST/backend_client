@@ -885,7 +885,7 @@ export class UsersService {
 
     try {
 
-      const code = dto.phoneNumber
+      const code = dto.number
       let phone;
       let phoneToChange;
 
@@ -900,7 +900,7 @@ export class UsersService {
       } else {
         phoneToChange = `+${dto.phoneToChange}`
       }
-
+      console.log(dto)
       const sameUser = await this.findByPhone(phoneToChange)
 
       if (sameUser && sameUser.isActivatedPhone) throw new HttpException('Номер телефона уже зарегистрирован в системе и подтвержден', HttpStatus.UNAUTHORIZED)

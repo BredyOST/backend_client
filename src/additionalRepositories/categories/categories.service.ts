@@ -508,12 +508,6 @@ export class CategoriesService {
 
       for (const item of dto.categ) {
         const nameCategory = await this.findById_category(item.id)
-        // if (dto.title === 'Недельный') {
-        //   price = Math.round(((+nameCategory.salary * 2) / 30) * +days)
-        // } else if (dto.title === 'Погрузись в работу') {
-        //   price = +nameCategory.salary * +days
-        // }
-
         const obj = {
           id: item.id,
           category: nameCategory.name,

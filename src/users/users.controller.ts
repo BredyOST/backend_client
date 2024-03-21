@@ -113,8 +113,6 @@ export class UsersController {
     }
     return this.usersService.codeForChangePhone(id, dto)
   }
-
-
   // ОБНОВЛЕНИЕ ПАРОЛЯ
   @Patch('/update/password')
   @UseGuards(JwtAuthGuard)
@@ -180,9 +178,23 @@ export class UsersController {
   // }
 
   @Post('/numberTgActivate')
-  // @UseGuards(JwtAuthGuard)
   async numberTgActivate(@UserId() id: number, @Request() req, @Body() dto: any) {
     return this.usersService.numberTgActivate(dto)
   }
+  @Post('/activateTgProfile')
+  @UseGuards(JwtAuthGuard)
+  async verifyTgInProfile(@UserId() id: number, @Request() req, @Body() dto: any) {
+    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
+    const result = await this.sessionAuthService.validateSessionToken(req.session)
+    // если возвращается false то сессия истекла
+    if (!result) {
+      return {
+        text: 'Ваша сессия истекла, выполните повторный вход',
+      }
+    }
+    return this.usersService.verifyTgInProfile(dto)
+  }
+
+
 
 }

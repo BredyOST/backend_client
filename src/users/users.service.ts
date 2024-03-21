@@ -20,9 +20,7 @@ import {
   phoneType
 } from './users.controller'
 import { LogsService } from '../otherServices/loggerService/logger.service'
-import { TelegramClient } from 'telegram'
-import { Bot } from "grammy";
-import {TelegramTwoService} from "../otherServices/telegram.service/telegramBotTwo.service";
+import { TelegramTwoService } from '../otherServices/telegram.service/telegramBotTwo.service'
 
 export type createUSerWithLink = {
   phoneNumber: string
@@ -300,7 +298,11 @@ export class UsersService {
       const user = await this.findById(+id)
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
 
-      if(user.forChangePhoneNumber.replace('+', '') === dto.phoneToChange.replace('+', '')) {
+      if (user.forChangePhoneNumber.replace('+', '') != dto.phoneToChange.replace('+', '')) {
+        throw new HttpException('Указан не верный номер телефона', HttpStatus.UNAUTHORIZED)
+      }
+
+      if(user.forChangePhoneNumber.replace('+', '') == dto.phoneToChange.replace('+', '')) {
         const code = await this.randomPassword(20)
         user.activationTgNumberToProfile = code
         await this.saveUpdatedUser(user.id, user)
@@ -319,7 +321,7 @@ export class UsersService {
       } else if (err.response === `Пользователь не найден`) {
         // await this.LogsService.error(`обновление имени`, `ошибка у ${id} no trace`)
         throw err
-      } else if (err.response === 'Такой телефон уже зарегестрирован') {
+      } else if (err.response === 'Указан не верный номер телефона') {
         // await this.LogsService.error(`обновление номера`, `Такой телефон уже зарегестрирован ${id} no trace`)
         throw err
       } else if (err.response === 'Телефон уже добавлен во временное хранилище, нажмите "Подтвердить телефон') {
@@ -330,7 +332,6 @@ export class UsersService {
       }
     }
   }
-
   // обновление пароля
   async updatePassword(id: number, dto: any) {
     try {
@@ -594,7 +595,6 @@ export class UsersService {
       throw new HttpException('Ошибка отправки сообщения', HttpStatus.FORBIDDEN)
     }
   }
-
   // отправить нвоый пароль - запрос
   async sendChangePassword(to: string, password: string) {
     let retries = 3 // количество повторных попыток
@@ -700,7 +700,7 @@ export class UsersService {
       }
     }
   }
-  // проверка введенног окода пользователем для верификации номера телефона
+  // проверка введенного кода пользователем для верификации номера телефона
   async verifyPhoneCode(id: number, dto: any) {
     try {
       const user = await this.findById(+id)
@@ -851,7 +851,6 @@ export class UsersService {
       }
     }
   }
-
   // создание кода при регистрации
   async verifyTg(dto, userIdTg, chatId) {
 
@@ -885,24 +884,59 @@ export class UsersService {
   async verifyTgInProfile(dto) {
 
     try {
-      const user = dto
-      const code = await this.randomPassword(20)
 
-      user.activationTgNumberToProfile = `${code}`
+      const code = dto.phoneNumber
+      let phone;
+      let phoneToChange;
+
+      if (dto.phoneNumber.startsWith('+')) {
+        phone = dto.phoneNumber
+      } else {
+        phone = `+${dto.phoneNumber}`
+      }
+
+      if (dto.phoneToChange.startsWith('+')) {
+        phoneToChange = dto.phoneToChange
+      } else {
+        phoneToChange = `+${dto.phoneToChange}`
+      }
+
+      const sameUser = await this.findByPhone(phoneToChange)
+
+      if (sameUser && sameUser.isActivatedPhone) throw new HttpException('Номер телефона уже зарегистрирован в системе и подтвержден', HttpStatus.UNAUTHORIZED)
+
+      const user = await this.findByPhone(phone)
+
+      if (!user) throw new HttpException('Аккаунт не найден', HttpStatus.UNAUTHORIZED)
+      if(user.forChangePhoneNumber != phoneToChange) throw new HttpException('Указан не верный номер телефона', HttpStatus.UNAUTHORIZED)
+
+      if (user.activationTgNumberToProfile !== code) throw new HttpException('Не верный код активации', HttpStatus.UNAUTHORIZED)
+
+      user.phoneNumber = phoneToChange
+      user.forChangePhoneNumber = ''
+      user.activationTgNumberToProfile = ''
+      if(!user.isActivatedPhone) user.isActivatedPhone = true
 
       await this.saveUpdatedUser(user.id, user)
 
       return {
-        text: code,
+        text: 'Телефон успешно изменен, обновите страницу',
       }
 
     } catch (err) {
-
+      console.log(err)
       if (err.response === 'Аккаунт не найден') {
-        await this.LogsService.error(`отправить повторно ссылку активации`, `Аккаунт не найден no trace`)
+        // await this.LogsService.error(`отправить повторно ссылку активации`, `Аккаунт не найден no trace`)
         throw err
-      } else if (err.response === 'Телефон уже используется') {
-        await this.LogsService.error(`телефон уже используется`, `повторно введен телефон`)
+      } else if (err.response === 'Указан не верный номер телефона') {
+        // await this.LogsService.error(`телефон уже используется`, `повторно введен телефон`)
+        throw err
+      } else if (err.response === 'Не верный код активации') {
+        // await this.LogsService.error(`телефон уже используется`, `повторно введен телефон`)
+        throw err
+      } else if (err.response === 'Номер телефона уже зарегистрирован в системе и подтвержден') {
+        // await this.LogsService.error(`телефон уже используется`, `повторно введен телефон`)
+        throw err
       } else {
         await this.LogsService.error(`подтверждение номера в телеграмме`, `ошибка ${err}`)
         throw new HttpException('Ошибка при отправке запроса', HttpStatus.FORBIDDEN)
@@ -911,12 +945,9 @@ export class UsersService {
   }
   async numberTgActivate(dto) {
 
-
     try {
-
       let numberPhone;
-      const numberPhoneToChange = dto.phoneToChange
-      const code = dto.number
+      const code = dto.numberActivation
 
       if (dto.phoneNumber.startsWith('+')) {
         numberPhone = dto.phoneNumber
@@ -928,19 +959,15 @@ export class UsersService {
 
       if (!user) throw new HttpException('Аккаунт не найден', HttpStatus.UNAUTHORIZED)
       // if (user.activationNumber) throw new HttpException('Аккаунт пользователя активирован', HttpStatus.UNAUTHORIZED)
-      if (user.forChangePhoneNumber !== numberPhoneToChange) throw new HttpException('Указан другой номер телефона, проверьте поле ввода номера', HttpStatus.UNAUTHORIZED)
 
-      if (user.activationTgNumberToProfile !== code) throw new HttpException('Не верный код активации', HttpStatus.UNAUTHORIZED)
+      if (user.activationTgNumber !== code) throw new HttpException('Не верный код активации', HttpStatus.UNAUTHORIZED)
 
-      user.phoneNumber = numberPhoneToChange
-      user.forChangePhoneNumber = ''
-
-      if(!user.isActivatedPhone) user.isActivatedPhone = true
+      user.isActivatedPhone = true
 
       await this.saveUpdatedUser(user.id, user)
 
       return {
-        text: 'Телефон успешно подтвержден изменен, обновите страницу',
+        text: 'Телефон успешно подтвержден, можете войти в учетную запись',
       }
     } catch (err) {
       if (err.response === 'Аккаунт не найден') {

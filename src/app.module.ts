@@ -35,9 +35,6 @@ import { RedisService } from './redis/redis.service'
 import * as dotenv from 'dotenv'
 import { PostsFromRedisModule } from './additionalRepositories/posts-from-redis/posts-from-redis.module'
 import { TelegramService } from './otherServices/telegram.service/telegram.service'
-import { TelegramTwoModule } from './otherServices/telegram.service/telegramBotTwo.module'
-import { TelegramTwoService } from './otherServices/telegram.service/telegramBotTwo.service'
-import {HeapdumpMiddleware} from "./middleware/headump.middleware";
 
 dotenv.config()
 

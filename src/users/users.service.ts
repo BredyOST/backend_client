@@ -10,16 +10,24 @@ import { AxiosError } from 'axios/index'
 import { AppService } from '../app.service'
 import { MailerService } from '@nestjs-modules/mailer'
 import { HttpService } from '@nestjs/axios'
-import { email } from '../auth/auth.controller'
-import { codeForNewEmailType, codeForNewPhone, codeType, fullNAmeType, phoneType } from './users.controller'
+import {accessNumber, email} from '../auth/auth.controller'
+import {
+  codeForChangePhone,
+  codeForNewEmailType,
+  codeForNewPhone,
+  codeType,
+  fullNAmeType,
+  phoneType
+} from './users.controller'
 import { LogsService } from '../otherServices/loggerService/logger.service'
 import { TelegramClient } from 'telegram'
 import { Bot } from "grammy";
+import {TelegramTwoService} from "../otherServices/telegram.service/telegramBotTwo.service";
 
 export type createUSerWithLink = {
-  email: string
+  phoneNumber: string
   password: string
-  activationLink: string
+  // activationLink: string
   ip: string
 }
 
@@ -32,6 +40,7 @@ export class UsersService {
     private readonly mailerService: MailerService,
     private LogsService: LogsService, // сервис для создания общих уведомления и ошибок
     private readonly httpService: HttpService,
+    private telegramTwoService: TelegramTwoService,
   ) {}
 
   // блоки получения пользователей по параметрам
@@ -153,13 +162,13 @@ export class UsersService {
       }
     } catch (err) {
       if (err.response === 'Вы уже ипользуете этот email') {
-        await this.LogsService.error(`обновление почты`, `Вы уже ипользуете этот email ${dto.email} no trace`)
+        // await this.LogsService.error(`обновление почты`, `Вы уже ипользуете этот email ${dto.email} no trace`)
         throw err
       } else if (err.response === 'Такой Email уже зарегистрирован') {
-        await this.LogsService.error(`обновление почты`, `уже существует ${dto.email} no trace`)
+        // await this.LogsService.error(`обновление почты`, `уже существует ${dto.email} no trace`)
         throw err
       } else if (err.response === `Ошибка отправки сообщения об активации, проверьте почту`) {
-        await this.LogsService.error(`обновление почты`, `ошибка отправки кода ${dto.email} no trace`)
+        // await this.LogsService.error(`обновление почты`, `ошибка отправки кода ${dto.email} no trace`)
         throw err
       } else if (err.response === 'Email уже добавлен во временное хранилище, проверьте ваш Email') {
         throw err
@@ -182,11 +191,12 @@ export class UsersService {
         user.email = newEmail
         user.forChangeEmail = ''
         user.activationLink = ''
+        user.isActivatedEmail = true
         await this.saveUpdatedUser(id, user)
       }
 
       return {
-        text: `Email успешно изменен на ${user.email}`,
+        text: `Email успешно изменен на ${user.email}. Обновите страницу`,
       }
     } catch (err) {
       if (err.response === 'Пользователь не найден, проверьте еще раз код или запросите новый') {
@@ -205,6 +215,8 @@ export class UsersService {
   async updateFullName(id: number, dto: fullNAmeType) {
     try {
       const user = await this.findById(+id)
+      if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
+
       if (user.fullName === dto.fullName) {
         throw new HttpException('Вы уже ипользуете это имя', HttpStatus.UNAUTHORIZED)
       }
@@ -218,13 +230,16 @@ export class UsersService {
       }
     } catch (err) {
       if (err.response === 'Вы уже ипользуете это имя') {
-        await this.LogsService.error(`обновление имени`, `Вы уже ипользуете этот email ${dto.fullName} no trace`)
+        // await this.LogsService.error(`обновление имени`, `Вы уже ипользуете этот email ${dto.fullName} no trace`)
         throw err
       } else if (err.response === `Ошибка при обновлении пользователя`) {
-        await this.LogsService.error(`обновление имени`, `ошибка у ${id} no trace`)
+        // await this.LogsService.error(`обновление имени`, `ошибка у ${id} no trace`)
+        throw err
+      } else if (err.response === `Пользователь не найден`) {
+        // await this.LogsService.error(`обновление имени`, `ошибка у ${id} no trace`)
         throw err
       } else {
-        await this.LogsService.error(`обновление имени`, `ошибка у ${id} ${err}`)
+        // await this.LogsService.error(`обновление имени`, `ошибка у ${id} ${err}`)
         throw new HttpException('Ошибка при обновлении данных имени', HttpStatus.FORBIDDEN)
       }
     }
@@ -235,6 +250,7 @@ export class UsersService {
     try {
       // получем пользователя
       const user = await this.findById(+id)
+      if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
       // проверям не прислал ли нам пользователь  номер которой уже использует
       if (user.phoneNumber.replace('+', '') === dto.phoneNumber.replace('+', '')) {
         throw new HttpException('Вы уже иcпользуете этот телефон', HttpStatus.UNAUTHORIZED)
@@ -260,10 +276,13 @@ export class UsersService {
       }
     } catch (err) {
       if (err.response === 'Вы уже ипользуете этот телефон') {
-        await this.LogsService.error(`обновление номера`, `Вы уже ипользуете этот телефон ${id} no trace`)
+        // await this.LogsService.error(`обновление номера`, `Вы уже ипользуете этот телефон ${id} no trace`)
+        throw err
+      } else if (err.response === `Пользователь не найден`) {
+        // await this.LogsService.error(`обновление имени`, `ошибка у ${id} no trace`)
         throw err
       } else if (err.response === 'Такой телефон уже зарегестрирован') {
-        await this.LogsService.error(`обновление номера`, `Такой телефон уже зарегестрирован ${id} no trace`)
+        // await this.LogsService.error(`обновление номера`, `Такой телефон уже зарегестрирован ${id} no trace`)
         throw err
       } else if (err.response === 'Телефон уже добавлен во временное хранилище, нажмите "Подтвердить телефон') {
         throw err
@@ -273,6 +292,45 @@ export class UsersService {
       }
     }
   }
+  // запрос кода в тг
+  async codeForChangePhone(id: number, dto: codeForChangePhone) {
+
+    try {
+      // получем пользователя
+      const user = await this.findById(+id)
+      if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
+
+      if(user.forChangePhoneNumber.replace('+', '') === dto.phoneToChange.replace('+', '')) {
+        const code = await this.randomPassword(20)
+        user.activationTgNumberToProfile = code
+        await this.saveUpdatedUser(user.id, user)
+        await this.telegramTwoService.sendNewCodeForNewPhone(user.userIdTg,`Ваш код: ${code}` )
+      }
+
+      return {
+        text: 'Код успешно направлен в телеграмм',
+      }
+
+    } catch (err) {
+
+      if (err.response === 'Вы уже ипользуете этот телефон') {
+        // await this.LogsService.error(`обновление номера`, `Вы уже ипользуете этот телефон ${id} no trace`)
+        throw err
+      } else if (err.response === `Пользователь не найден`) {
+        // await this.LogsService.error(`обновление имени`, `ошибка у ${id} no trace`)
+        throw err
+      } else if (err.response === 'Такой телефон уже зарегестрирован') {
+        // await this.LogsService.error(`обновление номера`, `Такой телефон уже зарегестрирован ${id} no trace`)
+        throw err
+      } else if (err.response === 'Телефон уже добавлен во временное хранилище, нажмите "Подтвердить телефон') {
+        throw err
+      } else {
+        await this.LogsService.error(`обновление номера`, `ошибка ${id} ${err}`)
+        throw new HttpException('Ошибка при обновлении телефона', HttpStatus.FORBIDDEN)
+      }
+    }
+  }
+
   // обновление пароля
   async updatePassword(id: number, dto: any) {
     try {
@@ -674,13 +732,24 @@ export class UsersService {
     }
   }
   // запрос на восстановление пароля
-  async changePassword(dto: email) {
+  async changePassword(dto: accessNumber) {
     try {
-      // находим пользователя по email
-      const user = await this.findByEmail(dto.email)
+
+      if (!dto?.phoneNumber?.length && !dto.email) {
+        throw new HttpException('Не заполнены или некорректно заполнены поля', HttpStatus.UNAUTHORIZED)
+      }
+
+      let user
+
+      if (dto?.phoneNumber?.length >= 5) {
+        user = await this.findByPhone(dto.phoneNumber)
+      } else if (dto.email.length >= 2) {
+        user = await this.findByEmail(dto.email)
+      }
+
       if (!user) throw new HttpException('Аккаунт не найден', HttpStatus.UNAUTHORIZED)
       // если не активирован то ошибка
-      if (user.isActivatedEmail === false) throw new HttpException('Аккаунт не активирован', HttpStatus.UNAUTHORIZED)
+      if (user.isActivatedPhone === false) throw new HttpException('Аккаунт не активирован,подтвердите номер телефона', HttpStatus.UNAUTHORIZED)
       // создаем новый пароль и шифруем
       const newPassword = await this.randomPassword(12)
       const saltRounds = 10
@@ -690,61 +759,43 @@ export class UsersService {
       user.password = password
       // обновляем пользователя а базе данных
       await this.saveUpdatedUser(user.id, user)
-      // высылаем на почту новый пароль
-      await this.sendChangePassword(user.email, newPassword)
+
+      let text;
+
+      if (dto?.phoneNumber?.length >= 5) {
+        await this.telegramTwoService.sendNewPassword(user.userIdTg, newPassword)
+        text = 'Сообщение c новым паролем направлено в телеграм'
+      } else if (dto.email.length >= 2) {
+        await this.sendChangePassword(user.email, newPassword)
+        text = 'Сообщение c новым паролем направлено на email'
+      }
 
       return {
-        text: 'Сообщение c новым паролем направлено на email',
+        text: text
       }
     } catch (err) {
       if (err.response === 'Аккаунт не найден') {
-        await this.LogsService.error(`выслать пароль`, `Аккаунт не найден  ${dto.email} no trace`)
+        // await this.LogsService.error(`выслать пароль`, `Аккаунт не найден  ${dto.phoneNumber} no trace`)
         throw err
-      } else if (err.response === 'Аккаунт не активирован') {
-        await this.LogsService.error(`выслать пароль`, `Аккаунт не активирован  ${dto.email} no trace`)
+      } else if (err.response === 'Аккаунт не активирован,подтвердите номер телефона') {
+        // await this.LogsService.error(`выслать пароль`, `Аккаунт не активирован  ${dto.phoneNumber} no trace`)
         throw err
       } else if (err.response === 'Ошибка при обновлении пользователя') {
-        await this.LogsService.error(`выслать пароль`, `ошибка приобновлении пользователя ${dto.email} no trace`)
+        await this.LogsService.error(`выслать пароль`, `ошибка приобновлении пользователя ${dto.phoneNumber} no trace`)
         throw err
       } else if (err.response === '= randomPassword') {
-        await this.LogsService.error(`выслать пароль`, `randomPassword error  ${dto.email} no trace`)
+        await this.LogsService.error(`выслать пароль`, `randomPassword error  ${dto.phoneNumber} no trace`)
         throw err
       } else if (err.response === 'Ошибка при отправке пароля') {
-        await this.LogsService.error(`выслать пароль`, `Ошибка при отправке пароля  ${dto.email} no trace`)
+        await this.LogsService.error(`выслать пароль`, `Ошибка при отправке пароля  ${dto.phoneNumber} no trace`)
         throw err
       } else {
-        await this.LogsService.error(`выслать пароль`, `Ошибка при генерации пароля ${dto.email} no trace`)
+        await this.LogsService.error(`выслать пароль`, `Ошибка при генерации пароля ${dto.phoneNumber} no trace`)
         throw new HttpException('Ошибка при генерации пароля', HttpStatus.FORBIDDEN)
       }
     }
   }
   // активация аккаунта
-  // async activate(activationLink) {
-  //   try {
-  //     // находим пользователя с такой ссылкой
-  //     const user = await this.findByActivateLink(activationLink)
-  //
-  //     if (!user) {
-  //       throw new HttpException('Некорректная ссылка активации, запросите повторно в окне авторизации', HttpStatus.BAD_REQUEST)
-  //     }
-  //     // если есть то ставим флаг об активации и обновляем его
-  //     user.isActivatedEmail = true
-  //     await this.saveUpdatedUser(user.id, user)
-  //     await this.sendMessageAboutActivated(user.email)
-  //
-  //     return {
-  //       text: `Успешная активация, перейдите по ссылке ${process.env['CLIENT_URL']}`,
-  //     }
-  //   } catch (err) {
-  //     if (err.response === 'Некорректная ссылка активации, запросите повторно в окне авторизации') {
-  //       await this.LogsService.error(`аквтивация ак`, `некорректная ссылка активации no trace`)
-  //       throw err
-  //     } else {
-  //       await this.LogsService.error(`активация ак`, `ошибка ${err}`)
-  //       throw new HttpException('Ошибка при активации аккаунта', HttpStatus.BAD_REQUEST)
-  //     }
-  //   }
-  // }
   async activate(activationLink: string) {
     try {
       const user = await this.findByActivateLink(activationLink)
@@ -800,25 +851,17 @@ export class UsersService {
       }
     }
   }
-  async verifyTg(dto, userIdTg) {
-    console.log('22222')
-    console.log(userIdTg)
-    console.log(dto)
+
+  // создание кода при регистрации
+  async verifyTg(dto, userIdTg, chatId) {
+
     try {
-
       const user = dto
+      const code = await this.randomPassword(20)
 
-      // if (!user) throw new HttpException('Аккаунт не найден', HttpStatus.UNAUTHORIZED)
-      // const userPhone = await this.findByChangePhone(dto.phoneNumber)
-      //
-      // if (!userPhone) throw new HttpException('Телефон уже используется', HttpStatus.UNAUTHORIZED)
-      // const tokenBot = process.env['TOKEN_BOT']
-      // const chatId = process.env['CHAT_ID']
-      // const url = `https://api.telegram.org/bot${tokenBot}/sendMessage`
-      const code = await this.randomPassword(10)
-      // const messageText = [`Верификация аккаунта`, `ваш проверочный код ${newPassword}`]
       user.activationTgNumber = `${code}`
-      user.chatIdTg = userIdTg
+      user.chatIdTg = chatId
+      user.userIdTg = userIdTg
       await this.saveUpdatedUser(user.id, user)
 
       return {
@@ -838,38 +881,115 @@ export class UsersService {
       }
     }
   }
-  async numberTgActivate(id, dto) {
+  // создание кода в профиле
+  async verifyTgInProfile(dto) {
+
     try {
+      const user = dto
+      const code = await this.randomPassword(20)
 
-      const user = await this.findById(id)
+      user.activationTgNumberToProfile = `${code}`
 
-      if (!user) throw new HttpException('Аккаунт не найден', HttpStatus.UNAUTHORIZED)
-      if (user.activationTgNumber !== dto.number) throw new HttpException('Не верный код активации', HttpStatus.UNAUTHORIZED)
-      if (user.phoneNumber == dto.number) throw new HttpException('Номер подтвержден', HttpStatus.UNAUTHORIZED)
-
-      user.phoneNumber = user.forChangePhoneNumber
-      user.forChangePhoneNumber = ''
-      user.isActivatedPhone = true
-      user.activationTgNumber = ''
-
-      await this.saveUpdatedUser(id, user)
+      await this.saveUpdatedUser(user.id, user)
 
       return {
-        text: 'Телефон успешно подтвержден',
+        text: code,
       }
+
     } catch (err) {
+
       if (err.response === 'Аккаунт не найден') {
-        await this.LogsService.error(`подтверждение номера тг`, `Аккаунт не найден no trace`)
+        await this.LogsService.error(`отправить повторно ссылку активации`, `Аккаунт не найден no trace`)
         throw err
-      } else if (err.response === 'Не верный код активации') {
-        await this.LogsService.error(`подтверждение номера тг`, `не верный код`)
-        throw err
-      } else if (err.response === 'Номер подтвержден') {
-        throw err
+      } else if (err.response === 'Телефон уже используется') {
+        await this.LogsService.error(`телефон уже используется`, `повторно введен телефон`)
       } else {
-        await this.LogsService.error(`подтверждение номера в телеграмме кодом`, `ошибка ${err}`)
+        await this.LogsService.error(`подтверждение номера в телеграмме`, `ошибка ${err}`)
         throw new HttpException('Ошибка при отправке запроса', HttpStatus.FORBIDDEN)
       }
     }
   }
+  async numberTgActivate(dto) {
+
+
+    try {
+
+      let numberPhone;
+      const numberPhoneToChange = dto.phoneToChange
+      const code = dto.number
+
+      if (dto.phoneNumber.startsWith('+')) {
+        numberPhone = dto.phoneNumber
+      } else {
+        numberPhone = `+${dto.phoneNumber}`
+      }
+
+      const user = await this.findByPhone(numberPhone)
+
+      if (!user) throw new HttpException('Аккаунт не найден', HttpStatus.UNAUTHORIZED)
+      // if (user.activationNumber) throw new HttpException('Аккаунт пользователя активирован', HttpStatus.UNAUTHORIZED)
+      if (user.forChangePhoneNumber !== numberPhoneToChange) throw new HttpException('Указан другой номер телефона, проверьте поле ввода номера', HttpStatus.UNAUTHORIZED)
+
+      if (user.activationTgNumberToProfile !== code) throw new HttpException('Не верный код активации', HttpStatus.UNAUTHORIZED)
+
+      user.phoneNumber = numberPhoneToChange
+      user.forChangePhoneNumber = ''
+
+      if(!user.isActivatedPhone) user.isActivatedPhone = true
+
+      await this.saveUpdatedUser(user.id, user)
+
+      return {
+        text: 'Телефон успешно подтвержден изменен, обновите страницу',
+      }
+    } catch (err) {
+      if (err.response === 'Аккаунт не найден') {
+        throw err
+      } else if (err.response === 'Указан другой номер телефона, проверьте поле ввода номера') {
+        throw err
+      } else if (err.response === 'Не верный код активации') {
+        throw err
+      } else if (err.response === 'Аккаунт пользователя активирован') {
+        throw err
+      } else {
+        await this.LogsService.error(`Подтверждение номера в телеграмме кодом`, `ошибка ${err}`)
+        throw new HttpException('Ошибка при отправке запроса', HttpStatus.FORBIDDEN)
+      }
+    }
+  }
+
+  // async numberTgActivate(id, dto) {
+  //   try {
+  //
+  //     const user = await this.findById(id)
+  //
+  //     if (!user) throw new HttpException('Аккаунт не найден', HttpStatus.UNAUTHORIZED)
+  //     if (user.activationTgNumber !== dto.number) throw new HttpException('Не верный код активации', HttpStatus.UNAUTHORIZED)
+  //     if (user.phoneNumber == dto.number) throw new HttpException('Номер подтвержден', HttpStatus.UNAUTHORIZED)
+  //
+  //     user.phoneNumber = user.forChangePhoneNumber
+  //     user.forChangePhoneNumber = ''
+  //     user.isActivatedPhone = true
+  //     user.activationTgNumber = ''
+  //
+  //     await this.saveUpdatedUser(id, user)
+  //
+  //     return {
+  //       text: 'Телефон успешно подтвержден',
+  //     }
+  //   } catch (err) {
+  //     if (err.response === 'Аккаунт не найден') {
+  //       await this.LogsService.error(`подтверждение номера тг`, `Аккаунт не найден no trace`)
+  //       throw err
+  //     } else if (err.response === 'Не верный код активации') {
+  //       await this.LogsService.error(`подтверждение номера тг`, `не верный код`)
+  //       throw err
+  //     } else if (err.response === 'Номер подтвержден') {
+  //       throw err
+  //     } else {
+  //       await this.LogsService.error(`подтверждение номера в телеграмме кодом`, `ошибка ${err}`)
+  //       throw new HttpException('Ошибка при отправке запроса', HttpStatus.FORBIDDEN)
+  //     }
+  //   }
+  // }
 }

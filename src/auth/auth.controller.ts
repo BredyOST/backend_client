@@ -11,12 +11,18 @@ import { ConfigService } from '@nestjs/config'
 
 
 export type createUserType = {
-  email: string
+  phoneNumber: string
   password: string
   passwordCheck: string
 }
 
 export type email = {
+  email: string
+}
+
+
+export type accessNumber = {
+  phoneNumber: string
   email: string
 }
 
@@ -66,7 +72,7 @@ export class AuthController {
 
   // ЗАПРОС НА НОВЫЙ ПАРОЛЬ ЕСЛИ ЗАБЫЛ
   @Post('/forgetPassword')
-  async changePassword(@Body() dto: email) {
+  async changePassword(@Body() dto: accessNumber) {
     return this.authService.changePassword(dto)
   }
 

@@ -9,7 +9,7 @@ import * as uuid from 'uuid'
 import axios from 'axios'
 import { TransactionService } from '../transaction/transaction.service'
 import * as process from 'process'
-import {TelegramTwoService} from "../../otherServices/telegram.service/telegramBotTwo.service";
+import { TelegramTwoService } from '../../otherServices/telegram.service/telegramBotTwo.service'
 
 // admin.initializeApp();
 
@@ -293,78 +293,73 @@ export class CategoriesService {
       }
     }
   }
-  async activateFreePeriodNotification(id: number, dto) {
-
-    try {
-      const user = await this.usersService.findById(+id)
-      if (!user.phoneNumber) throw new HttpException('Необходимо добавить номер телефона', HttpStatus.UNAUTHORIZED)
-      if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
-      if (dto.length <= 0) throw new HttpException('Необходимо выбрать категории', HttpStatus.UNAUTHORIZED)
-      if (user.endFreePeriodNotification) throw new HttpException('Вы уже использовали бесплатный период', HttpStatus.UNAUTHORIZED)
-      if (user.activatedFreePeriodNotification) throw new HttpException('Вы уже используете бесплатный период', HttpStatus.UNAUTHORIZED)
-      if (dto.length >= 2) throw new HttpException('Для бесплатного периода доступна одна категория', HttpStatus.UNAUTHORIZED)
-      const sameIp = await this.usersService.findByIp(user.ip)
-
-      for (const item of sameIp) {
-        if (item?.activatedFreePeriod || item?.endFreePeriod || item?.categoriesFreePeriod?.length > 0) throw new HttpException('Вы уже использовали бесплатный период', HttpStatus.UNAUTHORIZED)
-      }
-
-      const days = 1
-
-      const categories = []
-      const purchaseDate = new Date() // Дата покупки
-      const endDate = new Date(purchaseDate) // Создаем новый объект Date, чтобы не изменять оригинальный
-      endDate.setDate(purchaseDate.getDate() + days) // Устанавливаем дату окончания на 1 дня после даты покупки
-
-      for (const item of dto) {
-        const nameCategory = await this.findById_category(item.id)
-        const obj = {
-          id: item.id, // id купленной категории
-          category: nameCategory.name,
-          purchaseBuyDate: purchaseDate, // Дата покупки
-          purchaseEndDate: endDate, // Дата окончания подписки
-          purchasePeriod: days, // Период подписки в днях
-        }
-        categories.push(obj)
-      }
-
-      user.activatedFreePeriodNotification = true // делам активным бесплатный период
-      user.notificationsFreePeriod = categories // записываекм пользователю категории для бесплатного периода
-
-      await this.usersService.saveUpdatedUser(user.id, user)
-
-      return {
-        text: 'Бесплатный период для уведомлений активирован',
-      }
-    } catch (err) {
-      if (err.response === 'Пользователь не найден') {
-        throw err
-      } else if (err.response === `Вы уже используете бесплатный период`) {
-        throw err
-      } else if (err.response === `Необходимо выбрать категории`) {
-        throw err
-      } else if (err.response === `Вы уже использовали бесплатный период`) {
-        throw err
-      } else if (err.response === `Для бесплатного периода доступна одна категория`) {
-        throw err
-      } else if (err.response === `Необходимо добавить номер телефона`) {
-        throw err
-      } else {
-        throw new HttpException('Ошибка при получении бесплатного периода', HttpStatus.FORBIDDEN)
-      }
-    }
-  }
+  // async activateFreePeriodNotification(id: number, dto) {
+  //
+  //   try {
+  //     const user = await this.usersService.findById(+id)
+  //     if (!user.phoneNumber) throw new HttpException('Необходимо добавить номер телефона', HttpStatus.UNAUTHORIZED)
+  //     if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
+  //     if (dto.length <= 0) throw new HttpException('Необходимо выбрать категории', HttpStatus.UNAUTHORIZED)
+  //     if (user.endFreePeriodNotification) throw new HttpException('Вы уже использовали бесплатный период', HttpStatus.UNAUTHORIZED)
+  //     if (user.activatedFreePeriodNotification) throw new HttpException('Вы уже используете бесплатный период', HttpStatus.UNAUTHORIZED)
+  //     if (dto.length >= 2) throw new HttpException('Для бесплатного периода доступна одна категория', HttpStatus.UNAUTHORIZED)
+  //     const sameIp = await this.usersService.findByIp(user.ip)
+  //
+  //     for (const item of sameIp) {
+  //       if (item?.activatedFreePeriod || item?.endFreePeriod || item?.categoriesFreePeriod?.length > 0) throw new HttpException('Вы уже использовали бесплатный период', HttpStatus.UNAUTHORIZED)
+  //     }
+  //
+  //     const days = 1
+  //
+  //     const categories = []
+  //     const purchaseDate = new Date() // Дата покупки
+  //     const endDate = new Date(purchaseDate) // Создаем новый объект Date, чтобы не изменять оригинальный
+  //     endDate.setDate(purchaseDate.getDate() + days) // Устанавливаем дату окончания на 1 дня после даты покупки
+  //
+  //     for (const item of dto) {
+  //       const nameCategory = await this.findById_category(item.id)
+  //       const obj = {
+  //         id: item.id, // id купленной категории
+  //         category: nameCategory.name,
+  //         purchaseBuyDate: purchaseDate, // Дата покупки
+  //         purchaseEndDate: endDate, // Дата окончания подписки
+  //         purchasePeriod: days, // Период подписки в днях
+  //       }
+  //       categories.push(obj)
+  //     }
+  //
+  //     user.activatedFreePeriodNotification = true // делам активным бесплатный период
+  //     user.notificationsFreePeriod = categories // записываекм пользователю категории для бесплатного периода
+  //
+  //     await this.usersService.saveUpdatedUser(user.id, user)
+  //
+  //     return {
+  //       text: 'Бесплатный период для уведомлений активирован',
+  //     }
+  //   } catch (err) {
+  //     if (err.response === 'Пользователь не найден') {
+  //       throw err
+  //     } else if (err.response === `Вы уже используете бесплатный период`) {
+  //       throw err
+  //     } else if (err.response === `Необходимо выбрать категории`) {
+  //       throw err
+  //     } else if (err.response === `Вы уже использовали бесплатный период`) {
+  //       throw err
+  //     } else if (err.response === `Для бесплатного периода доступна одна категория`) {
+  //       throw err
+  //     } else if (err.response === `Необходимо добавить номер телефона`) {
+  //       throw err
+  //     } else {
+  //       throw new HttpException('Ошибка при получении бесплатного периода', HttpStatus.FORBIDDEN)
+  //     }
+  //   }
+  // }
   async activatePaymentNotification(dto) {
     try {
 
-      const user = await this.usersService.findById(+dto.user_id) // находим юзера
+      const user = await this.usersService.findById(+dto.user_id)
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
       let noInfo = false;
-
-      const saveInfo = async () => {
-
-        await this.usersService.saveUpdatedUser(user.id, user)
-      }
 
       const currentDate = new Date()
       // console.log(dto.category)
@@ -374,10 +369,7 @@ export class CategoriesService {
       } else {
         for (const item of dto.category) {
           let existingCategory = user.notificationsHasBought.find((category) => category.chatList === item.chatList);
-          console.log('item')
-          console.log(item)
-          console.log('22')
-          console.log(existingCategory)
+
           // если есть категория у пользователя
           if (existingCategory) {
             const dateCategoryEnd = new Date(existingCategory.purchaseEndDate)
@@ -405,8 +397,6 @@ export class CategoriesService {
               await this.addToChat(user.chatIdTg, item.id, item.chatList)
             }
           } else if (!existingCategory) {
-            console.log('11')
-            console.log(existingCategory)
             user.notificationsHasBought = [...user.notificationsHasBought, item]
             await this.addToChat(user.chatIdTg, item.id, item.chatList)
           }
@@ -416,7 +406,7 @@ export class CategoriesService {
       user.endFreePeriodNotification = false
       user.notificationsFreePeriod = []
       user.endFreePeriodNotification = true
-      await saveInfo()
+      await this.usersService.saveUpdatedUser(user.id, user)
 
       if (noInfo) {
         for (const item of user.notificationsHasBought) {
@@ -781,9 +771,6 @@ export class CategoriesService {
   }
 
   async addToChat(userIdTg, categId, chatName) {
-    console.log('chatname')
-    console.log(chatName)
-    console.log(userIdTg)
     let chatId;
     if (categId == 1) {
       const categoryFromDb = await this.findByIdCategory(categId);

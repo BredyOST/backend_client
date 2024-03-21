@@ -6,9 +6,10 @@ import { UpdateUserDto } from './dto/update-user.dto'
 import { SessionAuthService } from '../auth/session-auth/session-auth.service'
 
 export type fullNAmeType = { fullName: string }
-export type codeForNewEmailType = { email: string, indicator:'sendAgain' | 'change' }
+export type codeForNewEmailType = { email: string; indicator: 'sendAgain' | 'change' }
 export type codeType = { code: string }
 export type codeForNewPhone = { phoneNumber: string }
+export type codeForChangePhone = { phoneNumber: string; phoneToChange: string }
 export type phoneType = { phone: string }
 @Controller('users')
 export class UsersController {
@@ -98,6 +99,22 @@ export class UsersController {
     return this.usersService.updatePhone(id, dto)
   }
 
+  // ЗАПРОС КОДА В ТГ ДЛЯ ВЕРИФИКАЦИИ НОМЕРА ПРИ СМЕНЕ В ПРОФИЛЕ
+  @Patch('/update/phoneCodeTg')
+  @UseGuards(JwtAuthGuard)
+  async codeForChangePhone(@UserId() id: number, @Request() req, @Body() dto: codeForChangePhone) {
+    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
+    const result = await this.sessionAuthService.validateSessionToken(req.session)
+    // если возвращается false то сессия истекла
+    if (!result) {
+      return {
+        text: 'Ваша сессия истекла, выполните повторный вход',
+      }
+    }
+    return this.usersService.codeForChangePhone(id, dto)
+  }
+
+
   // ОБНОВЛЕНИЕ ПАРОЛЯ
   @Patch('/update/password')
   @UseGuards(JwtAuthGuard)
@@ -163,17 +180,9 @@ export class UsersController {
   // }
 
   @Post('/numberTgActivate')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async numberTgActivate(@UserId() id: number, @Request() req, @Body() dto: any) {
-    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
-    const result = await this.sessionAuthService.validateSessionToken(req.session)
-    // если возвращается false то сессия истекла
-    if (!result) {
-      return {
-        text: 'Ваша сессия истекла, выполните повторный вход',
-      }
-    }
-    return this.usersService.numberTgActivate(id, dto)
+    return this.usersService.numberTgActivate(dto)
   }
 
 }

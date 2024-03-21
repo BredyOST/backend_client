@@ -17,7 +17,6 @@ export class SessionTokenStrategy extends PassportStrategy(Strategy, 'session') 
   }
 
   async validateSessionToken(token: any) {
-
     try {
       const secretKey = process.env['SECRET_KEY_TWO']
 

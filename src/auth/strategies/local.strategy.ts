@@ -20,6 +20,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   ): Promise<any> {
 
     try {
+
       const user = await this.authService.validateUser(request.body)
 
       if (!user) {
@@ -28,9 +29,10 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
 
       return user
     } catch (err) {
+
       if (err.response === 'Неверный логин или пароль') {
         throw err
-      } else if (err.response === 'Необходимо подтвердить email') {
+      } else if (err.response === 'Для входа через email, требуется его подтвердить') {
         throw err
       } else if (err.response === 'Пользователь не найден') {
         throw err

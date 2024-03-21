@@ -8,11 +8,12 @@ import { PassportModule } from '@nestjs/passport'
 import { SessionAuthModule } from '../auth/session-auth/session-auth.module'
 import { LogsService } from '../otherServices/loggerService/logger.service'
 import { RepositoryAllAdd } from '../otherServices/loggerService/logger.module'
+import { TelegramTwoService } from '../otherServices/telegram.service/telegramBotTwo.service'
 
 @Module({
   imports: [HttpModule, TypeOrmModule.forFeature([UserEntity]), PassportModule, SessionAuthModule],
   exports: [UsersService],
   controllers: [UsersController],
-  providers: [UsersService, RepositoryAllAdd, LogsService],
+  providers: [UsersService, RepositoryAllAdd, LogsService, TelegramTwoService],
 })
 export class UsersModule {}

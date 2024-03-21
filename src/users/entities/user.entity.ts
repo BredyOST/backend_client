@@ -4,11 +4,11 @@ import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedCol
 export class UserEntity {
   @PrimaryGeneratedColumn()
   id: number
-  @Column({ unique: true })
+  @Column({ unique: true, nullable: true })
   email: string
-  @Column({ default: '' })
+  @Column({ default: '', nullable: true })
   forChangeEmail: string
-  @Column({ default: '' })
+  @Column({ default: ''})
   phoneNumber: string
   @Column({ default: '' })
   forChangePhoneNumber: string
@@ -18,6 +18,8 @@ export class UserEntity {
   fullName: string
   @Column({ default: '' })
   chatIdTg: string
+  @Column({ default: '' })
+  userIdTg: string
   @Column({ default: false })
   isAdmin: boolean
   @Column({ default: false })
@@ -46,6 +48,8 @@ export class UserEntity {
   activationNumber: string
   @Column({ default: '' })
   activationTgNumber: string
+  @Column({ default: '' })
+  activationTgNumberToProfile: string
   @Column('jsonb', { array: false, default: [] })
   categoriesFreePeriod: PurchasedCategory[]
   @Column('jsonb', { array: false, default: [] })

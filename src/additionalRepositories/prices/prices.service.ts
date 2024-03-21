@@ -50,15 +50,12 @@ export class PricesService {
         percentForSale: dto.percentForSale,
       })
     } catch (err) {
-      // console.log(err)
       if (err.response === 'Пользователь не найден') {
-        await this.LogsService.error(`добавление прайса`, `Пользователь не найден ${dto.email}`)
         throw err
       } else if (err.response === 'Не достаточно прав доступа') {
-        await this.LogsService.error(`добавление прайса`, `нет доступа ${dto.email}`)
         throw err
       } else {
-        await this.LogsService.error(`добавление прайса`, `ошибка ${dto.email} ${err}`)
+        await this.LogsService.error(`добавление прайса`, `ошибка ${err}`)
         throw new HttpException('Ошибка при создании прайса', HttpStatus.UNAUTHORIZED)
       }
     }
@@ -73,13 +70,10 @@ export class PricesService {
       return await this.getAllPrices()
     } catch (err) {
       if (err.response === 'Пользователь не найден') {
-        await this.LogsService.error(`получение прайсов для всех`, `Пользователь не найден ${id}`)
         throw err
       } else if (err.response === 'Не достаточно прав доступа') {
-        await this.LogsService.error(`получение прайсов для всех`, `нет доступа ${id}`)
         throw err
       } else {
-        await this.LogsService.error(`получение прайсов для всех`, `ошибка ${id}`)
         throw new HttpException('Ошибка при получении', HttpStatus.UNAUTHORIZED)
       }
     }
@@ -126,19 +120,19 @@ export class PricesService {
 
     } catch (err) {
       if (err.response === 'Пользователь не найден') {
-        await this.LogsService.error(`обновление прайса`, `Пользователь не найден ${id}`)
+        await this.LogsService.error(`обновление прайса`, `Пользователь не найден ${dto.id}`)
         throw err
       } else if (err.response === 'Не достаточно прав доступа') {
-        await this.LogsService.error(`обновление прайса`, `нет доступа ${id}`)
+        await this.LogsService.error(`обновление прайса`, `нет доступа ${dto.id}`)
         throw err
       } else if (err.response === 'Категория не найдена') {
-        await this.LogsService.error(`обновление прайса`, `категория не найдена ${id}`)
+        await this.LogsService.error(`обновление прайса`, `категория не найдена ${dto.id}`)
         throw err
       } else if (err.response === 'Вы не внесли изменения') {
-        await this.LogsService.error(`обновление прайса`, `Вы не внесли изменения ${id}`)
+        await this.LogsService.error(`обновление прайса`, `Вы не внесли изменения ${dto.id}`)
         throw err
       } else {
-        await this.LogsService.error(`обновление прайса`, `ошибка ${id} ${err}`)
+        await this.LogsService.error(`обновление прайса`, `ошибка ${dto.is} ${err}`)
         throw new HttpException('Ошибка при обновлении прайса, попробуйте позже', HttpStatus.UNAUTHORIZED)
       }
     }
@@ -153,18 +147,19 @@ export class PricesService {
       const priceBlock = await this.findOneByIdentificatorId(dto.identificatorId)
       if (!priceBlock) throw new HttpException('прайс не найден', HttpStatus.UNAUTHORIZED)
       await this.repository.delete(dto.identificatorId)
+
     } catch (err) {
       if (err.response === 'Пользователь не найден') {
-        await this.LogsService.error(`удаление прайса`, `Пользователь не найден ${dto.email}`)
+        // await this.LogsService.error(`удаление прайса`, `Пользователь не найден ${dto.id}`)
         throw err
       } else if (err.response === 'Не достаточно прав доступа') {
-        await this.LogsService.error(`удаление прайса`, `нет доступа ${dto.email}`)
+        // await this.LogsService.error(`удаление прайса`, `нет доступа ${dto.id}`)
         throw err
       } else if (err.response === 'Не достаточно прав доступа') {
-        await this.LogsService.error(`удаление прайса`, `прайс не найден ${dto.email}`)
+        // await this.LogsService.error(`удаление прайса`, `прайс не найден ${dto.id}`)
         throw err
       } else {
-        await this.LogsService.error(`удаление прайса`, `ошибка ${dto.email} ${err}`)
+        await this.LogsService.error(`удаление прайса`, `ошибка ${dto.id} ${err}`)
         throw new HttpException('Ошибка при удалении прайса', HttpStatus.UNAUTHORIZED)
       }
     }

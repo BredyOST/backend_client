@@ -12,6 +12,7 @@ export class SessionAuthService {
   ) {}
 
   async validateSessionToken(reqSession) {
+
     const resTokenSession = reqSession
     if (!resTokenSession || !resTokenSession._id) {
       destroyCookie(null, '_z', { path: '/' })

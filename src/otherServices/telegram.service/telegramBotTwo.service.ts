@@ -173,7 +173,7 @@ export class TelegramTwoService implements OnApplicationShutdown {
           this.isBotRunning = true
         })
         .catch((error) => {
-          console.error('Failed to start bot:', error)
+        console.error('Failed to start bot:', error)
           // Повторный запуск бота через некоторое время
           setTimeout(() => {
             console.log('Restarting bot...')
@@ -207,6 +207,14 @@ export class TelegramTwoService implements OnApplicationShutdown {
     } catch (error) {
       console.error("Error sending confirmation message:", error);
     }
+  }
+
+  async sendNewPassword(userId, text) {
+    await this.bot.api.sendMessage( `${userId}`, `${text}`);
+  }
+
+  async sendNewCodeForNewPhone(userId, text) {
+    await this.bot.api.sendMessage( `${userId}`, `${text}`);
   }
 
 }

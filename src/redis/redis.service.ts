@@ -9,7 +9,7 @@ export class RedisService {
   private readonly client: RedisClientType
   private isConnected = false
   constructor(private configService: ConfigService) {
-    // console.log('Creating Redis client...')
+    console.log('Creating Redis client...')
 
     const password = encodeURIComponent(this.configService.get<string>('PASSWORD_REDIS'))
     const redisPath = this.configService.get<string>('PATH_REDIS')
@@ -30,7 +30,7 @@ export class RedisService {
       .connect()
       .then(() => {
         this.isConnected = true
-        // console.log('Redis client connected.')
+        console.log('Redis client connected.')
       })
       .catch((err) => {
         console.error('Redis connection error:', err)
@@ -39,7 +39,7 @@ export class RedisService {
 
   async get(key: string): Promise<string | null> {
     if (!this.isConnected) {
-      // console.warn('Redis client is not connected.')
+      console.warn('Redis client is not connected.')
       return null
     }
     try {
@@ -53,7 +53,7 @@ export class RedisService {
 
       return JSON.parse(result, reviveFromBase64Representation);
     } catch (error) {
-      // console.error('cache.get', error);
+      console.error('cache.get', error);
       return null;
     }
 

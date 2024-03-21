@@ -10,7 +10,7 @@ import { MailerService } from '@nestjs-modules/mailer'
 import { AppService } from '../app.service'
 import { AuthorizationsService } from '../additionalRepositories/authorizations/authorizations.service'
 import { LogsService } from '../otherServices/loggerService/logger.service'
-import { createUserType, email } from './auth.controller'
+import {accessNumber, createUserType, email} from './auth.controller'
 import { SessionAuthService } from './session-auth/session-auth.service'
 import { ConfigService } from '@nestjs/config'
 import axios from "axios";
@@ -31,71 +31,60 @@ export class AuthService {
   // регистрация
   async register(dto: createUserType, clientIp: string) {
     try {
-      // const allowedDomains = [
-      //   'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'aol.com',
-      //   'mail.com', 'protonmail.com', 'icloud.com', 'zoho.com', 'yandex.ru',
-      //   'bk.ru', 'inbox.ru', 'list.ru', 'rambler.ru', 'mail.ru', 'tut.by',
-      //   'yandex.com', 'fastmail.com', 'gmx.com', 'comcast.net', 'yahoo.co.uk',
-      //   'ymail.com', 'live.com', 'rocketmail.com', 'googlemail.com', 'me.com',
-      //   'outlook.co.th', 'abv.bg', 'seznam.cz', 'centrum.cz', 'wp.pl', 'onet.pl',
-      //   'interia.pl', 'o2.pl', 'yahoo.fr', 'orange.fr', 'free.fr', 'laposte.net',
-      // ];
-      //
-      // try {
-      //   const response = await axios.get(`https://apilayer.com/mailboxlayer?check=${dto.email}`);
-      //   console.log(response)
-      // } catch (err)
-      //     return
-      // Проверяем, является ли почтовый домен не временным
-      // const emailDomain = dto.email.split('@')[1];
-      // if (!allowedDomains.includes(emailDomain)) {
-      //   throw new HttpException('Использование временных почтовых адресов запрещено', HttpStatus.BAD_REQUEST);
-      // }
 
       // проверяем совпадают ли пароли, основной и проверочный
       if (dto.password !== dto.passwordCheck) throw new HttpException('Не совпадают введенные пароли', HttpStatus.BAD_REQUEST)
+
       // проверяем email в базе данных, если существует в базе данных то выдаем ошибку
-      const checkUserWithTheSameEmail = await this.usersService.findByEmail(dto.email)
-      if (checkUserWithTheSameEmail) throw new HttpException('Пользователь c таким email зарегистрирован', HttpStatus.BAD_REQUEST)
+      // const checkUserWithTheSameEmail = await this.usersService.findByEmail(dto.email)
+      // if (checkUserWithTheSameEmail) throw new HttpException('Пользователь c таким email зарегистрирован', HttpStatus.BAD_REQUEST)
+
+      // проверяем телефон в базе данных, если существует в базе данных то выдаем ошибку (проверяем основной привязанный номер)
+      const checkUserWithTheSamePhone = await this.usersService.findByPhone(dto.phoneNumber)
+      if (checkUserWithTheSamePhone) throw new HttpException('Пользователь c таким номером телефона зарегистрирован', HttpStatus.BAD_REQUEST)
+
       // генерируем ссылку активации учетной записи и шифруем ее
-      const activationLink = await uuidv4()
+      // const activationLink = await uuidv4()
       const saltRounds = 10
       const salt = await bcrypt.genSalt(saltRounds)
       const password = await bcrypt.hash(dto.password, salt)
       // данные для нового пользователя
+
       const newUser: createUSerWithLink = {
-        email: dto.email,
+        phoneNumber: dto.phoneNumber,
         password: password,
-        activationLink: activationLink,
+        // activationLink: activationLink,
         ip: clientIp,
       }
+
       // создаем нового пользователя
       const newUserDate = await this.usersService.create(newUser)
-      if (!newUserDate || !newUserDate.email) throw new HttpException('Ошибка при создании учетной записи, обновите страницу и попробуйте еще раз', HttpStatus.BAD_REQUEST)
+
+      if (!newUserDate || !newUserDate.phoneNumber) throw new HttpException('Ошибка при создании учетной записи, обновите страницу и попробуйте еще раз', HttpStatus.BAD_REQUEST)
       // отправляем ссылку активации на указанный при регистрации email
 
-      await this.usersService.sendActivationMail(dto.email, `${this.configService.get<string>('API_URL')}/auth/activate/${activationLink}`)
+      // await this.usersService.sendActivationMail(dto.email, `${this.configService.get<string>('API_URL')}/auth/activate/${activationLink}`)
 
       return {
-        text: 'Регистрация завершена. На Ваш Email направлено сообщение для активации аккаунта',
+        text: 'Регистрация завершена. Подтвердите номер в мессенджере телеграмм',
       }
     } catch (err) {
       if (err.response === 'Не совпадают введенные пароли') {
         throw err
-      } else if (err.response === 'Пользователь c таким email зарегистрирован') {
-        await this.LogsService.error(`Регистрация`, `Пользователь уже существует ${dto.email} no trace`)
+      } else if (err.response === 'Пользователь c таким номером телефона зарегистрирован') {
+        await this.LogsService.error(`Регистрация`, `Пользователь уже существует ${dto.phoneNumber} no trace`)
         throw err
       } else if (err.response === 'Ошибка при создании учетной записи, обновите страницу и попробуйте еще раз') {
-        await this.LogsService.error(`Регистрация`, `Ошибка создания ${dto.email} no trace`)
+        await this.LogsService.error(`Регистрация`, `Ошибка создания ${dto.phoneNumber} no trace`)
         throw err
       } else if (err.response === `Ошибка отправки сообщения об активации, проверьте почту`) {
-        await this.LogsService.error(`Регистрация`, `sendActivationMail ${dto.email} no trace`)
+        await this.LogsService.error(`Регистрация`, `sendActivationMail ${dto.phoneNumber} no trace`)
         throw err
       } else if (err.response === `Использование временных почтовых адресов запрещено`) {
-        await this.LogsService.error(`Регистрация`, `Использование временных почтовых адресов запрещено ${dto.email} no trace`)
+        await this.LogsService.error(`Регистрация`, `Использование временных почтовых адресов запрещено ${dto.phoneNumber} no trace`)
         throw err
       } else {
-        await this.LogsService.error(`Регистрация`, `Ошибка при регистрации ${dto.email} ${err}`)
+        await this.LogsService.error(`Регистрация`, `Ошибка при регистрации ${dto.phoneNumber} ${err}`)
         throw new HttpException('Ошибка при регистрации', HttpStatus.FORBIDDEN)
       }
     }
@@ -103,6 +92,7 @@ export class AuthService {
   // вход в учетнуб запись
   async login(user: UserEntity, clientIp, userAgent) {
     try {
+
       // убираем лишнее, что не хотим возвращать пользователю
       const { password, activationLink, activationNumber, id, updateAt, deletedAt, ...other } = user
       // получаем токены доступа
@@ -123,7 +113,7 @@ export class AuthService {
         clientIp: clientIp,
         userId: user.id,
         userAgent: userAgent || 'no date',
-        userMail: user.email,
+        userMail: user.phoneNumber,
         status: true,
         loginAt: new Date(),
         sessionToken: sessionToken,
@@ -139,19 +129,19 @@ export class AuthService {
       }
     } catch (err) {
       if (err.response === 'Нудачная попытка входа в учетную запись, обновите страницу браузера') {
-        await this.LogsService.error(`вход`, `не получен токен или токены доступа ${user.email} no trace`)
+        await this.LogsService.error(`вход`, `не получен токен или токены доступа ${user.id} no trace`)
         throw err
       } else if (err.response === 'Нудачная попытка входа в учетную запись по сессии, обновите страницу браузера и попробуйте еще раз') {
-        await this.LogsService.error(`вход`, `не получен токен сессии ${user.email} no trace`)
+        await this.LogsService.error(`вход`, `не получен токен сессии ${user.id} no trace`)
         throw err
       } else if (err.response === `Ошибка в создании сессии, обновите страницу браузера и попробуйте еще раз`) {
-        await this.LogsService.error(`вход`, `не получен токен сессии ${user.email} no trace`)
+        await this.LogsService.error(`вход`, `не получен токен сессии ${user.id} no trace`)
         throw err
       } else if (err.response === `Ошибка в получении токенов доступа, обновите страницу браузера и попробуйте еще раз`) {
-        await this.LogsService.error(`вход`, `не получен токен доступа ${user.email} no trace`)
+        await this.LogsService.error(`вход`, `не получен токен доступа ${user.id} no trace`)
         throw err
       } else {
-        await this.LogsService.error(`Вход в учетную запись`, `Ошибка при входе в учетную запись email:${user.email} phone:${user.phoneNumber} ${err}`)
+        await this.LogsService.error(`Вход в учетную запись`, `Ошибка при входе в учетную запись email:${user.id} phone:${user.phoneNumber} ${err}`)
         throw new HttpException('Ошибка при входе в учетную запись', HttpStatus.FORBIDDEN)
       }
     }
@@ -206,18 +196,24 @@ export class AuthService {
   // валидация пользователя
   async validateUser(request: any): Promise<any> {
     try {
+
       // переменная для пользователя
       let user
       // ищем в базе данных пользователя по email или phone
       if (request.email !== 'no date') {
         user = await this.usersService.findByEmail(request.email)
-      } else {
+        if(user && !user.isActivatedEmail) throw new HttpException('Для входа через email, требуется его подтвердить', HttpStatus.UNAUTHORIZED)
+      } else if (request.phoneNumber.length >= 5) {
         user = await this.usersService.findByPhone(request.phoneNumber)
+      } else {
+        throw new HttpException('Некорректно введены данные', HttpStatus.UNAUTHORIZED)
       }
+
       // если не активирован email, то ошибка
-      if (user && !user.isActivatedEmail) {
-        throw new HttpException('Необходимо подтвердить email', HttpStatus.UNAUTHORIZED)
-      }
+      // if (user && !user.isActivatedEmail) {
+      //   throw new HttpException('Необходимо подтвердить email', HttpStatus.UNAUTHORIZED)
+      // }
+
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
       // сравниваем пароли, то что ввели и тот который у пользователя
       const isMatch = await bcrypt.compare(request.password, user.password)
@@ -229,16 +225,19 @@ export class AuthService {
       }
     } catch (err) {
       if (err.response === 'Не верный логин или пароль') {
-        await this.LogsService.error(`Валидация`, `Не верный логин или пароль ${request?.email && request.email} ${request?.phoneNumber && request.phoneNumber} no trace`)
+        // await this.LogsService.error(`Валидация`, `Не верный логин или пароль ${request?.email && request.email} ${request?.phoneNumber && request.phoneNumber} no trace`)
         throw err
-      } else if (err.response === 'Необходимо подтвердить email') {
-        await this.LogsService.error(`Валидация`, `Необходимо подтвердить email ${request?.email && request.email} ${request?.phoneNumber && request.phoneNumber} no trace`)
+      } else if (err.response === 'Для входа через email, требуется его подтвердить') {
+        // await this.LogsService.error(`Валидация`, `Необходимо подтвердить email ${request?.email && request.email} ${request?.phoneNumber && request.phoneNumber} no trace`)
+        throw err
+      }  else if (err.response === 'Некорректно введены данные') {
+        // await this.LogsService.error(`Валидация`, `Пользователь не найден ${request?.email && request.email} ${request?.phoneNumber && request.phoneNumber} no trace`)
         throw err
       } else if (err.response === 'Пользователь не найден') {
-        await this.LogsService.error(`Валидация`, `Пользователь не найден ${request?.email && request.email} ${request?.phoneNumber && request.phoneNumber} no trace`)
+        // await this.LogsService.error(`Валидация`, `Пользователь не найден ${request?.email && request.email} ${request?.phoneNumber && request.phoneNumber} no trace`)
         throw err
       } else {
-        await this.LogsService.error(`Валидация`, ` ошибка ${request?.email && request.email} ${request?.phoneNumber && request.phoneNumber} ${err}`)
+        await this.LogsService.error(`Валидация`, ` ошибка ${request?.id && request.id} ${request?.email && request?.phoneNumber} ${err}`)
         throw new HttpException('validateUser', HttpStatus.FORBIDDEN)
       }
     }
@@ -287,11 +286,13 @@ export class AuthService {
     }
   }
   // изменения пароля
-  async changePassword(dto: email) {
+  async changePassword(dto: accessNumber) {
+
     try {
       const message = await this.usersService.changePassword(dto)
 
       return message
+
     } catch (err) {
       if (err.response === 'Аккаунт не найден') {
         await this.LogsService.error(`выслать пароль`, `Аккаунт не найден  no trace`)

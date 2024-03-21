@@ -12,8 +12,8 @@ export class TelegramService implements OnApplicationShutdown {
     const token = process.env['TOKEN_BOT']
 
     if (this.isBotRunning) {
-      console.log('Bot is already running.'); // Логирование сообщения о повторном запуске
-      return;
+      console.log('Bot is already running.') // Логирование сообщения о повторном запуске
+      return
     }
 
     // Инициализация бота с вашим токеном
@@ -23,13 +23,13 @@ export class TelegramService implements OnApplicationShutdown {
 
     this.bot.api.setMyCommands([
       // { command: 'start', description: 'Start the bot' },
-      { command: 'share', description: `Показать инструкции,\nShow instruction"` },
+      // { command: 'share', description: `Показать инструкции,\nShow instruction"` },
     ])
 
-    this.bot.command('share', async (ctx) => {
-      const shareKeyBoard = new Keyboard().requestContact('Add contact').resized()
+    this.bot.command('start', async (ctx) => {
+      const shareKeyBoard = new Keyboard().requestContact('Отправить контакт').resized()
       await ctx.reply(
-        "Нажмите на кнопку 'Add contact', после чего вы получите код подтверждения, который необходимо ввести на сайте.\n \nClick on the 'Add contact' button, after which you will receive a confirmation code that you need to enter on the website.\"",
+        "Нажмите на кнопку 'Отправить контакт', после чего вы получите код подтверждения, который необходимо ввести на сайте в окне подтверждения номера.",
         {
           reply_markup: shareKeyBoard,
         },
@@ -44,40 +44,34 @@ export class TelegramService implements OnApplicationShutdown {
     // Обработчик всех входящих текстовых сообщений
     this.bot.on(':contact', async (ctx) => {
 
+      const chatId = ctx.message.chat.id
       let phone = ctx.message.contact.phone_number
       const name = ctx.message.contact.first_name
       const lastName = ctx.message.contact.last_name
       const userId = ctx.message.contact.user_id
 
       if (!phone.startsWith('+')) {
-        phone = '+' + phone; // Добавление символа "+" в начале, если его нет
+        phone = '+' + phone
       }
 
       const samePhoneUser = await this.userService.findByPhone(phone)
-      const newPhoneUser = await this.userService.findByChangePhone(phone)
+      // const newPhoneUser = await this.userService.findByChangePhone(phone)
 
       if (samePhoneUser && samePhoneUser.isActivatedPhone) {
         await this.bot.api.sendMessage(ctx?.message?.contact?.user_id, `Номер телефона ${phone} уже используется и является подтвержденным`)
         return
-      }
-
-      if (samePhoneUser && !samePhoneUser.isActivatedPhone) {
-
-        await this.bot.api.sendMessage(
-          ctx?.message?.contact?.user_id,
-          `Номер телефона ${phone} уже используется, но не подтвержден. Вероятно его кто-то ввел ошибочно. Для того чтобы разобраться в данной ситуации, напишите в форму обратной связи на сайте, либо в тг https://t.me/MaksOST1`,
-        )
-        return
-      }
-
-      if (newPhoneUser && !samePhoneUser && phone.replace('+', '') == newPhoneUser.forChangePhoneNumber.replace('+', '')) {
-
-        const code = await this.userService.verifyTg(newPhoneUser, userId)
+      } else {
+        const code = await this.userService.verifyTg(samePhoneUser, userId, chatId)
 
         if (code?.text) {
           await this.bot.api.sendMessage(
             ctx?.message?.contact?.user_id,
             `Ваш код подтверждения: ${code?.text}, введите его на сайте. \n \n Your confirmation code: ${code?.text}, please enter it on the website."`,
+          )
+        } else {
+          await this.bot.api.sendMessage(
+            ctx?.message?.contact?.user_id,
+            `Произошел сбой, код не получен. Попробуйте запросить код повторно или написать в поддержку"`,
           )
         }
       }
@@ -95,17 +89,38 @@ export class TelegramService implements OnApplicationShutdown {
         console.error('Unknown error:', e)
       }
     })
+    this.bot
+      .start()
+      .then(() => {
+        // Обработка успешного запуска бота
+        console.log('Bot started successfully.')
+
+        // Отправляем клавиатуру с кнопкой сразу после успешного запуска бота
+        const startKeyBoard = new Keyboard().text('Отправить контакт')
+        this.bot.api.sendMessage('<YOUR_CHAT_ID>', "Welcome to the bot! Press 'Share your contact' to start.", {
+          reply_markup: startKeyBoard,
+        })
+      })
+      .catch((error) => {
+        console.error('Failed to start bot:', error)
+        this.isBotRunning = false // Сбрасываем флаг запуска, если произошла ошибка при запуске
+        // Выполняем повторный запуск бота через некоторое время
+        setTimeout(() => {
+          console.log('Restarting bot...')
+          this.initializeBot()
+        }, 5000) // Повторный запуск через 5 секунд
+      })
 
     // Запуск бота
-    this.bot.start().catch((error) => {
-      console.error('Failed to start bot:', error)
-      this.isBotRunning = false // Сбрасываем флаг запуска, если произошла ошибка при запуске
-      // Выполняем повторный запуск бота через некоторое время
-      setTimeout(() => {
-        console.log('Restarting bot...')
-        this.initializeBot()
-      }, 5000) // Повторный запуск через 5 секунд
-    })
+    // this.bot.start().catch((error) => {
+    //   console.error('Failed to start bot:', error)
+    //   this.isBotRunning = false // Сбрасываем флаг запуска, если произошла ошибка при запуске
+    //   // Выполняем повторный запуск бота через некоторое время
+    //   setTimeout(() => {
+    //     console.log('Restarting bot...')
+    //     this.initializeBot()
+    //   }, 5000) // Повторный запуск через 5 секунд
+    // })
   }
 
   private initializeBot() {

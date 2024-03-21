@@ -8,8 +8,8 @@ import { UsersModule } from '../../users/users.module'
 import { SessionAuthModule } from '../../auth/session-auth/session-auth.module'
 import { RepositoryAllAdd } from '../../otherServices/loggerService/logger.module'
 import { LogsService } from '../../otherServices/loggerService/logger.service'
-import {TransactionModule} from "../transaction/transaction.module";
-import {TelegramTwoService} from "../../otherServices/telegram.service/telegramBotTwo.service";
+import { TransactionModule } from '../transaction/transaction.module'
+import { TelegramTwoService } from '../../otherServices/telegram.service/telegramBotTwo.service'
 
 @Module({
   imports: [

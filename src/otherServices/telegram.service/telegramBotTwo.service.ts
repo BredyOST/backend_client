@@ -1,6 +1,7 @@
 import { Injectable, OnApplicationShutdown, Scope } from '@nestjs/common'
 import { Bot, GrammyError, HttpError, Keyboard } from 'grammy'
 import * as process from 'process'
+import { UsersService } from '../../users/users.service'
 
 @Injectable({ scope: Scope.DEFAULT })
 export class TelegramTwoService implements OnApplicationShutdown {

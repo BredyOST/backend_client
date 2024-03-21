@@ -900,7 +900,7 @@ export class UsersService {
       } else {
         phoneToChange = `+${dto.phoneToChange}`
       }
-      console.log(dto)
+
       const sameUser = await this.findByPhone(phoneToChange)
 
       if (sameUser && sameUser.isActivatedPhone) throw new HttpException('Номер телефона уже зарегистрирован в системе и подтвержден', HttpStatus.UNAUTHORIZED)
@@ -1019,4 +1019,18 @@ export class UsersService {
   //     }
   //   }
   // }
+
+
+  // СТАРОЕ
+  async giveInfo(dto) {
+      try {
+
+        const user = await this.findByEmail(dto.email)
+
+
+
+      } catch (err) {
+
+      }
+  }
 }

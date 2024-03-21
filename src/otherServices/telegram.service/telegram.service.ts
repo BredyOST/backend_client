@@ -28,22 +28,39 @@ export class TelegramService implements OnApplicationShutdown {
 
     this.bot.command('start', async (ctx) => {
       const shareKeyBoard = new Keyboard().requestContact('Отправить контакт').resized()
-      await ctx.reply(
-        "Нажмите на кнопку 'Отправить контакт', после чего вы получите код подтверждения, который необходимо ввести на сайте в окне подтверждения номера.",
-        {
-          reply_markup: shareKeyBoard,
-        },
-      )
+      await ctx.reply("Нажмите на кнопку 'Отправить контакт', после чего вы получите код подтверждения, который необходимо ввести на сайте в окне подтверждения номера.", {
+        reply_markup: shareKeyBoard,
+      })
     })
 
     // Обработчик всех входящих текстовых сообщений
     this.bot.on('::email', async (ctx) => {
+      const text = ctx.message.text
+      const userId = ctx.message.from.id
+      const chatId = ctx.message.chat.id
+
+      const user = await this.userService.findByEmail(text)
+
+      // Проверка, содержит ли сообщение email
+      // if (isValidEmail(text)) {
+      //   // Проверить, есть ли у пользователя номер телефона в его учетной записи
+      //   const hasPhoneNumber = await this.userService.userHasPhoneNumber(userId);
+      //   if (!hasPhoneNumber) {
+      //     // Если у пользователя нет номера телефона, предложить поделиться контактом
+      //     await this.bot.api.sendMessage(userId, 'Чтобы продолжить, пожалуйста, поделитесь своим контактом.');
+      //   } else {
+      //     // Если у пользователя есть номер телефона, обработать email соответствующим образом
+      //     await this.processEmail(userId, text);
+      //   }
+      // } else {
+      //   // Обработать другие типы сообщений или проигнорировать
+      // }
+
       // await this.handleTextMessage(ctx);
     })
 
     // Обработчик всех входящих текстовых сообщений
     this.bot.on(':contact', async (ctx) => {
-
       const chatId = ctx.message.chat.id
       let phone = ctx.message.contact.phone_number
       const name = ctx.message.contact.first_name
@@ -69,10 +86,7 @@ export class TelegramService implements OnApplicationShutdown {
             `Ваш код подтверждения: ${code?.text}, введите его на сайте. \n \n Your confirmation code: ${code?.text}, please enter it on the website."`,
           )
         } else {
-          await this.bot.api.sendMessage(
-            ctx?.message?.contact?.user_id,
-            `Произошел сбой, код не получен. Попробуйте запросить код повторно или написать в поддержку"`,
-          )
+          await this.bot.api.sendMessage(ctx?.message?.contact?.user_id, `Произошел сбой, код не получен. Попробуйте запросить код повторно или написать в поддержку"`)
         }
       }
     })

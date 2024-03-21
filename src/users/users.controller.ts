@@ -197,4 +197,19 @@ export class UsersController {
 
 
 
+  // СТАРОЕ ЕСЛИ ЧЕЛ ЗАРЕГАЛСЯ БЕЗ НОМЕРА ДО 21.03.2024
+  @Post('/giveInfo')
+  async giveInfo(@UserId() id: number, @Request() req, @Body() dto: any) {
+    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
+    const result = await this.sessionAuthService.validateSessionToken(req.session)
+    // если возвращается false то сессия истекла
+    if (!result) {
+      return {
+        text: 'Ваша сессия истекла, выполните повторный вход',
+      }
+    }
+    return this.usersService.giveInfo(dto)
+  }
+
+
 }

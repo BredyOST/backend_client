@@ -95,6 +95,8 @@ dotenv.config()
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(IpMiddleware, SessionTokenMiddleware, HeapdumpMiddleware).forRoutes('*') // Примените Middleware ко всем маршрутам
+    consumer.apply(IpMiddleware, SessionTokenMiddleware).forRoutes('*') // Примените Middleware ко всем маршрутам
   }
 }
+
+// , HeapdumpMiddleware

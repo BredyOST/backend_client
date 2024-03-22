@@ -10,7 +10,7 @@ export type codeForNewEmailType = { email: string; indicator: 'sendAgain' | 'cha
 export type codeType = { code: string }
 export type codeForNewPhone = { phoneNumber: string }
 export type codeForChangePhone = { phoneNumber: string; phoneToChange: string }
-export type phoneType = { phone: string }
+export type phoneType = { phone: string, indicator: string }
 @Controller('users')
 export class UsersController {
   constructor(
@@ -27,7 +27,6 @@ export class UsersController {
     // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
     const result = await this.sessionAuthService.validateSessionToken(req.session)
     // если возвращается false то сессия истекла
-    // console.log(req.session)
     if (!result) {
       return {
         text: 'Ваша сессия истекла, выполните повторный вход',
@@ -84,35 +83,36 @@ export class UsersController {
     return this.usersService.updateEmail(id, dto)
   }
 
-  // ОБНОВЛЕНИЕ ТЕЛЕФОНА
-  @Patch('/update/phone')
-  @UseGuards(JwtAuthGuard)
-  async updatePhone(@UserId() id: number, @Request() req, @Body() dto: codeForNewPhone) {
-    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
-    const result = await this.sessionAuthService.validateSessionToken(req.session)
-    // если возвращается false то сессия истекла
-    if (!result) {
-      return {
-        text: 'Ваша сессия истекла, выполните повторный вход',
-      }
-    }
-    return this.usersService.updatePhone(id, dto)
-  }
+  // // ОБНОВЛЕНИЕ ТЕЛЕФОНА
+  // @Patch('/update/phone')
+  // @UseGuards(JwtAuthGuard)
+  // async updatePhone(@UserId() id: number, @Request() req, @Body() dto: codeForNewPhone) {
+  //   // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
+  //   const result = await this.sessionAuthService.validateSessionToken(req.session)
+  //   // если возвращается false то сессия истекла
+  //   if (!result) {
+  //     return {
+  //       text: 'Ваша сессия истекла, выполните повторный вход',
+  //     }
+  //   }
+  //   return this.usersService.updatePhone(id, dto)
+  // }
 
   // ЗАПРОС КОДА В ТГ ДЛЯ ВЕРИФИКАЦИИ НОМЕРА ПРИ СМЕНЕ В ПРОФИЛЕ
-  @Patch('/update/phoneCodeTg')
-  @UseGuards(JwtAuthGuard)
-  async codeForChangePhone(@UserId() id: number, @Request() req, @Body() dto: codeForChangePhone) {
-    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
-    const result = await this.sessionAuthService.validateSessionToken(req.session)
-    // если возвращается false то сессия истекла
-    if (!result) {
-      return {
-        text: 'Ваша сессия истекла, выполните повторный вход',
-      }
-    }
-    return this.usersService.codeForChangePhone(id, dto)
-  }
+  // @Patch('/update/phoneCodeTg')
+  // @UseGuards(JwtAuthGuard)
+  // async codeForChangePhone(@UserId() id: number, @Request() req, @Body() dto: codeForChangePhone) {
+  //   // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
+  //   const result = await this.sessionAuthService.validateSessionToken(req.session)
+  //   // если возвращается false то сессия истекла
+  //   if (!result) {
+  //     return {
+  //       text: 'Ваша сессия истекла, выполните повторный вход',
+  //     }
+  //   }
+  //   return this.usersService.codeForChangePhone(id, dto)
+  // }
+
   // ОБНОВЛЕНИЕ ПАРОЛЯ
   @Patch('/update/password')
   @UseGuards(JwtAuthGuard)
@@ -128,33 +128,16 @@ export class UsersController {
     return this.usersService.updatePassword(id, dto)
   }
 
-  // ЗАПРОС ВЫЗОВА ДЛЯ ВЕРИФИКАЦИИ НОМЕРА
+
+  // ЗАПРОС ВЫЗОВА ДЛЯ ВЕРИФИКАЦИИ НОМЕРА ИЛИ ЗАБЫЛ ПАРОЛЬ
   @Post('/call')
-  @UseGuards(JwtAuthGuard)
   async verifyPhoneNumber(@UserId() id: number, @Request() req, @Body() dto: phoneType) {
-    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
-    const result = await this.sessionAuthService.validateSessionToken(req.session)
-    // если возвращается false то сессия истекла
-    if (!result) {
-      return {
-        text: 'Ваша сессия истекла, выполните повторный вход',
-      }
-    }
     return this.usersService.verifyPhoneNumber(id, dto)
   }
 
   // КОГДА ПОЛЬЗОВАТЕЛЬ ОТПРАВЛЯЕТ КОД ДЛЯ ВЕРИФИКАЦИИ НОМЕРА ТЕЛЕФОНА
   @Post('/call/code')
-  @UseGuards(JwtAuthGuard)
-  async verifyPhoneCode(@UserId() id: number, @Request() req, @Body() dto: number) {
-    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
-    const result = await this.sessionAuthService.validateSessionToken(req.session)
-    // если возвращается false то сессия истекла
-    if (!result) {
-      return {
-        text: 'Ваша сессия истекла, выполните повторный вход',
-      }
-    }
+  async verifyPhoneCode(@UserId() id: number, @Request() req, @Body() dto: { phoneNumber: string, numberActivation: string}) {
     return this.usersService.verifyPhoneCode(id, dto)
   }
 
@@ -177,25 +160,27 @@ export class UsersController {
   //   // return this.usersService.verifyTg(id, dto)
   // }
 
+  // Отправка кода для верификации номера в ТГ
   @Post('/numberTgActivate')
   async numberTgActivate(@UserId() id: number, @Request() req, @Body() dto: any) {
     return this.usersService.numberTgActivate(dto)
   }
-  @Post('/activateTgProfile')
-  @UseGuards(JwtAuthGuard)
-  async verifyTgInProfile(@UserId() id: number, @Request() req, @Body() dto: any) {
-    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
-    const result = await this.sessionAuthService.validateSessionToken(req.session)
-    // если возвращается false то сессия истекла
-    if (!result) {
-      return {
-        text: 'Ваша сессия истекла, выполните повторный вход',
-      }
-    }
-    return this.usersService.verifyTgInProfile(dto)
-  }
 
 
+  // Активация
+  // @Post('/activateTgProfile')
+  // @UseGuards(JwtAuthGuard)
+  // async verifyTgInProfile(@UserId() id: number, @Request() req, @Body() dto: any) {
+  //   // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
+  //   const result = await this.sessionAuthService.validateSessionToken(req.session)
+  //   // если возвращается false то сессия истекла
+  //   if (!result) {
+  //     return {
+  //       text: 'Ваша сессия истекла, выполните повторный вход',
+  //     }
+  //   }
+  //   return this.usersService.verifyTgInProfile(dto)
+  // }
 
   // СТАРОЕ ЕСЛИ ЧЕЛ ЗАРЕГАЛСЯ БЕЗ НОМЕРА ДО 21.03.2024
   @Post('/giveInfo')

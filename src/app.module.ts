@@ -35,6 +35,7 @@ import { RedisService } from './redis/redis.service'
 import * as dotenv from 'dotenv'
 import { PostsFromRedisModule } from './additionalRepositories/posts-from-redis/posts-from-redis.module'
 import { TelegramService } from './otherServices/telegram.service/telegram.service'
+import {HeapdumpMiddleware} from "./middleware/headump.middleware";
 
 dotenv.config()
 
@@ -94,8 +95,6 @@ dotenv.config()
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(IpMiddleware, SessionTokenMiddleware).forRoutes('*') // Примените Middleware ко всем маршрутам
+    consumer.apply(IpMiddleware, SessionTokenMiddleware, HeapdumpMiddleware).forRoutes('*') // Примените Middleware ко всем маршрутам
   }
 }
-
-// , HeapdumpMiddleware

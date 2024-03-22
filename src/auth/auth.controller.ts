@@ -22,8 +22,12 @@ export type email = {
 
 
 export type accessNumber = {
+  email?: string
   phoneNumber: string
-  email: string
+  password?: string
+  passwordTwo?: string
+  code?: string
+  indicator: string
 }
 
 @Controller('auth')

@@ -35,12 +35,8 @@ export class AuthService {
       // проверяем совпадают ли пароли, основной и проверочный
       if (dto.password !== dto.passwordCheck) throw new HttpException('Не совпадают введенные пароли', HttpStatus.BAD_REQUEST)
 
-      // проверяем email в базе данных, если существует в базе данных то выдаем ошибку
-      // const checkUserWithTheSameEmail = await this.usersService.findByEmail(dto.email)
-      // if (checkUserWithTheSameEmail) throw new HttpException('Пользователь c таким email зарегистрирован', HttpStatus.BAD_REQUEST)
-
-      // проверяем телефон в базе данных, если существует в базе данных то выдаем ошибку (проверяем основной привязанный номер)
-      const checkUserWithTheSamePhone = await this.usersService.findByPhone(dto.phoneNumber)
+      // проверяем телефон в базе данных
+      const checkUserWithTheSamePhone = await this.usersService.findByPhone(dto?.phoneNumber)
       if (checkUserWithTheSamePhone) throw new HttpException('Пользователь c таким номером телефона зарегистрирован', HttpStatus.BAD_REQUEST)
 
       // генерируем ссылку активации учетной записи и шифруем ее
@@ -53,7 +49,6 @@ export class AuthService {
       const newUser: createUSerWithLink = {
         phoneNumber: dto.phoneNumber,
         password: password,
-        // activationLink: activationLink,
         ip: clientIp,
       }
 
@@ -63,25 +58,15 @@ export class AuthService {
       if (!newUserDate || !newUserDate.phoneNumber) throw new HttpException('Ошибка при создании учетной записи, обновите страницу и попробуйте еще раз', HttpStatus.BAD_REQUEST)
       // отправляем ссылку активации на указанный при регистрации email
 
-      // await this.usersService.sendActivationMail(dto.email, `${this.configService.get<string>('API_URL')}/auth/activate/${activationLink}`)
-
       return {
-        text: 'Регистрация завершена. Подтвердите номер в мессенджере телеграмм',
+        text: 'Регистрация завершена. Осталось подтвердить номер телефона',
       }
     } catch (err) {
       if (err.response === 'Не совпадают введенные пароли') {
         throw err
       } else if (err.response === 'Пользователь c таким номером телефона зарегистрирован') {
-        await this.LogsService.error(`Регистрация`, `Пользователь уже существует ${dto.phoneNumber} no trace`)
         throw err
       } else if (err.response === 'Ошибка при создании учетной записи, обновите страницу и попробуйте еще раз') {
-        await this.LogsService.error(`Регистрация`, `Ошибка создания ${dto.phoneNumber} no trace`)
-        throw err
-      } else if (err.response === `Ошибка отправки сообщения об активации, проверьте почту`) {
-        await this.LogsService.error(`Регистрация`, `sendActivationMail ${dto.phoneNumber} no trace`)
-        throw err
-      } else if (err.response === `Использование временных почтовых адресов запрещено`) {
-        await this.LogsService.error(`Регистрация`, `Использование временных почтовых адресов запрещено ${dto.phoneNumber} no trace`)
         throw err
       } else {
         await this.LogsService.error(`Регистрация`, `Ошибка при регистрации ${dto.phoneNumber} ${err}`)
@@ -196,17 +181,17 @@ export class AuthService {
   // валидация пользователя
   async validateUser(request: any): Promise<any> {
     try {
-
       // переменная для пользователя
       let user
+      let ifNoAccess;
       // ищем в базе данных пользователя по email или phone
-      if (request.email !== 'no date') {
+      if (request?.email !== 'no date') {
         user = await this.usersService.findByEmail(request.email)
-        if(user && !user.isActivatedEmail) throw new HttpException('Для входа через email, требуется его подтвердить', HttpStatus.UNAUTHORIZED)
-      } else if (request.phoneNumber.length >= 5) {
-        user = await this.usersService.findByPhone(request.phoneNumber)
-      } else {
-        throw new HttpException('Некорректно введены данные', HttpStatus.UNAUTHORIZED)
+        if(user && !user?.isActivatedEmail) throw new HttpException('Для входа через email, требуется его подтвердить', HttpStatus.UNAUTHORIZED)
+      }
+      if (request?.phoneNumber !== 'no date') {
+        user = await this.usersService.findByPhone(request?.phoneNumber)
+        if(user && !user?.isActivatedPhone) throw new HttpException('Не подтвержден номер телефона', HttpStatus.UNAUTHORIZED)
       }
 
       // если не активирован email, то ошибка
@@ -223,18 +208,15 @@ export class AuthService {
         const { password, ...result } = user
         return result
       }
+
     } catch (err) {
       if (err.response === 'Не верный логин или пароль') {
-        // await this.LogsService.error(`Валидация`, `Не верный логин или пароль ${request?.email && request.email} ${request?.phoneNumber && request.phoneNumber} no trace`)
+        throw err
+      } else if (err.response === 'Не подтвержден номер телефона') {
         throw err
       } else if (err.response === 'Для входа через email, требуется его подтвердить') {
-        // await this.LogsService.error(`Валидация`, `Необходимо подтвердить email ${request?.email && request.email} ${request?.phoneNumber && request.phoneNumber} no trace`)
-        throw err
-      }  else if (err.response === 'Некорректно введены данные') {
-        // await this.LogsService.error(`Валидация`, `Пользователь не найден ${request?.email && request.email} ${request?.phoneNumber && request.phoneNumber} no trace`)
         throw err
       } else if (err.response === 'Пользователь не найден') {
-        // await this.LogsService.error(`Валидация`, `Пользователь не найден ${request?.email && request.email} ${request?.phoneNumber && request.phoneNumber} no trace`)
         throw err
       } else {
         await this.LogsService.error(`Валидация`, ` ошибка ${request?.id && request.id} ${request?.email && request?.phoneNumber} ${err}`)
@@ -294,24 +276,24 @@ export class AuthService {
       return message
 
     } catch (err) {
-      if (err.response === 'Аккаунт не найден') {
-        await this.LogsService.error(`выслать пароль`, `Аккаунт не найден  no trace`)
+
+      if (err.response === 'Не заполнены или некорректно заполнены поля') {
         throw err
-      } else if (err.response === 'Аккаунт не активирован') {
-        await this.LogsService.error(`выслать пароль`, `Аккаунт не активирован`)
+      } else if (err.response === 'Введенные пароли не совпадают') {
         throw err
-      } else if (err.response === 'Ошибка при генерации пароля') {
-        await this.LogsService.error(`выслать пароль`, `Ошибка при генерации пароля`)
+      } else if (err.response === 'Не заполнен номер телефона') {
         throw err
-      } else if (err.response === '= randomPassword') {
-        await this.LogsService.error(`выслать пароль`, `randomPassword error`)
+      } else if (err.response === 'Аккаунт не найден') {
         throw err
-      } else if (err.response === 'Ошибка отправки сообщения с новым паролем') {
-        await this.LogsService.error(`выслать пароль`, `Ошибка при отправке пароля`)
+      } else if (err.response === 'Аккаунт не активирован, необходимо подтвердить номер телефона') {
+        throw err
+      } else if (err.response === 'Указан не верный код') {
+        throw err
+      } else if (err.response === 'На аккаунте не привязан телеграмм') {
         throw err
       } else {
         await this.LogsService.error(`отправка пароля`, `Ошибка отправки сообщения ${err}`)
-        throw new HttpException('ошибка отправки сообщения на почту', HttpStatus.FORBIDDEN)
+        throw new HttpException('ошибка изменения пароля', HttpStatus.FORBIDDEN)
       }
     }
   }

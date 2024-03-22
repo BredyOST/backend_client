@@ -28,7 +28,10 @@ export class TelegramService implements OnApplicationShutdown {
 
     this.bot.command('start', async (ctx) => {
       const shareKeyBoard = new Keyboard().requestContact('Отправить контакт').resized()
-      await ctx.reply("Нажмите на кнопку 'Отправить контакт', после чего вы получите код подтверждения, который необходимо ввести на сайте в окне подтверждения номера.", {
+      await ctx.reply("Приветствую тебя, я официальный телеграмм-бот сайта клиенты.com.\n  \nСкорее всего вы проходите регистрацию на сайте и выбрали вариант подтверждения аккаунта через телеграм.\n" +
+          "Сейчас вместо кнопки start вы увидите кнопку Отправить контакт.\n " +
+          "Для того чтобы мне проверить вашу учету запись по номеру телефона, вам нужно им со мной поделиться нажав на кнопку и подтвердить передачу. \n" +
+          "Как только я получу ваш телефонный номер, я проверю вашу учетную запись и отправлю вам код подтверждения, который нужно будет ввести в окне подтверждения номера на сайте клиенты.com", {
         reply_markup: shareKeyBoard,
       })
     })
@@ -75,7 +78,7 @@ export class TelegramService implements OnApplicationShutdown {
       // const newPhoneUser = await this.userService.findByChangePhone(phone)
 
       if (samePhoneUser && samePhoneUser.isActivatedPhone) {
-        await this.bot.api.sendMessage(ctx?.message?.contact?.user_id, `Номер телефона ${phone} уже используется и является подтвержденным`)
+        await this.bot.api.sendMessage(ctx?.message?.contact?.user_id, `Хм.. \nВаш номер телефона ${phone} зарегистрирован в системе и является подтвержденным, попробуйте войти в свою учетную запись.\n \nЕсли вы забыли пароль, то вы можете его легко восстановить.`)
         return
       } else {
         const code = await this.userService.verifyTg(samePhoneUser, userId, chatId)
@@ -83,10 +86,10 @@ export class TelegramService implements OnApplicationShutdown {
         if (code?.text) {
           await this.bot.api.sendMessage(
             ctx?.message?.contact?.user_id,
-            `Ваш код подтверждения: ${code?.text}, введите его на сайте. \n \n Your confirmation code: ${code?.text}, please enter it on the website."`,
+            `А вот и ваш долгожданный код подтверждения: ${code?.text}. Теперь вернитесь на сайт клиенты.com в окно подтверждения номера через телеграмм и введите его в соответствующее поле.`,
           )
         } else {
-          await this.bot.api.sendMessage(ctx?.message?.contact?.user_id, `Произошел сбой, код не получен. Попробуйте запросить код повторно или написать в поддержку"`)
+          await this.bot.api.sendMessage(ctx?.message?.contact?.user_id, `Упс... что-то пошло не так, произошел какой-то сбой, не получилось проверить учетную запись. Попробуйте запросить код повторно или написать в поддержку"`)
         }
       }
     })

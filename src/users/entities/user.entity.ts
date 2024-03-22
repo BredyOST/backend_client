@@ -49,6 +49,8 @@ export class UserEntity {
   @Column({ default: '' })
   activationTgNumber: string
   @Column({ default: '' })
+  activationCodeForChangePassword: string
+  @Column({ default: '' })
   activationTgNumberToProfile: string
   @Column('jsonb', { array: false, default: [] })
   categoriesFreePeriod: PurchasedCategory[]

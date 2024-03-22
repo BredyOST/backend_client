@@ -23,20 +23,20 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
 
       const user = await this.authService.validateUser(request.body)
 
+
       if (!user) {
         throw new HttpException('Неверный логин или пароль', HttpStatus.UNAUTHORIZED)
       }
 
       return user
     } catch (err) {
-
-      if (err.response === 'Неверный логин или пароль') {
+      if (err.response === 'Не верный логин или пароль') {
+        throw err
+      } else if (err.response === 'Не подтвержден номер телефона') {
         throw err
       } else if (err.response === 'Для входа через email, требуется его подтвердить') {
         throw err
       } else if (err.response === 'Пользователь не найден') {
-        throw err
-      } else if (err.response === 'Не верный логин или пароль') {
         throw err
       } else {
         throw new HttpException('validateStrategy', HttpStatus.FORBIDDEN)

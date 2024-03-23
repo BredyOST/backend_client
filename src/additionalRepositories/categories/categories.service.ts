@@ -355,6 +355,7 @@ export class CategoriesService {
   //   }
   // }
   async activatePaymentNotification(dto) {
+    console.log(dto)
     try {
 
       const user = await this.usersService.findById(+dto.user_id)
@@ -413,9 +414,11 @@ export class CategoriesService {
           await this.addToChat(user.chatIdTg, item.id, item.chatList)
         }
       }
-      return {
-        text: 'Подписка на уведомления оформлена',
-      }
+
+      // return {
+      //   text: 'Подписка на уведомления оформлена',
+      // }
+
     } catch (err) {
       if (err.response === 'Пользователь не найден') {
         throw err
@@ -580,13 +583,13 @@ export class CategoriesService {
     }
   }
   // для уведомлений
-  async createPayNotification(id, dto) {
+  async createPayNotification(userThis, dto) {
 
     try {
-      const user = await this.usersService.findById(+id)
-      if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
-      if (dto.categ.length <= 0) throw new HttpException('Необходимо выбрать категории', HttpStatus.UNAUTHORIZED)
-      if (!user.isActivatedPhone) throw new HttpException('Подтвердите номер телефона в профиле', HttpStatus.UNAUTHORIZED)
+      const user = userThis
+      // if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
+      // if (dto.categ.length <= 0) throw new HttpException('Необходимо выбрать категории', HttpStatus.UNAUTHORIZED)
+      // if (!user.isActivatedPhone) throw new HttpException('Подтвердите номер телефона в профиле', HttpStatus.UNAUTHORIZED)
 
       const price = user.isMainAdmin ? '1' : dto.price
       const shopId = process.env['SHOP_ID']
@@ -630,7 +633,6 @@ export class CategoriesService {
       const data = {
         amount: {
           value: `${price}`,
-          // value: `1`,
           currency: 'RUB',
         },
         payment_method_data: {
@@ -659,7 +661,7 @@ export class CategoriesService {
           const newTransaction = {
             title: dto.title,
             type: response.data.status,
-            user_id: id,
+            user_id: user.id,
             amount: dto.price,
             category: categories,
             id_payment: response.data.id,
@@ -667,9 +669,10 @@ export class CategoriesService {
             status: response.data.status,
             createdAt: new Date(), // текущая дата и время
           }
-          this.transactionService.addNewTransaction(id, newTransaction)
+          this.transactionService.addNewTransaction(user.id, newTransaction)
         }
         return confirmationUrl
+
       } catch (error) {
         throw new HttpException('Failed to create payment', HttpStatus.FORBIDDEN)
       }
@@ -765,20 +768,23 @@ export class CategoriesService {
   }
 
   async addToChat(userIdTg, categId, chatName) {
+
     let chatId;
+
     if (categId == 1) {
+
       const categoryFromDb = await this.findByIdCategory(categId);
 
-      if (chatName.toLowerCase().includes('англ')) chatId = process.env['CHAT_ENG']
-      if (chatName.toLowerCase().includes('мате' || 'алг')) chatId = process.env['CHAT_MATH']
+      if (chatName.toLowerCase().includes('языки')) chatId = process.env['CHAT_LANGUAGE']
+      if (chatName.toLowerCase().includes('мате')) chatId = process.env['CHAT_MATH']
       if (chatName.toLowerCase().includes('рус')) chatId = process.env['CHAT_RUS']
-      if (chatName.toLowerCase().includes('химия')) chatId = process.env['CHAT_CHEM']
+      if (chatName.toLowerCase().includes('химия')) chatId = process.env['CHAT_BIOLOGY']
       if (chatName.toLowerCase().includes('биолог')) chatId = process.env['CHAT_BIOLOGY']
       if (chatName.toLowerCase().includes('информ')) chatId = process.env['CHAT_INFORM']
       if (chatName.toLowerCase().includes('физик')) chatId = process.env['CHAT_PHYSIC']
       if (chatName.toLowerCase().includes('общест')) chatId = process.env['CHAT_SOCIAL']
       if (chatName.toLowerCase().includes('истор')) chatId = process.env['CHAT_HISTORY']
-      if (chatName.toLowerCase().includes('начал' || '1 класс' || '2 класс')) chatId = process.env['CHAT_ENG']
+      if (chatName.toLowerCase().includes('начал')) chatId = process.env['CHAT_ENG']
     }
     await this.telegramTwoService.sendlink(userIdTg, `${chatId}`, chatName)
   }

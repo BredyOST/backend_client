@@ -37,32 +37,6 @@ export class TelegramService implements OnApplicationShutdown {
     })
 
     // Обработчик всех входящих текстовых сообщений
-    // this.bot.on('::email', async (ctx) => {
-    //   const text = ctx.message.text
-    //   const userId = ctx.message.from.id
-    //   const chatId = ctx.message.chat.id
-    //
-    //   const user = await this.userService.findByEmail(text)
-
-      // Проверка, содержит ли сообщение email
-      // if (isValidEmail(text)) {
-      //   // Проверить, есть ли у пользователя номер телефона в его учетной записи
-      //   const hasPhoneNumber = await this.userService.userHasPhoneNumber(userId);
-      //   if (!hasPhoneNumber) {
-      //     // Если у пользователя нет номера телефона, предложить поделиться контактом
-      //     await this.bot.api.sendMessage(userId, 'Чтобы продолжить, пожалуйста, поделитесь своим контактом.');
-      //   } else {
-      //     // Если у пользователя есть номер телефона, обработать email соответствующим образом
-      //     await this.processEmail(userId, text);
-      //   }
-      // } else {
-      //   // Обработать другие типы сообщений или проигнорировать
-      // }
-
-      // await this.handleTextMessage(ctx);
-    // })
-
-    // Обработчик всех входящих текстовых сообщений
     this.bot.on(':contact', async (ctx) => {
       const chatId = ctx.message.chat.id
       let phone = ctx.message.contact.phone_number
@@ -127,17 +101,6 @@ export class TelegramService implements OnApplicationShutdown {
           this.initializeBot()
         }, 5000) // Повторный запуск через 5 секунд
       })
-
-    // Запуск бота
-    // this.bot.start().catch((error) => {
-    //   console.error('Failed to start bot:', error)
-    //   this.isBotRunning = false // Сбрасываем флаг запуска, если произошла ошибка при запуске
-    //   // Выполняем повторный запуск бота через некоторое время
-    //   setTimeout(() => {
-    //     console.log('Restarting bot...')
-    //     this.initializeBot()
-    //   }, 5000) // Повторный запуск через 5 секунд
-    // })
   }
 
   private initializeBot() {

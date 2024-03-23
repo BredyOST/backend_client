@@ -59,6 +59,11 @@ export class UsersService {
       chatIdTg,
     })
   }
+  async findByIdTgUser(userIdTg: string) {
+    return this.repository.findOneBy({
+      userIdTg,
+    })
+  }
   async findByChangePhone(forChangePhoneNumber: string) {
     return this.repository.findOneBy({
       forChangePhoneNumber,
@@ -80,7 +85,6 @@ export class UsersService {
   async findManyByIp(ip: string) {
     return await this.repository.find({ where: { ip } });
   }
-
 
   // по ссылке активации
   async findByActivateLink(activationLink: string) {
@@ -839,7 +843,6 @@ export class UsersService {
         if(!user.chatIdTg) throw new HttpException('На аккаунте не привязан телеграмм', HttpStatus.UNAUTHORIZED)
       }
 
-      console
       let checkPassword;
 
       const saltRounds = 10
@@ -848,7 +851,6 @@ export class UsersService {
       if (dto.indicator == '2') {
         checkPassword = user.activationCodeForChangePassword == dto.code
       }
-
       if (dto.indicator == '1') {
         checkPassword = user.activationCodeForChangePasswordTg == dto.code
       }
@@ -874,6 +876,7 @@ export class UsersService {
       }
 
     } catch (err) {
+      console.log(err)
       if (err.response === 'Не заполнены или некорректно заполнены поля') {
         throw err
       } else if (err.response === 'Введенные пароли не совпадают') {

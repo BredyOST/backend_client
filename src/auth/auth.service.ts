@@ -30,6 +30,7 @@ export class AuthService {
 
   // регистрация
   async register(dto: createUserType, clientIp: string) {
+
     try {
 
       // проверяем совпадают ли пароли, основной и проверочный
@@ -61,6 +62,7 @@ export class AuthService {
       return {
         text: 'Регистрация завершена. Осталось подтвердить номер телефона',
       }
+
     } catch (err) {
       if (err.response === 'Не совпадают введенные пароли') {
         throw err
@@ -74,6 +76,7 @@ export class AuthService {
       }
     }
   }
+
   // вход в учетнуб запись
   async login(user: UserEntity, clientIp, userAgent) {
     try {

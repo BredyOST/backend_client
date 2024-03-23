@@ -643,6 +643,7 @@ export class UsersService {
     }
   }
   // верификация номера телефона или изменение пароля - запрос вызова
+  //  indicator: `1` - подтверждение, 2- восстановление
   async verifyPhoneNumber(id: number, dto: phoneType) {
 
     try {
@@ -656,6 +657,9 @@ export class UsersService {
 
       if (dto.indicator == `1`) {
         if (user.isActivatedPhone) throw new HttpException('Ваш номер телефона уже активирован', HttpStatus.UNAUTHORIZED)
+      }
+      if (dto.indicator == `2`) {
+        if (!user.isActivatedPhone) throw new HttpException('Ваш номер не подтвержден', HttpStatus.UNAUTHORIZED)
       }
 
       if (user.timeCallVerify) {
@@ -700,6 +704,8 @@ export class UsersService {
       if (err.response === 'Пользователь не найден') {
         throw err
       } else if (err.response === 'Ваш номер телефона уже активирован') {
+        throw err
+      } else if (err.response === 'Ваш номер не подтвержден') {
         throw err
       } else if (err.response === 'Пользователь с таким номером телефона не найден. Нажмите кнопку "Изменить номер" перед запросом') {
         throw err

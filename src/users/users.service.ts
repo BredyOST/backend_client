@@ -839,18 +839,18 @@ export class UsersService {
         if(!user.chatIdTg) throw new HttpException('На аккаунте не привязан телеграмм', HttpStatus.UNAUTHORIZED)
       }
 
-
+      console
       let checkPassword;
 
       const saltRounds = 10
       const salt = await bcrypt.genSalt(saltRounds)
 
       if (dto.indicator == '2') {
-        checkPassword = user.activationCodeForChangePassword != dto.code
+        checkPassword = user.activationCodeForChangePassword == dto.code
       }
 
       if (dto.indicator == '1') {
-        checkPassword = user.activationCodeForChangePasswordTg != dto.code
+        checkPassword = user.activationCodeForChangePasswordTg == dto.code
       }
 
       if(!checkPassword) throw new HttpException('Указан не верный код', HttpStatus.UNAUTHORIZED)

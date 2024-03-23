@@ -334,6 +334,7 @@ export class UsersService {
   }
   // обновление пароля
   async updatePassword(id: number, dto: any) {
+
     try {
       if (dto.passwordNew !== dto.passwordNewTwo) throw new HttpException('Введенные новые пароли не совпадают', HttpStatus.UNAUTHORIZED)
 
@@ -641,7 +642,7 @@ export class UsersService {
       throw new HttpException('Ошибка при генерации пароля', HttpStatus.FORBIDDEN)
     }
   }
-  // верификация номера телефона или мзменение пароля - запрос вызова
+  // верификация номера телефона или изменение пароля - запрос вызова
   async verifyPhoneNumber(id: number, dto: phoneType) {
 
     try {
@@ -682,15 +683,10 @@ export class UsersService {
       )
 
       if (response && response.data && response?.data?.pincode) {
-        console.log('respnse')
-        console.log(response?.data)
-
         if (dto.indicator == `1`) {
-          console.log('1111')
           user.activationNumber = response?.data?.pincode
         }
         if (dto.indicator == `2`) {
-          console.log('122222')
           user.activationCodeForChangePassword = response?.data?.pincode
         }
         await this.saveUpdatedUser(user?.id, user)
@@ -701,7 +697,6 @@ export class UsersService {
       }
 
     } catch (err) {
-      console.log(err)
       if (err.response === 'Пользователь не найден') {
         throw err
       } else if (err.response === 'Ваш номер телефона уже активирован') {
@@ -717,7 +712,7 @@ export class UsersService {
   }
 
   //когда зашел в форму заыбл пароль и восстанавливаешь его через номер телефона
-  async   reqCallForgetPassword(id: number, dto: phoneType) {
+  async reqCallForgetPassword(id: number, dto: phoneType) {
 
     try {
 
@@ -778,8 +773,6 @@ export class UsersService {
     }
   }
 
-
-
   // проверка введенного кода пользователем для верификации номера телефона
   async verifyPhoneCode(id: number, dto: { phoneNumber: string, numberActivation: string}) {
 
@@ -820,59 +813,58 @@ export class UsersService {
     // indicator == `2 - звонок, 1 - телеграмм
 
     try {
-      if (dto.indicator == `2` && (dto?.phoneNumber?.length <= 5 || dto?.password?.length <= 0 || dto?.passwordTwo?.length <= 0 || dto?.code?.length <= 0)) {
+      if (dto?.phoneNumber?.length <= 5 || dto?.password?.length <= 0 || dto?.passwordTwo?.length <= 0 || dto?.code?.length <= 0) {
         throw new HttpException('Не заполнены или некорректно заполнены поля', HttpStatus.UNAUTHORIZED)
       }
 
-      if (dto.indicator == `2` && dto?.password != dto?.passwordTwo) throw new HttpException('Введенные пароли не совпадают', HttpStatus.UNAUTHORIZED)
-
-      if (dto.indicator == `1` && dto?.phoneNumber?.length <= 5) {
-        throw new HttpException('Не заполнен номер телефона', HttpStatus.UNAUTHORIZED)
-      }
+      if (dto?.password != dto?.passwordTwo) throw new HttpException('Введенные пароли не совпадают', HttpStatus.UNAUTHORIZED)
 
       let user
 
       if (dto?.phoneNumber?.length >= 5) {
         user = await this.findByPhone(dto.phoneNumber)
-      } else if (dto.email.length >= 2) {
-        user = await this.findByEmail(dto.email)
       }
 
       if (!user) throw new HttpException('Аккаунт не найден', HttpStatus.UNAUTHORIZED)
       // если не активирован то ошибка
       if (!user.isActivatedPhone) throw new HttpException('Аккаунт не активирован, необходимо подтвердить номер телефона', HttpStatus.UNAUTHORIZED)
-      let text;
+
+      if (dto.indicator == '1') {
+        if(!user.chatIdTg) throw new HttpException('На аккаунте не привязан телеграмм', HttpStatus.UNAUTHORIZED)
+      }
+
+
+      let checkPassword;
 
       const saltRounds = 10
       const salt = await bcrypt.genSalt(saltRounds)
 
-      // через звонок
       if (dto.indicator == '2') {
-        if (user.activationCodeForChangePassword != dto.code) throw new HttpException('Указан не верный код', HttpStatus.UNAUTHORIZED)
-        const salt = await bcrypt.genSalt(saltRounds)
-        const password = await bcrypt.hash(dto.password, salt)
-        user.password = password
-        user.activationCodeForChangePassword = '';
-        await this.saveUpdatedUser(user.id, user)
-        text = 'Пароль успешно изменен'
+        checkPassword = user.activationCodeForChangePassword != dto.code
       }
 
-      // через телегу
       if (dto.indicator == '1') {
-        if(!user.chatIdTg) throw new HttpException('На аккаунте не привязан телеграмм', HttpStatus.UNAUTHORIZED)
-        // создаем новый пароль и шифруем
-        const newPassword = await this.randomPassword(12)
-        const password = await bcrypt.hash(newPassword, salt)
-        // обновляем пароль у найденного пользователя
-        user.password = password
-        // обновляем пользователя а базе данных
-        await this.saveUpdatedUser(user.id, user)
-        await this.telegramTwoService.sendNewPassword(user.chatIdTg, `Ваш новый пароль доступа, который рекомендуется изменить при первом входе в аккаунт -  ${newPassword}`)
-        text = 'Ожидайте сообщения от официального бота, в течении нескольких минут вам будет направлено сообщение с новым паролем.'
+        checkPassword = user.activationCodeForChangePasswordTg != dto.code
+      }
+
+      if(!checkPassword) throw new HttpException('Указан не верный код', HttpStatus.UNAUTHORIZED)
+
+      const password = await bcrypt.hash(dto.password, salt)
+      user.password = password
+
+      await this.saveUpdatedUser(user.id, user)
+
+      // через звонок
+      if (dto.indicator == '2') {
+        user.activationCodeForChangePassword = ''
+      }
+
+      if (dto.indicator == '1') {
+        user.activationCodeForChangePasswordTg = ''
       }
 
       return {
-        text: text,
+        text: 'Пароль успешно изменен',
       }
 
     } catch (err) {
@@ -1025,7 +1017,7 @@ export class UsersService {
       }
 
     } catch (err) {
-      console.log(err)
+
       if (err.response === 'Аккаунт не найден') {
         // await this.LogsService.error(`отправить повторно ссылку активации`, `Аккаунт не найден no trace`)
         throw err
@@ -1059,7 +1051,6 @@ export class UsersService {
       const user = await this.findByPhone(numberPhone)
 
       if (!user) throw new HttpException('Аккаунт не найден', HttpStatus.UNAUTHORIZED)
-      // if (user.activationNumber) throw new HttpException('Аккаунт пользователя активирован', HttpStatus.UNAUTHORIZED)
 
       if (user.activationTgNumber !== code) throw new HttpException('Не верный код активации', HttpStatus.UNAUTHORIZED)
 
@@ -1081,6 +1072,48 @@ export class UsersService {
         throw err
       } else {
         await this.LogsService.error(`Подтверждение номера в телеграмме кодом`, `ошибка ${err}`)
+        throw new HttpException('Ошибка при отправке запроса', HttpStatus.FORBIDDEN)
+      }
+    }
+  }
+  // изменение пароля через тг - запрос кода подтверждения
+  async numberTgForgetPassword(dto) {
+
+    try {
+
+      let numberPhone;
+
+      if (dto.phoneNumber.startsWith('+')) {
+        numberPhone = dto.phoneNumber
+      } else {
+        numberPhone = `+${dto.phoneNumber}`
+      }
+
+      const user = await this.findByPhone(numberPhone)
+
+      if (!user) throw new HttpException('Аккаунт не найден', HttpStatus.UNAUTHORIZED)
+      if (!user?.chatIdTg) throw new HttpException('На вашем аккаунте не привязан телеграм', HttpStatus.UNAUTHORIZED)
+      if (!user.isActivatedPhone) throw new HttpException('Аккаунт не активирован, необходимо подтвердить номер телефона', HttpStatus.UNAUTHORIZED)
+
+      const code = await this.randomPassword(15)
+
+      user.activationCodeForChangePasswordTg = code;
+      await this.saveUpdatedUser(user.id, user)
+      await this.telegramTwoService.sendNewPassword(user?.chatIdTg, `Ваш код подтверждения для изменения пароля: ${code}.\n \nНе передавайте его никому. Внесите его в соответствующую форму запроса насайте.`)
+
+      return {
+        text: 'Ожидайте сообщения от бота с кодом подтверждения в ваш телеграмм',
+      }
+
+    } catch (err) {
+      if (err.response === 'Аккаунт не найден') {
+        throw err
+      } else if (err.response === 'На вашем аккаунте не привязан телеграм') {
+        throw err
+      } else if (err.response === 'Аккаунт не активирован, необходимо подтвердить номер телефона') {
+        throw err
+      } else {
+        await this.LogsService.error(`Запрос кода на смену пароля в тг`, `ошибка ${err}`)
         throw new HttpException('Ошибка при отправке запроса', HttpStatus.FORBIDDEN)
       }
     }
@@ -1120,7 +1153,6 @@ export class UsersService {
   //     }
   //   }
   // }
-
 
   // СТАРОЕ
   async giveInfo(dto) {

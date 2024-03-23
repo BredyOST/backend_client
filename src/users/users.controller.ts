@@ -152,7 +152,7 @@ export class UsersController {
   //   // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
   //   const result = await this.sessionAuthService.validateSessionToken(req.session)
   //   // если возвращается false то сессия истекла
-  //   if (!result) {
+  //   if (!result)
   //     return {
   //       text: 'Ваша сессия истекла, выполните повторный вход',
   //     }
@@ -165,7 +165,11 @@ export class UsersController {
   async numberTgActivate(@UserId() id: number, @Request() req, @Body() dto: any) {
     return this.usersService.numberTgActivate(dto)
   }
-
+  // Отправка кода для смены пароля через тг
+  @Post('/numberTgForgetPassword')
+  async numberTgForgetPassword(@UserId() id: number, @Request() req, @Body() dto: any) {
+    return this.usersService.numberTgForgetPassword(dto)
+  }
 
   // Активация
   // @Post('/activateTgProfile')

@@ -210,6 +210,7 @@ export class AuthService {
       }
 
     } catch (err) {
+
       if (err.response === 'Не верный логин или пароль') {
         throw err
       } else if (err.response === 'Не подтвержден номер телефона') {

@@ -38,7 +38,7 @@ export class TelegramServiceThree implements OnApplicationShutdown {
         text.push(block)
       })
 
-      const keyBoard = new Keyboard().text('Получить доступ').text('к выбору чата').row().resized()
+      const keyBoard = new Keyboard().text('Получить доступ').text('Оплатил, но не пришла ссылка на вступление в чат').row().resized()
       await ctx.reply(
         `Приветствую тебя, я официальный телеграмм-бот сайта клиенты.com.\n\nНаправляю список категорий и доступных к ним чатов:\n\n${text.join('\n\n')}\n\n` +
           `Варианты подписки на один канал:\n\n` +
@@ -78,7 +78,15 @@ export class TelegramServiceThree implements OnApplicationShutdown {
 
       const sameUser = await this.userService.findByPhone(phone)
 
+      const saveInfo = async () => {
+        if (!sameUser.chatIdTg) sameUser.chatIdTg = `${chatId}`
+        if (!sameUser.userIdTg) sameUser.userIdTg = `${userId}`
+        await this.userService.saveUpdatedUser(sameUser.id, sameUser)
+      }
+
       if (sameUser && !sameUser.isActivatedPhone) {
+       await saveInfo()
+
         await ctx.reply(
             `У вас уже создана учетная запись на сайте клиенты.com!\n\n` +
             `Но номер телефона не подтвержден\n \n` +
@@ -89,6 +97,8 @@ export class TelegramServiceThree implements OnApplicationShutdown {
         )
       }
       if (sameUser && sameUser.isActivatedPhone) {
+        await saveInfo()
+
         await ctx.reply(
             `У вас уже создана учетная запись на сайте клиенты.com!\n\n` +
             `Можете перейти к выбору канала\n`+
@@ -134,7 +144,7 @@ export class TelegramServiceThree implements OnApplicationShutdown {
       }
     })
 
-    this.bot.hears(/(Получить доступ|к выбору чата)/i, async (ctx) => {
+    this.bot.hears('Получить доступ', async (ctx) => {
       const shareKeyBoard = new Keyboard().requestContact('Отправить контакт').resized()
       await ctx.reply(
           'Для продолжения мне необходимо проверить имеется ли учетная запись с вашим номером телефона на сайте клиенты.com. Если ее нет я ее быстро создам и направлю вам данные для входа. Это необходимо для подключения вашего аккаунта к телеграмм чату и проведения платежей. В учетную запись заходить необязательно, все будет в телеграмме',
@@ -142,6 +152,15 @@ export class TelegramServiceThree implements OnApplicationShutdown {
             reply_markup: shareKeyBoard,
           },
       )
+    })
+
+    this.bot.hears('Оплатил, но не пришла ссылка на вступление в чат', async (ctx) => {
+      await ctx.reply(`Если вы оплатили и не пришла ссылка на вступление в чат, напишите в телеграмм @MaksOST1\n\n` +
+          `Мы проверим вашу оплату и предоставим доступ\n`)
+
+      // const chatId = ctx.message.chat.id
+      // const userId = ctx.message.from.id
+      // const user = await this.userService.findByIdTgUser(`${userId}`)
     })
 
     // БЛОК РАБОТЫ С КАТЕГОРИЯМИ
@@ -211,7 +230,7 @@ export class TelegramServiceThree implements OnApplicationShutdown {
         const nameMonthOtWeek = match[4]; // Срок
         const price = match[5]; // Цена
 
-        const user = await this.userService.findByIdTgUser(`${userId}`);
+        const user = await this.userService.findByIdTgUser(`${userId}`)
 
         if (user && user.isActivatedPhone) {
 
@@ -242,7 +261,8 @@ export class TelegramServiceThree implements OnApplicationShutdown {
               `Сумма: ${price} руб\n` +
               `Период ${duration} ${nameMonthOtWeek}\n` +
               `Оплата производится на сервисе Юкасса\n\n` +
-              `После проведения оплаты и списания денежных средств вам придет ссылка на вступление в группу\n\n` +
+              `После проведения оплаты и списания денежных средств вам придет ссылка на вступление в группу от бота @com_client_chat_bot\n` +
+              `Если после проведения оплаты вы не получили ссылку на вступление, напишите @MaksOST1\n\n` +
               `Для перехода на стартовое меню отправьте сообщение боту с текстом /start или используйте меню бота`,
           )
 
@@ -251,7 +271,6 @@ export class TelegramServiceThree implements OnApplicationShutdown {
         }
       }
     })
-
 
     this.bot.catch((err) => {
       const ctx = err.ctx

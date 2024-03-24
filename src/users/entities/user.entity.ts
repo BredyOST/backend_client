@@ -49,6 +49,8 @@ export class UserEntity {
   @Column({ default: '' })
   activationTgNumber: string
   @Column({ default: '' })
+  linkForAccessToTelegramChat: string
+  @Column({ default: '' })
   activationCodeForChangePassword: string
   @Column({ default: '' })
   activationCodeForChangePasswordTg: string

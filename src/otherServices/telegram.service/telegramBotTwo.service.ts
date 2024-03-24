@@ -188,29 +188,32 @@ export class TelegramTwoService implements OnApplicationShutdown {
     await this.bot.stop();
   }
 
-  async sendlink(userId, chatId, chatName) {
-    console.log('22')
-    console.log(userId)
-    console.log(chatId)
+  async sendlink(user, link, chatName) {
+
     try {
-      // const chatId = process.env['CHAT_MATH']
-      const name = 'MyInviteLink'; // Название пригласительной ссылки (необязательно)
-      const currentDate = new Date();
-      const futureDate = Math.floor((currentDate.getTime() + (24 * 60 * 60 * 1000)) / 1000); // Преобразуем в Unix timestamp, разделив на 1000 и округлив
-      const createsJoinRequest = false; // Указывает, нужно ли администраторам чата одобрять запросы на вступление по этой ссылке (необязательно)
+      await this.bot.api.sendMessage( `${user.userId}`, `чат "${chatName}" Ссылка для вступления: \n\n ${link.invite_link}`);
 
-      const link = await this.bot.api.createChatInviteLink(chatId,{
-        name,
-        expire_date: futureDate,
-        member_limit: 1,
-        creates_join_request: createsJoinRequest,
-      })
-
-      // Ваша логика для отправки сообщения подтверждения пользователю
-      await this.bot.api.sendMessage( `${userId}`, `чат "${chatName}" Ссылка для вступления: \n\n ${link.invite_link}`);
     } catch (error) {
       console.error("Error sending confirmation message:", error);
     }
+  }
+
+  async createLink(user, chatId, chatName) {
+
+    // const chatId = process.env['CHAT_MATH']
+    const name = 'MyInviteLink'; // Название пригласительной ссылки (необязательно)
+    const currentDate = new Date();
+    const futureDate = Math.floor((currentDate.getTime() + (7 * 60 * 60 * 1000)) / 1000); // Преобразуем в Unix timestamp, разделив на 1000 и округлив
+    const createsJoinRequest = false; // Указывает, нужно ли администраторам чата одобрять запросы на вступление по этой ссылке (необязательно)
+
+    const link = await this.bot.api.createChatInviteLink(chatId,{
+      name,
+      expire_date: futureDate,
+      member_limit: 1,
+      creates_join_request: createsJoinRequest,
+    })
+
+    return link;
   }
 
   async sendNewPassword(userId, text) {

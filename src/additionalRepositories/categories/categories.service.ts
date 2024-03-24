@@ -16,12 +16,13 @@ import { TelegramTwoService } from '../../otherServices/telegram.service/telegra
 @Injectable()
 export class CategoriesService {
   constructor(
-    @InjectRepository(CategoryEntity)
-    private repository: Repository<CategoryEntity>,
-    private transactionService: TransactionService,
-    private usersService: UsersService,
-    private telegramTwoService: TelegramTwoService,
-  ) {}
+      @InjectRepository(CategoryEntity)
+      private repository: Repository<CategoryEntity>,
+      private transactionService: TransactionService,
+      private usersService: UsersService,
+      private telegramTwoService: TelegramTwoService,
+  ) {
+  }
 
   async findByIdCategory(id_category: string) {
     return this.repository.findOneBy({
@@ -293,6 +294,7 @@ export class CategoriesService {
       }
     }
   }
+
   // async activateFreePeriodNotification(id: number, dto) {
   //
   //   try {
@@ -355,7 +357,7 @@ export class CategoriesService {
   //   }
   // }
   async activatePaymentNotification(dto) {
-    console.log(dto)
+
     try {
 
       const user = await this.usersService.findById(+dto.user_id)
@@ -395,11 +397,11 @@ export class CategoriesService {
 
               const noExistingCategory = user.notificationsHasBought.filter((category) => category.chatList !== item.chatList)
               user.notificationsHasBought = [...noExistingCategory, item]
-              await this.addToChat(user.chatIdTg, item.id, item.chatList)
+              await this.addToChat(user, item.id, item.chatList)
             }
           } else if (!existingCategory) {
             user.notificationsHasBought = [...user.notificationsHasBought, item]
-            await this.addToChat(user.chatIdTg, item.id, item.chatList)
+            await this.addToChat(user, item.id, item.chatList)
           }
         }
       }
@@ -411,7 +413,7 @@ export class CategoriesService {
 
       if (noInfo) {
         for (const item of user.notificationsHasBought) {
-          await this.addToChat(user.chatIdTg, item.id, item.chatList)
+          await this.addToChat(user, item.id, item.chatList)
         }
       }
 
@@ -422,13 +424,14 @@ export class CategoriesService {
     } catch (err) {
       if (err.response === 'Пользователь не найден') {
         throw err
-      }  else if (err.response === `Необходимо добавить номер телефона`) {
+      } else if (err.response === `Необходимо добавить номер телефона`) {
         throw err
       } else {
         throw new HttpException('Ошибка при получении бесплатного периода', HttpStatus.FORBIDDEN)
       }
     }
   }
+
   async activatePayment(dto) {
     try {
       const user = await this.usersService.findById(+dto.user_id) // находим юзера
@@ -461,7 +464,7 @@ export class CategoriesService {
               user.categoriesHasBought = [...noExistingCategory, existingCategory]
             }
             if (!actualDate) {
-              const noExistingCategory = user.categoriesHasBought.filter((category )=> category.id !== item.id);
+              const noExistingCategory = user.categoriesHasBought.filter((category) => category.id !== item.id);
               user.categoriesHasBought = [...noExistingCategory, item]
             }
           } else if (!existingCategory) {
@@ -487,6 +490,7 @@ export class CategoriesService {
       }
     }
   }
+
   async createPay(id, dto) {
     try {
       const user = await this.usersService.findById(+id)
@@ -550,7 +554,7 @@ export class CategoriesService {
       }
 
       try {
-        const response = await axios.post(url, data, { headers })
+        const response = await axios.post(url, data, {headers})
 
         const confirmationUrl = response.data?.confirmation?.confirmation_url
 
@@ -582,6 +586,7 @@ export class CategoriesService {
       }
     }
   }
+
   // для уведомлений
   async createPayNotification(userThis, dto) {
 
@@ -653,7 +658,7 @@ export class CategoriesService {
       }
 
       try {
-        const response = await axios.post(url, data, { headers })
+        const response = await axios.post(url, data, {headers})
 
         const confirmationUrl = response.data?.confirmation?.confirmation_url
 
@@ -690,44 +695,29 @@ export class CategoriesService {
 
     }
   }
+
   async getPayment(paymentStatusDto: string) {
-    const url = `https://api.yookassa.ru/v3/payments/${paymentStatusDto}`
-    const shopId = process.env['SHOP_ID']
-    const secretKey = process.env['SECRET_KEY_SHOP']
-    const authorization = `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString('base64')}`
-    const headers = {
-      Authorization: authorization,
-    }
 
     try {
-      const response = await axios.get(url, { headers })
+      const url = `https://api.yookassa.ru/v3/payments/${paymentStatusDto}`
+      const shopId = process.env['SHOP_ID']
+      const secretKey = process.env['SECRET_KEY_SHOP']
+      const authorization = `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString('base64')}`
+      const headers = {
+        Authorization: authorization,
+      }
+
+      const response = await axios.get(url, {headers})
       return response;
     } catch (error) {
-      // console.log(error)
-      // throw new Error('Failed to get payment information');
-    }
-  }
-  async cancelPayemnt(payment_id) {
-    const url = `https://api.yookassa.ru/v3/payments/${payment_id}/cancel`
-    const shopId = process.env['SHOP_ID']
-    const secretKey = process.env['SECRET_KEY_SHOP']
-    const authorization = `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString('base64')}`
-    const headers = {
-      Authorization: authorization,
+      console.log(error)
     }
 
-    try {
-      const response = await axios.post(url, { headers })
-      // console.log(response)
-      // return response;
-    } catch (error) {
-      // console.log(error)
-      // throw new Error('Failed to get payment information');
-    }
   }
+
   async capturePayment(paymentStatusDto) {
     const receipt = await this.getPayment(paymentStatusDto.object.id)
-    if(receipt.data.status !== 'waiting_for_capture') return
+    if (receipt.data.status !== 'waiting_for_capture') return
 
     const url = `https://api.yookassa.ru/v3/payments/${paymentStatusDto.object.id}/capture`
     const shopId = process.env['SHOP_ID']
@@ -748,9 +738,9 @@ export class CategoriesService {
     }
 
     try {
-      const response = await axios.post(url, data, { headers });
+      const response = await axios.post(url, data, {headers});
       // console.log(response)
-      if(response?.data && response?.status == 200 && response.data.status == 'succeeded') {
+      if (response?.data && response?.status == 200 && response.data.status == 'succeeded') {
         const trans = await this.transactionService.changeTransaction(response)
         if (trans) {
           if (paymentStatusDto.object.description == 'Оплата подписки на сайте клиенты.com') {
@@ -761,32 +751,45 @@ export class CategoriesService {
           }
         }
       }
-      return { statusCode: HttpStatus.OK, data: response.data };
+      return {statusCode: HttpStatus.OK, data: response.data};
     } catch (error) {
       throw new Error('Failed to get payment information');
     }
   }
 
-  async addToChat(userIdTg, categId, chatName) {
+  async addToChat(user, categId, chatName) {
 
-    let chatId;
+    try {
 
-    if (categId == 1) {
+      let chatId;
+      const thisUser = user;
 
-      const categoryFromDb = await this.findByIdCategory(categId);
+      if (categId == 1) {
 
-      if (chatName.toLowerCase().includes('языки')) chatId = process.env['CHAT_LANGUAGE']
-      if (chatName.toLowerCase().includes('мате')) chatId = process.env['CHAT_MATH']
-      if (chatName.toLowerCase().includes('рус')) chatId = process.env['CHAT_RUS']
-      if (chatName.toLowerCase().includes('химия')) chatId = process.env['CHAT_BIOLOGY']
-      if (chatName.toLowerCase().includes('биолог')) chatId = process.env['CHAT_BIOLOGY']
-      if (chatName.toLowerCase().includes('информ')) chatId = process.env['CHAT_INFORM']
-      if (chatName.toLowerCase().includes('физик')) chatId = process.env['CHAT_PHYSIC']
-      if (chatName.toLowerCase().includes('общест')) chatId = process.env['CHAT_SOCIAL']
-      if (chatName.toLowerCase().includes('истор')) chatId = process.env['CHAT_HISTORY']
-      if (chatName.toLowerCase().includes('начал')) chatId = process.env['CHAT_ENG']
+        // const categoryFromDb = await this.findByIdCategory(categId);
+
+        if (chatName.toLowerCase().includes('языки')) chatId = process.env['CHAT_LANGUAGE']
+        if (chatName.toLowerCase().includes('мате')) chatId = process.env['CHAT_MATH']
+        if (chatName.toLowerCase().includes('рус')) chatId = process.env['CHAT_RUS']
+        if (chatName.toLowerCase().includes('химия')) chatId = process.env['CHAT_BIOLOGY']
+        if (chatName.toLowerCase().includes('биолог')) chatId = process.env['CHAT_BIOLOGY']
+        if (chatName.toLowerCase().includes('информ')) chatId = process.env['CHAT_INFORM']
+        if (chatName.toLowerCase().includes('физик')) chatId = process.env['CHAT_PHYSIC']
+        if (chatName.toLowerCase().includes('общест')) chatId = process.env['CHAT_SOCIAL']
+        if (chatName.toLowerCase().includes('истор')) chatId = process.env['CHAT_HISTORY']
+        if (chatName.toLowerCase().includes('начал')) chatId = process.env['CHAT_ENG']
+      }
+
+      const link = await this.telegramTwoService.createLink(user, `${chatId}`, chatName)
+
+      thisUser.linkForAccessToTelegramChat = `${chatName} : ${link}`
+      await this.usersService.saveUpdatedUser(thisUser.id, thisUser)
+
+      await this.telegramTwoService.sendlink(user, link, chatName)
+
+    } catch (err) {
+      console.log(err)
     }
-    await this.telegramTwoService.sendlink(userIdTg, `${chatId}`, chatName)
   }
 
 }

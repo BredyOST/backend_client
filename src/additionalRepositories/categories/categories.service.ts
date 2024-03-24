@@ -782,7 +782,7 @@ export class CategoriesService {
 
       const link = await this.telegramTwoService.createLink(user, `${chatId}`, chatName)
 
-      thisUser.linkForAccessToTelegramChat = `${chatName} : ${link}`
+      thisUser.linkForAccessToTelegramChat = link
       await this.usersService.saveUpdatedUser(thisUser.id, thisUser)
 
       await this.telegramTwoService.sendlink(user, link, chatName)

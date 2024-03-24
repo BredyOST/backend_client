@@ -188,10 +188,10 @@ export class TelegramTwoService implements OnApplicationShutdown {
     await this.bot.stop();
   }
 
-  async sendlink(user, link, chatName) {
+  async sendlink(chatTgId, link, chatName) {
 
     try {
-      await this.bot.api.sendMessage( `${user.userId}`, `чат "${chatName}" Ссылка для вступления: \n\n ${link.invite_link}`);
+      await this.bot.api.sendMessage( `${chatTgId}`, `чат "${chatName}" Ссылка для вступления: \n\n ${link.invite_link}`);
 
     } catch (error) {
       console.error("Error sending confirmation message:", error);

@@ -3,6 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { GroupsFromVkEntity } from './entities/groups-from-vk.entity'
 import { Repository } from 'typeorm'
 import { UsersService } from '../../users/users.service'
+import * as process from 'process';
+import {catchError, firstValueFrom} from "rxjs";
+import {AxiosError} from "axios/index";
+import {HttpService} from "@nestjs/axios";
 
 @Injectable()
 export class GroupsFromVkService {
@@ -10,6 +14,7 @@ export class GroupsFromVkService {
 		private usersService: UsersService,
 		@InjectRepository(GroupsFromVkEntity)
 		private repository: Repository<GroupsFromVkEntity>,
+		private readonly httpService: HttpService,
 	) { }
 
 	async findByIdVk(idVk: string) {
@@ -31,7 +36,7 @@ export class GroupsFromVkService {
 		const groups = await this.repository.find({
 			take: dto.size,
 			skip: dto.offset,
-			order: { id: 'ASC' }, // Замените 'id' на поле, по которому вы хотите сортировать
+			order: { id: 'ASC' },
 		});
 		return groups;
 	}
@@ -258,4 +263,203 @@ export class GroupsFromVkService {
 			}
 		}
 	}
+
+
+
+
+
+
+
+
+
+
+
+	async getGroupsNew() {
+		let start = 110565000
+		let end = 110565500
+		let resultArray = []
+		let forIndex = 0;
+		// формируем запрос на сл посты в вк
+		const requestPosts = [];
+
+		for (let i = 0; i <= 500000000000; i++) {
+			forIndex = 0
+			resultArray = []
+
+			for(let  o = start; o <= end; o++) {
+				resultArray.push(o)
+			}
+
+		const access = process.env['ACCESS_TOKEN'];
+		const versionVk = process.env['VERSION_VK'];
+
+		const groupIds = []
+
+			try {
+
+			const response = await firstValueFrom(
+				this.httpService.get<any>(`https://api.vk.com/method/groups.getById?group_ids=${resultArray}&access_token=${access}&fields=name,members_count,is_closed,deactivated,counters&v=${versionVk}`,
+				)
+					.pipe(
+						catchError((error: AxiosError) => {
+							if (error.response && 'data' in error.response && error.response.data != undefined) {}
+							throw new Error(`${error}`);
+						}),
+					),
+			);
+
+			start += 500;
+			end += 500;
+			console.log(end)
+			const data = response?.data;
+
+			for (let index = 0; index < response?.data?.response?.groups.length; index++) {
+				const item = response.data.response.groups[index];
+				if (item.is_closed == 0 && item?.members_count >= 1000 && (item?.deactivated != 'deleted' || item?.deactivated != 'banned')) {
+					if (item.name.includes(
+						'работа' ||
+						'отзыв' ||
+						'отзови' ||
+						'город' ||
+						'мамы' ||
+						'шабашк' ||
+						'мамоч' ||
+						'школ' ||
+						'репет' ||
+						'куп' ||
+						'продай' ||
+						'женски' ||
+						'объявле' ||
+						'доска' ||
+						'студент' ||
+						'спроси' ||
+						'совет' ||
+						'репет' ||
+						'ищу' ||
+						'барахол' ||
+						'женск' ||
+						'подслушано' ||
+						'первый' ||
+						'наш' ||
+						'проверено' ||
+						'р-н' ||
+						'мама' ||
+						'сегодня' ||
+						'мкр' ||
+						'ЕГЭ' ||
+						'ОГЭ' ||
+						'сплетни' ||
+						'район' ||
+						'вакансии' ||
+						'покуп' ||
+						'книг' ||
+						'krash' ||
+						'беремен' ||
+						'доск' ||
+						'признавашк' ||
+						'купи' ||
+						'прода' ||
+						'стукач' ||
+						'мамин' ||
+						'выбирает' ||
+						'мам' ||
+						'полезные контакты' ||
+						'село' ||
+						'деревн' ||
+						'подслухано' ||
+						'типичны' ||
+						'жк' ||
+						'поиск' ||
+						'прод' ||
+						'ищу' ||
+						'найдись' ||
+						'спрашивай' ||
+						'дете'
+					)) {
+						const sameGroup = await this.findByIdVk(`-${item.id}`)
+						if (!sameGroup) {
+							await this.repository.save({
+								idVk: `-${item.id}`,
+							})
+							const sameGroup = await this.findByIdVk(`-${item.id}`)
+							sameGroup.name = item.name
+							await this.repository.update(sameGroup.id, sameGroup)
+						}
+
+					}
+				}
+			}
+
+				// // if (requestPosts.length >= 2) {
+				//
+				// 	const codeIfPostsNo =
+				// 		requestPosts.join('\n') +
+				// 		'\nreturn { ' +
+				// 		requestPosts
+				// 			.map((_, index) => `group${index}: response${index}`)
+				// 			.join(', ') +
+				// 		' };';
+				//
+				// 	console.log(codeIfPostsNo)
+				// 	const result = await this.getPostsFromVK(codeIfPostsNo)
+				// 	// console.log(result)
+				// 	// return
+				// // }
+		} catch (err) {
+			console.log(err)
+		}
+		}
+	}
+	// async getPostsFromVK(postsForRequest) {
+	// 	const access = process.env['ACCESS_TOKEN'];
+	// 	const versionVk = process.env['VERSION_VK'];
+	// 	try {
+	// 		const { data } = await firstValueFrom(
+	// 			this.httpService.get<any>(`https://api.vk.com/method/execute?code=${postsForRequest}&access_token=${access}&v=${versionVk}`)
+	// 				.pipe(
+	// 					catchError((error: AxiosError) => {
+	// 						if (
+	// 							error.response &&
+	// 							'data' in error.response &&
+	// 							error.response.data != undefined
+	// 						) {
+	//
+	// 						}
+	// 						throw new Error(
+	// 							`getPostsFromVK An error happened! ${data} для ${postsForRequest}`,
+	// 						);
+	// 					}),
+	// 				),
+	// 		);
+	//
+	// 		console.log(data)
+	//
+	// 		// очищаем ответ, удаляя лишнее
+	// 		if (data?.response && typeof data.response === 'object') {
+	// 			if ('execute_errors' in data.response) {
+	// 				delete data.response.execute_errors;
+	// 			}
+	// 		}
+	//
+	// 		const filteredData = { response: {} };
+	//
+	// 		filteredData.response = Object.fromEntries(
+	// 			Object.entries(data.response).filter(([key, value]: [string, any]) => {
+	// 				return (
+	// 					value !== false &&
+	// 					(!value.count || value.count !== 0) &&
+	// 					value.items &&
+	// 					value.items.length > 0
+	// 				);
+	// 			}),
+	// 		);
+	// 		return filteredData;
+	// 	} catch (err) {
+	// 		console.log(err)
+	// 	}
+	// }
+
+
+
+
 }

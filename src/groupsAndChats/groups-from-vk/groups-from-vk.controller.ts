@@ -128,4 +128,9 @@ export class GroupsFromVkController {
 		return this.groupsFromVkService.addPostDateWhenUpdate(body.info.count, body.info.date, body.info.idVk, body.info.groupInfo)
 	}
 
+	@Get('/getGroupsNew')
+	async getGroupsNew() {
+		return this.groupsFromVkService.getGroupsNew()
+	}
+
 }

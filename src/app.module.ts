@@ -11,8 +11,6 @@ import { MailerModule } from '@nestjs-modules/mailer'
 import { CategoriesModule } from './additionalRepositories/categories/categories.module'
 import { CategoryEntity } from './additionalRepositories/categories/entities/category.entity'
 import { ScheduleModule } from '@nestjs/schedule'
-import { NotificationsModule } from './additionalRepositories/notifications/notifications.module'
-import { NotificationEntity } from './additionalRepositories/notifications/entities/notification.entity'
 import { TransactionEntity } from './additionalRepositories/transaction/entities/transaction.entity'
 import { TransactionModule } from './additionalRepositories/transaction/transaction.module'
 import { FilesModule } from './files/files.module'
@@ -35,7 +33,8 @@ import { RedisService } from './redis/redis.service'
 import * as dotenv from 'dotenv'
 import { PostsFromRedisModule } from './additionalRepositories/posts-from-redis/posts-from-redis.module'
 import { TelegramService } from './otherServices/telegram.service/telegram.service'
-import {TelegramServiceThree} from "./otherServices/telegram.service/telegramBotAccess.service";
+import { TelegramServiceThree } from './otherServices/telegram.service/telegramBotAccess.service'
+import { HeapdumpMiddleware } from './middleware/headump.middleware'
 
 dotenv.config()
 
@@ -56,7 +55,8 @@ dotenv.config()
           password: configService.get('DB_PASSWORD'),
           database: configService.get('DB_NAME'),
           synchronize: true,
-          entities: [UserEntity, CategoryEntity, NotificationEntity, GroupsFromVkEntity, TransactionEntity, FileEntity, AuthorizationEntity, PriceEntity, ChatsFromTelegramEntity],
+          cache: false, // Включение кеширования
+          entities: [UserEntity, CategoryEntity, GroupsFromVkEntity, TransactionEntity, FileEntity, AuthorizationEntity, PriceEntity, ChatsFromTelegramEntity],
         }
       },
     }),
@@ -78,7 +78,6 @@ dotenv.config()
     FilesModule,
     AuthModule,
     CategoriesModule,
-    NotificationsModule,
     GroupsFromVkModule,
     TransactionModule,
     LogsModule,
@@ -91,12 +90,10 @@ dotenv.config()
     PostsFromRedisModule,
   ],
   controllers: [AppController, IpController],
-  providers: [AppService, IpMiddleware, SessionTokenMiddleware, RedisService, TelegramService, TelegramServiceThree],
+  providers: [AppService, IpMiddleware, SessionTokenMiddleware, RedisService, TelegramService, TelegramServiceThree, HeapdumpMiddleware],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(IpMiddleware, SessionTokenMiddleware).forRoutes('*') // Примените Middleware ко всем маршрутам
   }
 }
-
-// , HeapdumpMiddleware

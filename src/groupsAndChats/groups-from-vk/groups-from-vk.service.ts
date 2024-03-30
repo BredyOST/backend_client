@@ -268,15 +268,9 @@ export class GroupsFromVkService {
 
 
 
-
-
-
-
-
-
 	async getGroupsNew() {
-		let start = 110565000
-		let end = 110565500
+		let start = 174784500
+		let end = 174784500
 		let resultArray = []
 		let forIndex = 0;
 		// формируем запрос на сл посты в вк

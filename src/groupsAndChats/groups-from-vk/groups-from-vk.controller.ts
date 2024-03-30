@@ -92,8 +92,10 @@ export class GroupsFromVkController {
 		return this.groupsFromVkService.findAll()
 	}
 
-	@Post('/getPartOfGroup')
-	async getGroupsBatch(@Body() dto:{size:number, offset:number}) {
+	// @Post('/getPartOfGroup')
+	@Get('/getPartOfGroup')
+	// async getGroupsBatch(@Body() dto:{size:number, offset:number}) {
+		async getGroupsBatch(@Body() dto:{size:14600, offset:0}) {
 		return this.groupsFromVkService.getGroupsBatch(dto)
 	}
 

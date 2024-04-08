@@ -48,7 +48,9 @@ export class CategoriesService {
 
   async getAllCategories() {
     try {
-      return await this.findAll()
+      const res = await this.findAll()
+      console.log(res)
+      return res
     } catch (err) {
       throw new HttpException('Ошибка получении всех категорий', HttpStatus.FORBIDDEN)
     }
@@ -589,7 +591,7 @@ export class CategoriesService {
 
   // для уведомлений
   async createPayNotification(userThis, dto) {
-
+    console.log(dto)
     try {
       const user = userThis
       // if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)

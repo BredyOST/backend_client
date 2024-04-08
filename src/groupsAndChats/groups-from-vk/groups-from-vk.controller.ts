@@ -6,7 +6,7 @@ import {
 	Patch,
 	Delete,
 	UseGuards,
-	Request,
+	Request, Query,
 } from '@nestjs/common'
 import { GroupsFromVkService } from './groups-from-vk.service'
 
@@ -92,11 +92,9 @@ export class GroupsFromVkController {
 		return this.groupsFromVkService.findAll()
 	}
 
-	// @Post('/getPartOfGroup')
 	@Get('/getPartOfGroup')
-	// async getGroupsBatch(@Body() dto:{size:number, offset:number}) {
-		async getGroupsBatch(@Body() dto:{size:14600, offset:0}) {
-		return this.groupsFromVkService.getGroupsBatch(dto)
+		async getGroupsBatch(@Query('size') size: string, @Query('offset') offset: string) {
+		return this.groupsFromVkService.getGroupsBatch(size, offset)
 	}
 
 	// помечаем в базе данных информацию по закрытым группам

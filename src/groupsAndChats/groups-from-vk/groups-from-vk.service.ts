@@ -32,12 +32,13 @@ export class GroupsFromVkService {
 	}
 
 	// ====================================================
-	async getGroupsBatch(dto) {
+	async getGroupsBatch(size,offset) {
 		const groups = await this.repository.find({
-			take: dto.size,
-			skip: dto.offset,
+			take: size,
+			skip: offset,
 			order: { id: 'ASC' },
 		});
+		console.log(groups.length)
 		return groups;
 	}
 
@@ -200,7 +201,6 @@ export class GroupsFromVkService {
 
 	async addPostDateWhenUpdate(count: number, date: Date, idVk: string, groupInfo) {
 
-
 		// const group = await this.findByIdVk(idVk)
 		if (!groupInfo) return
 
@@ -228,15 +228,19 @@ export class GroupsFromVkService {
 
 	async changePostsDateToDateUpdateWhenBreak(info) {
 
-		// const group = await this.findByIdVk(idVk)
-		if (!info) return
+		if (!info || !info?.postsDateWhenUpdate) return
 
-		if (!info?.postsDateWhenUpdate) return
+		const postsLastDate = new Date(info.postsLastDate);
+		const postsDateWhenUpdate = new Date(info.postsDateWhenUpdate);
 
-		info.postsLastDate = info.postsDateWhenUpdate
+		if(postsDateWhenUpdate > postsLastDate) {
 
-		await this.repository.update(info.id, info)
+			info.postsLastDate = info.postsDateWhenUpdate
+			await this.repository.update(info.id, info)
 
+		} else {
+			return
+		}
 	}
 
 	// для теста
@@ -269,8 +273,8 @@ export class GroupsFromVkService {
 
 
 	async getGroupsNew() {
-		let start = 174784500
-		let end = 174784500
+		let start = 10074020
+		let end = 10074500
 		let resultArray = []
 		let forIndex = 0;
 		// формируем запрос на сл посты в вк
@@ -311,64 +315,77 @@ export class GroupsFromVkService {
 				const item = response.data.response.groups[index];
 				if (item.is_closed == 0 && item?.members_count >= 1000 && (item?.deactivated != 'deleted' || item?.deactivated != 'banned')) {
 					if (item.name.includes(
-						'работа' ||
-						'отзыв' ||
-						'отзови' ||
-						'город' ||
-						'мамы' ||
-						'шабашк' ||
-						'мамоч' ||
-						'школ' ||
-						'репет' ||
-						'куп' ||
-						'продай' ||
-						'женски' ||
-						'объявле' ||
-						'доска' ||
-						'студент' ||
-						'спроси' ||
-						'совет' ||
-						'репет' ||
-						'ищу' ||
-						'барахол' ||
-						'женск' ||
-						'подслушано' ||
-						'первый' ||
-						'наш' ||
-						'проверено' ||
-						'р-н' ||
-						'мама' ||
-						'сегодня' ||
-						'мкр' ||
-						'ЕГЭ' ||
-						'ОГЭ' ||
-						'сплетни' ||
-						'район' ||
-						'вакансии' ||
-						'покуп' ||
-						'книг' ||
-						'krash' ||
-						'беремен' ||
-						'доск' ||
-						'признавашк' ||
-						'купи' ||
-						'прода' ||
-						'стукач' ||
-						'мамин' ||
-						'выбирает' ||
-						'мам' ||
-						'полезные контакты' ||
-						'село' ||
-						'деревн' ||
-						'подслухано' ||
-						'типичны' ||
 						'жк' ||
-						'поиск' ||
-						'прод' ||
+						'недвижимост' ||
+						'квартир' ||
+						'риелтер' ||
+						'район' ||
+						'дом' ||
+						'дачи' ||
+						'строительств' ||
+						'ремонт' ||
+						'дизайн' ||
+						'архитектур' ||
 						'ищу' ||
-						'найдись' ||
-						'спрашивай' ||
-						'дете'
+						'без посредников' ||
+						'аренд' ||
+						'мам'
+						// 'работа' ||
+						// 'отзыв' ||
+						// 'отзови' ||
+						// 'город' ||
+						// 'мамы' ||
+						// 'шабашк' ||
+						// 'школ' ||
+						// 'куп' ||
+						// 'продай' ||
+						// 'женски' ||
+						// 'объявле' ||
+						// 'доска' ||
+						// 'студент' ||
+						// 'спроси' ||
+						// 'совет' ||
+						// 'репет' ||
+						// 'ищу' ||
+						// 'барахол' ||
+						// 'женск' ||
+						// 'подслушано' ||
+						// 'первый' ||
+						// 'наш' ||
+						// 'проверено' ||
+						// 'р-н' ||
+						// 'мама' ||
+						// 'сегодня' ||
+						// 'мкр' ||
+						// 'ЕГЭ' ||
+						// 'ОГЭ' ||
+						// 'сплетни' ||
+						// 'район' ||
+						// 'вакансии' ||
+						// 'покуп' ||
+						// 'книг' ||
+						// 'krash' ||
+						// 'беремен' ||
+						// 'доск' ||
+						// 'признавашк' ||
+						// 'купи' ||
+						// 'прода' ||
+						// 'стукач' ||
+						// 'мамин' ||
+						// 'выбирает' ||
+						// 'мам' ||
+						// 'полезные контакты' ||
+						// 'село' ||
+						// 'деревн' ||
+						// 'подслухано' ||
+						// 'типичны' ||
+						// 'жк' ||
+						// 'поиск' ||
+						// 'прод' ||
+						// 'ищу' ||
+						// 'найдись' ||
+						// 'спрашивай' ||
+						// 'дете'
 					)) {
 						const sameGroup = await this.findByIdVk(`-${item.id}`)
 						if (!sameGroup) {

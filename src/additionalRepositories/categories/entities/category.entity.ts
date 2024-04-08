@@ -15,6 +15,8 @@ export class CategoryEntity {
   @Column('jsonb', { array: false, default: [] })
   negativeWords: string[]
   @Column('jsonb', { array: false, default: [] })
+  extraWords: string[]
+  @Column('jsonb', { array: false, default: [] })
   chatNames: string[]
   @Column({ default: 2500 })
   salary: number

@@ -223,7 +223,6 @@ export class TelegramServiceThree implements OnApplicationShutdown {
       const match = message.match(regex);
 
       if (match) {
-
         const number = match[1]; // Номер
         const subject = match[2]; // Предмет
         const duration = match[3]; // Срок дни
@@ -242,7 +241,7 @@ export class TelegramServiceThree implements OnApplicationShutdown {
           let days;
 
           if (nameMonthOtWeek.includes('не')) days = +duration * 7
-          if (nameMonthOtWeek.includes('ме')) days = +duration * 30
+          if (nameMonthOtWeek.includes('ме')) days = +duration
 
           const payment = {
             categ: [{id: chosenCategory.id, text: chosenCategory.name, chatNames: chosenCategory.chatNames}],
@@ -271,6 +270,13 @@ export class TelegramServiceThree implements OnApplicationShutdown {
         }
       }
     })
+
+
+    //======
+
+    //======
+
+
 
     this.bot.catch((err) => {
       const ctx = err.ctx

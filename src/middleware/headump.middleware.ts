@@ -26,7 +26,7 @@ export class HeapdumpMiddleware implements NestMiddleware {
             if (err) {
                 console.error('Error creating heap snapshot:', err);
             } else {
-                console.log('Heap snapshot created:', dumpFile);
+                // console.log('Heap snapshot created:', dumpFile);
             }
         });
     }

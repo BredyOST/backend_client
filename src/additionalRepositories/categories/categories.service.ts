@@ -247,11 +247,11 @@ export class CategoriesService {
       if (user.endFreePeriod) throw new HttpException('Вы уже использовали бесплатный период', HttpStatus.UNAUTHORIZED)
       if (user.activatedFreePeriod) throw new HttpException('Вы уже используете бесплатный период', HttpStatus.UNAUTHORIZED)
       if (dto.length >= 2) throw new HttpException('Для бесплатного периода доступна одна категория', HttpStatus.UNAUTHORIZED)
-      const sameIp = await this.usersService.findByIp(`${user.ip}`)
+      // const sameIp = await this.usersService.findByIp(`${user.ip}`)
 
-      for (const item of sameIp) {
-        if (item?.activatedFreePeriod || item?.endFreePeriod || item?.categoriesFreePeriod?.length > 0) throw new HttpException('Вы уже использовали бесплатный период', HttpStatus.UNAUTHORIZED)
-      }
+      // for (const item of sameIp) {
+      //   if (item?.activatedFreePeriod || item?.endFreePeriod || item?.categoriesFreePeriod?.length > 0) throw new HttpException('Вы уже использовали бесплатный период', HttpStatus.UNAUTHORIZED)
+      // }
 
       const days = 1
 

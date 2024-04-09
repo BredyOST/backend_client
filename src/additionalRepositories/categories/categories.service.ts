@@ -367,7 +367,7 @@ export class CategoriesService {
       let noInfo = false;
 
       const currentDate = new Date()
-      // console.log(dto.category)
+
       if (user?.notificationsHasBought?.length == 0) {
         user.notificationsHasBought = dto.category
         noInfo = true
@@ -442,10 +442,10 @@ export class CategoriesService {
 
       if (user?.categoriesHasBought?.length == 0) {
         user.categoriesHasBought = dto.category
-        // console.log(1)
+
       } else {
         for (const item of dto.category) {
-          // console.log(2)
+
           let existingCategory = user.categoriesHasBought.find((category) => category.id === item.id);
           // если есть категория у пользователя
           if (existingCategory) {
@@ -591,7 +591,7 @@ export class CategoriesService {
 
   // для уведомлений
   async createPayNotification(userThis, dto) {
-    console.log(dto)
+
     try {
       const user = userThis
       // if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
@@ -741,7 +741,7 @@ export class CategoriesService {
 
     try {
       const response = await axios.post(url, data, {headers});
-      // console.log(response)
+
       if (response?.data && response?.status == 200 && response.data.status == 'succeeded') {
         const trans = await this.transactionService.changeTransaction(response)
         if (trans) {

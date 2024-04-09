@@ -42,7 +42,8 @@ export class PostsFromRedisService {
       if (err.response === 'Пользователь не найден') {
         throw err
       } else {
-
+        console.log('redis error')
+        console.log(err)
       }
     }
   }

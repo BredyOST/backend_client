@@ -38,7 +38,6 @@ export class GroupsFromVkService {
 			skip: offset,
 			order: { id: 'ASC' },
 		});
-		console.log(groups.length)
 		return groups;
 	}
 
@@ -308,7 +307,6 @@ export class GroupsFromVkService {
 
 			start += 500;
 			end += 500;
-			console.log(end)
 			const data = response?.data;
 
 			for (let index = 0; index < response?.data?.response?.groups.length; index++) {

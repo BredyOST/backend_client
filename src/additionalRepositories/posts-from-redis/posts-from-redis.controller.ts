@@ -15,6 +15,7 @@ export class PostsFromRedisController {
   @Post('/getPostsRedis')
   @UseGuards(JwtAuthGuard)
   async getPostsFromRedis(@UserId() id: number, @Request() req, @Body() dto) {
+    console.log('start resis')
     // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
     const result = await this.sessionAuthService.validateSessionToken(req.session)
     // если возвращается false то сессия истекла

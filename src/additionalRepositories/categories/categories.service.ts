@@ -49,7 +49,6 @@ export class CategoriesService {
   async getAllCategories() {
     try {
       const res = await this.findAll()
-      console.log(res)
       return res
     } catch (err) {
       throw new HttpException('Ошибка получении всех категорий', HttpStatus.FORBIDDEN)

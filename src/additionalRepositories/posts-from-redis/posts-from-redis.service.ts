@@ -32,10 +32,11 @@ export class PostsFromRedisService {
 
   async getPostsFromRedis(id, dto) {
     try {
+      console.log('1')
       const user = await this.usersService.findById(+id)
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
       const posts = await this.redisService.get(dto.str)
-
+      console.log(posts.length)
       return posts;
 
     } catch (err) {

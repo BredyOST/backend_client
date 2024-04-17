@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { ChatsFromTelegramEntity } from './entities/chats-from-telegram.entity'
 import { Repository } from 'typeorm'
 import {UsersService} from "../../users/users.service";
+import {HttpService} from "@nestjs/axios";
+import * as process from 'process';
 
 @Injectable()
 export class ChatsFromTelegramService {
@@ -10,6 +12,7 @@ export class ChatsFromTelegramService {
     private usersService: UsersService,
     @InjectRepository(ChatsFromTelegramEntity)
     private repository: Repository<ChatsFromTelegramEntity>,
+    private readonly httpService: HttpService,
   ) {}
 
   async findByNameChat(chatName: string) {
@@ -22,8 +25,19 @@ export class ChatsFromTelegramService {
       id,
     })
   }
+  async updateThis(id, group) {
+    await this.repository.update(id, group)
+  }
   async findAll() {
     return this.repository.find()
+  }
+  async getGroupsBatch(size,offset) {
+    const groups = await this.repository.find({
+      take: size,
+      skip: offset,
+      order: { id: 'ASC' },
+    });
+    return groups;
   }
   async create(id, dto) {
     try {
@@ -139,4 +153,71 @@ export class ChatsFromTelegramService {
       }
     }
   }
+  async addPostDateWhenUpdate(date: Date, id: string, groupInfo) {
+
+    // const group = await this.findByIdVk(idVk)
+    if (!groupInfo) return
+
+    let shouldUpdate = false // Флаг, указывающий, нужно ли обновлять запись в базе данных
+
+    const dateObject = new Date(date);
+    const groupInfoDate = new Date(groupInfo.postsDateWhenUpdate);
+    // Обновляем дату последнего поста, если переданная дата более свежая или текущей даты нет
+    if (!groupInfo.postsDateWhenUpdate || (date && groupInfoDate.getTime() < dateObject.getTime())) {
+      groupInfo.postsDateWhenUpdate = date
+      shouldUpdate = true
+    }
+
+    // Обновляем запись в базе данных, если были внесены изменения
+    if (shouldUpdate) {
+      this.repository.update(groupInfo.id, groupInfo)
+    }
+
+  }
+  async changePostsDateToDateUpdateWhenBreak(info) {
+
+    if (!info || !info?.postsDateWhenUpdate) return
+
+    const postsLastDate = new Date(info.postsLastDate);
+    const postsDateWhenUpdate = new Date(info.postsDateWhenUpdate);
+
+    if(postsDateWhenUpdate > postsLastDate) {
+
+      info.postsLastDate = info.postsDateWhenUpdate
+      await this.repository.update(info.id, info)
+
+    } else {
+      return
+    }
+  }
+  async addPostCounter(date: Date, chatName: string) {
+
+    try {
+
+      const group = await this.findByNameChat(chatName)
+
+      if (!group) return
+
+      let shouldUpdate = false // Флаг, указывающий, нужно ли обновлять запись в базе данных
+
+      const dateObject = new Date(date);
+      // Обновляем дату последнего поста, если переданная дата более свежая или текущей даты нет
+      if (!group.postsLastDate || (date && group.postsLastDate.getTime() < dateObject.getTime())) {
+        group.postsLastDate = date
+        shouldUpdate = true
+      }
+
+      // Обновляем запись в базе данных, если были внесены изменения
+      if (shouldUpdate) {
+        await this.repository.update(group.id, group)
+      }
+    } catch (err) {
+      console.log(err)
+    }
+
+  }
+
+
+
+
 }

@@ -15,7 +15,7 @@ export class CategoryEntity {
   @Column('jsonb', { array: false, default: [] })
   negativeWords: string[]
   @Column('jsonb', { array: false, default: [] })
-  extraWords: string[]
+  extraWords: ExtraWords[]
   @Column('jsonb', { array: false, default: [] })
   chatNames: string[]
   @Column({ default: 2500 })
@@ -37,3 +37,12 @@ export class CategoryEntity {
   @UpdateDateColumn()
   updateAt: Date
 }
+
+
+export interface ExtraWords {
+  id: number // id купленной категории
+  word: string // Имя купленной категории
+  dateLast: Date // Дата последнего поста
+  dateUpdate: Date // Дата обновления
+}
+

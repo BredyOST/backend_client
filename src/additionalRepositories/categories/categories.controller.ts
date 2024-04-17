@@ -13,6 +13,7 @@ export type category = {
   description: string
   positiveWords: string[]
   negativeWords: string[]
+  extraWords: any[]
   salary: string
 }
 export type PaymentNotificationDto = {
@@ -75,6 +76,12 @@ export class CategoriesController {
   async updateCategory(@UserId() id: number, @Body() dto: category) {
     return this.categoriesService.updateCategory(id, dto)
   }
+  // ОБНОВЛЕНИЕ категории во время обновления постов
+  @Post('/updateThis')
+  async updateThis(@Body() dto) {
+    return this.categoriesService.updateThis(dto.category)
+  }
+
 
   // УДАЛЕНИЕ КАТЕГОРИИ
   @Delete('/delete')

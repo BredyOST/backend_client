@@ -10,6 +10,10 @@ export class ChatsFromTelegramEntity {
     default: 'tg',
   })
   identification: string
+  @Column({ nullable: true })
+  postsLastDate: Date
+  @Column({ nullable: true })
+  postsDateWhenUpdate: Date
   @CreateDateColumn()
   createdAt: Date
   @UpdateDateColumn()

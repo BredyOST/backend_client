@@ -172,6 +172,15 @@ export class CategoriesService {
       }
     }
   }
+  async updateThis(dto) {
+    try {
+      await this.repository.update(dto.id, dto)
+    } catch (err) {
+      throw new HttpException('Ошибка при изменении категории', HttpStatus.FORBIDDEN)
+    }
+  }
+
+
 
   async deleteCategory(id: number, dto: { id: number }) {
     try {

@@ -7,9 +7,10 @@ import { UsersModule } from '../../users/users.module'
 import { SessionAuthModule } from '../../auth/session-auth/session-auth.module'
 import { RepositoryAllAdd } from '../../otherServices/loggerService/logger.module'
 import { LogsService } from '../../otherServices/loggerService/logger.service'
+import {HttpModule} from "@nestjs/axios";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ChatsFromTelegramEntity]), UsersModule, SessionAuthModule],
+  imports: [HttpModule, TypeOrmModule.forFeature([ChatsFromTelegramEntity]), UsersModule, SessionAuthModule],
   controllers: [ChatsFromTelegramController],
   providers: [ChatsFromTelegramService, RepositoryAllAdd, LogsService],
   exports: [ChatsFromTelegramService],

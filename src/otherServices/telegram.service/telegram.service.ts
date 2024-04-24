@@ -129,4 +129,6 @@ export class TelegramService implements OnApplicationShutdown {
     // Остановить бота перед завершением работы приложения
     await this.bot.stop()
   }
+
+
 }

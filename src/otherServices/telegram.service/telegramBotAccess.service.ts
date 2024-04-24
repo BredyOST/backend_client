@@ -20,6 +20,7 @@ export class TelegramServiceThree implements OnApplicationShutdown {
 
     // Инициализация бота с вашим токеном
     this.bot = new Bot(token)
+    console.log('2')
 
     this.isBotRunning = true // Устанавливаем флаг запуска бота
 
@@ -271,12 +272,51 @@ export class TelegramServiceThree implements OnApplicationShutdown {
       }
     })
 
+    this.bot.hears(/t\.me\.*/, async (ctx) => {
 
-    //======
+      const text = ctx.message.text
 
-    //======
+      async function getInfo(text) {
+        try {
+
+          const link = `http://localhost:7000`
+          const encodedText = encodeURIComponent(text);
+
+          const response = await fetch(`${link}/telegram-posts/addPeopleFromChat?text=${encodedText}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(
+                `Failed to fetch categories. Status: ${response.status}`,
+            );
+          }
+          const responseData = await response.json();
+
+          // await this.bot.api.messages.AddChatUser()
 
 
+          if(responseData) {
+            await ctx.reply(
+                `Все закончил брат. Давай еще ссылку, но сперва проверь, увеличилось ли количество подписчиков в том чате куда я должен был добавить пиплов`
+            )
+          } else {
+            await ctx.reply(
+                `Хм...что-то не так. Разработчика в студию`
+            )
+          }
+
+        } catch (err) {
+          console.log(err)
+        }
+      }
+
+      const result = await getInfo(text)
+
+    })
 
     this.bot.catch((err) => {
       const ctx = err.ctx

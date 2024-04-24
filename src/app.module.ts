@@ -34,6 +34,7 @@ import * as dotenv from 'dotenv'
 import { PostsFromRedisModule } from './additionalRepositories/posts-from-redis/posts-from-redis.module'
 import { TelegramService } from './otherServices/telegram.service/telegram.service'
 import { TelegramServiceThree } from './otherServices/telegram.service/telegramBotAccess.service'
+import {TelegramBotControlMessage,} from "./otherServices/telegram.service/telegramBotControlMessage.service";
 
 dotenv.config()
 
@@ -89,7 +90,7 @@ dotenv.config()
     PostsFromRedisModule,
   ],
   controllers: [AppController, IpController],
-  providers: [AppService, IpMiddleware, SessionTokenMiddleware, RedisService, TelegramService, TelegramServiceThree],
+  providers: [AppService, IpMiddleware, SessionTokenMiddleware, RedisService, TelegramService, TelegramServiceThree, TelegramBotControlMessage],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

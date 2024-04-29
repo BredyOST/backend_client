@@ -273,7 +273,7 @@ export class TelegramServiceThree implements OnApplicationShutdown {
 
     this.bot.hears(/t\.me\.*/, async (ctx) => {
       const text = ctx.message.text
-
+      console.log(text)
       async function getInfo(text) {
         try {
 

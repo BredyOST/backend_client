@@ -277,7 +277,7 @@ export class TelegramServiceThree implements OnApplicationShutdown {
       async function getInfo(text) {
         try {
 
-          const link = process.env["API_URL"]
+          const link = process.env["API_OTHER"]
           const encodedText = encodeURIComponent(text);
 
           const response = await fetch(`${link}/telegram-posts/addPeopleFromChat?text=${encodedText}`, {

@@ -20,7 +20,6 @@ export class TelegramServiceThree implements OnApplicationShutdown {
 
     // Инициализация бота с вашим токеном
     this.bot = new Bot(token)
-    console.log('2')
 
     this.isBotRunning = true // Устанавливаем флаг запуска бота
 
@@ -273,7 +272,6 @@ export class TelegramServiceThree implements OnApplicationShutdown {
     })
 
     this.bot.hears(/t\.me\.*/, async (ctx) => {
-
       const text = ctx.message.text
 
       async function getInfo(text) {

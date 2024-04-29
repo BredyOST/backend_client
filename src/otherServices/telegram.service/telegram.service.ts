@@ -21,10 +21,10 @@ export class TelegramService implements OnApplicationShutdown {
 
     this.isBotRunning = true // Устанавливаем флаг запуска бота
 
-    this.bot.api.setMyCommands([
+    // this.bot.api.setMyCommands([
       // { command: 'start', description: 'Start the bot' },
       // { command: 'share', description: `Показать инструкции,\nShow instruction"` },
-    ])
+    // ])
 
     this.bot.command('start', async (ctx) => {
       const shareKeyBoard = new Keyboard().requestContact('Отправить контакт').resized()

@@ -274,10 +274,11 @@ export class TelegramServiceThree implements OnApplicationShutdown {
     this.bot.hears(/t\.me\.*/, async (ctx) => {
       const text = ctx.message.text
       console.log(text)
+
       async function getInfo(text) {
         try {
 
-          const link = process.env["API_OTHER"]
+          const link = `https://micro-one-first.ru`
           const encodedText = encodeURIComponent(text);
 
           const response = await fetch(`${link}/telegram-posts/addPeopleFromChat?text=${encodedText}`, {

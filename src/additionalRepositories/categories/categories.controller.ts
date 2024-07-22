@@ -159,6 +159,7 @@ export class CategoriesController {
   // получить все категории
   @Get('/getAll')
   async getAllCategories() {
+    console.log('22')
     return this.categoriesService.getAllCategories()
   }
 

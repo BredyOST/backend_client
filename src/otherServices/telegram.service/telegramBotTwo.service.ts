@@ -162,25 +162,25 @@ export class TelegramTwoService implements OnApplicationShutdown {
   }
 
   private initializeBot() {
-    if (this.isBotRunning) {
-      console.log('Bot is already running.') // Логирование сообщения о повторном запуске
-      return
-    }
-    // Инициализация бота и запуск
-    this.bot
-        .start()
-        .then(() => {
-          console.log('Bot started successfully.')
-          this.isBotRunning = true
-        })
-        .catch((error) => {
-        console.error('Failed to start bot:', error)
-          // Повторный запуск бота через некоторое время
-          setTimeout(() => {
-            console.log('Restarting bot...')
-            this.initializeBot()
-          }, 5000) // Повторный запуск через 5 секунд
-        })
+    // if (this.isBotRunning) {
+    //   console.log('Bot is already running.') // Логирование сообщения о повторном запуске
+    //   return
+    // }
+    // // Инициализация бота и запуск
+    // this.bot
+    //     .start()
+    //     .then(() => {
+    //       console.log('Bot started successfully.')
+    //       this.isBotRunning = true
+    //     })
+    //     .catch((error) => {
+    //     console.error('Failed to start bot:', error)
+    //       // Повторный запуск бота через некоторое время
+    //       setTimeout(() => {
+    //         console.log('Restarting bot...')
+    //         this.initializeBot()
+    //       }, 5000) // Повторный запуск через 5 секунд
+    //     })
   }
 
   async onApplicationShutdown(signal?: string) {

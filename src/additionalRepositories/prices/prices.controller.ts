@@ -38,6 +38,7 @@ export class PricesController {
 
   @Get('/getAll')
   async getAll() {
+    console.log('222')
     return this.pricesService.getAll()
   }
 

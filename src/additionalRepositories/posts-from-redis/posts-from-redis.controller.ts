@@ -15,9 +15,7 @@ export class PostsFromRedisController {
   @Post('/getPostsRedis')
   @UseGuards(JwtAuthGuard)
   async getPostsFromRedis(@UserId() id: number, @Request() req, @Body() dto) {
-    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
     const result = await this.sessionAuthService.validateSessionToken(req.session)
-    // если возвращается false то сессия истекла
     if (!result) {
       return {
         text: 'Ваша сессия истекла, выполните повторный вход',
@@ -29,9 +27,7 @@ export class PostsFromRedisController {
   @Post('/redisKeys')
   @UseGuards(JwtAuthGuard)
   async redisKey(@UserId() id: number, @Request() req, @Body() dto) {
-    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
     const result = await this.sessionAuthService.validateSessionToken(req.session)
-    // если возвращается false то сессия истекла
     if (!result) {
       return {
         text: 'Ваша сессия истекла, выполните повторный вход',

@@ -21,7 +21,6 @@ export class AuthorizationsService {
         sessionToken: dto.sessionToken,
         loginAt: dto.loginAt,
       }
-
       await this.repository.save(obj)
     } catch (err) {
       // await this.logsServiceForOtherErrors.error(`создание сессии`,`ошибка при добавлении сессии для ${dto.userMail}`, `${err}`)
@@ -36,8 +35,8 @@ export class AuthorizationsService {
     const query = this.repository.createQueryBuilder('authorization').where('authorization.userId = :userId', { userId }).orderBy('authorization.createdAt', 'DESC').getOne()
     return query
   }
-  async updateAuthorization(id, newobj) {
-    await this.repository.update(id, newobj)
+  async updateAuthorization(id, authoried) {
+    await this.repository.update(id, authoried)
   }
   async getMyAuthorizations(userId: number) {
     return await this.repository.find({

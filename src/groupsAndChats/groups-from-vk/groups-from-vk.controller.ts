@@ -24,28 +24,21 @@ export class GroupsFromVkController {
 	@Post('/create')
 	@UseGuards(JwtAuthGuard)
 	async create(@UserId() id: number, @Body() dto: any, @Request() req) {
-		// передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
-		const result = await this.sessionAuthService.validateSessionToken(
-			req.session,
-		)
-		// если возвращается false то сессия истекла
+    const result = await this.sessionAuthService.validateSessionToken(req.session)
 		if (!result) {
-			return {
+      return {
 				text: 'Ваша сессия истекла, выполните повторный вход',
 			}
 		}
-		// console.log(id)
 		return this.groupsFromVkService.create(id, dto)
 	}
 
 	@Get('/getAll')
 	@UseGuards(JwtAuthGuard)
 	async getGroups(@UserId() id: number, @Request() req) {
-		// передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
 		const result = await this.sessionAuthService.validateSessionToken(
 			req.session,
 		)
-		// если возвращается false то сессия истекла
 		if (!result) {
 			return {
 				text: 'Ваша сессия истекла, выполните повторный вход',
@@ -57,11 +50,9 @@ export class GroupsFromVkController {
 	@Patch('/update')
 	@UseGuards(JwtAuthGuard)
 	async updateGroup(@UserId() id: number, @Body() dto: { newIdVk: string; id: number }, @Request() req,) {
-		// передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
 		const result = await this.sessionAuthService.validateSessionToken(
 			req.session,
 		)
-		// если возвращается false то сессия истекла
 		if (!result) {
 			return {
 				text: 'Ваша сессия истекла, выполните повторный вход',
@@ -73,11 +64,9 @@ export class GroupsFromVkController {
 	@Delete('/delete')
 	@UseGuards(JwtAuthGuard)
 	async deleteGroup(@UserId() id: number, @Body() dto: { id: number }, @Request() req,) {
-		// передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
 		const result = await this.sessionAuthService.validateSessionToken(
 			req.session,
 		)
-		// если возвращается false то сессия истекла
 		if (!result) {
 			return {
 				text: 'Ваша сессия истекла, выполните повторный вход',
@@ -127,10 +116,4 @@ export class GroupsFromVkController {
 	async addPostDateWhenUpdate(@Body() body: { info }) {
 		return this.groupsFromVkService.addPostDateWhenUpdate(body.info.count, body.info.date, body.info.idVk, body.info.groupInfo)
 	}
-
-	@Get('/getGroupsNew')
-	async getGroupsNew() {
-		return this.groupsFromVkService.getGroupsNew()
-	}
-
 }

@@ -2,8 +2,8 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { ChatsFromTelegramEntity } from './entities/chats-from-telegram.entity'
 import { Repository } from 'typeorm'
-import {UsersService} from "../../users/users.service";
-import {HttpService} from "@nestjs/axios";
+import { UsersService } from '../../users/users.service'
+import { HttpService } from '@nestjs/axios'
 import * as process from 'process';
 
 @Injectable()
@@ -31,7 +31,7 @@ export class ChatsFromTelegramService {
   async findAll() {
     return this.repository.find()
   }
-  async getGroupsBatch(size,offset) {
+  async getGroupsBatch(size, offset) {
     const groups = await this.repository.find({
       take: size,
       skip: offset,

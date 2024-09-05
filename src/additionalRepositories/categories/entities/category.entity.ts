@@ -38,7 +38,6 @@ export class CategoryEntity {
   updateAt: Date
 }
 
-
 export interface ExtraWords {
   id: number // id купленной категории
   word: string // Имя купленной категории

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { destroyCookie } from 'nookies'
 import { JwtService } from '@nestjs/jwt'
 import * as process from 'process'
-// для того чтобы очищать куки и возвратить false если токен сессии из req.session будет не валидный или его вообще не будет
+// для того чтобы очищать куки и возвратить false если токен сессии из req.session будет не валидный или будет отсутствовать
 // т.е. сессия поменяется, кто-то другой зашел в учетку
 @Injectable()
 export class SessionAuthService {

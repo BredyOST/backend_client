@@ -18,15 +18,11 @@ export class UsersController {
       private readonly sessionAuthService: SessionAuthService
   ) {}
 
-  // получить всех пользователей
-
   // ПОЛУЧЕНИЕ ИНФОРМАЦИИ О ПОЛЬЗОВАТЕЛЕ
   @Get('profile')
   @UseGuards(JwtAuthGuard)
   async getMe(@UserId() id: number, @Request() req) {
-    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
     const result = await this.sessionAuthService.validateSessionToken(req.session)
-    // если возвращается false то сессия истекла
     if (!result) {
       return {
         text: 'Ваша сессия истекла, выполните повторный вход',
@@ -40,10 +36,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   // @Headers('session-token') sessionToken: string,
   async updateMe(@UserId() id: number, @Request() req, @Body() dto: fullNAmeType) {
-    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
     const result = await this.sessionAuthService.validateSessionToken(req.session)
-
-    //если возвращается false то сессия истекла
     if (!result) {
       return {
         text: 'Ваша сессия истекла, выполните повторный вход',
@@ -57,9 +50,7 @@ export class UsersController {
   @Post('/update/codeEmail')
   @UseGuards(JwtAuthGuard)
   async updateEmailСode(@UserId() id: number, @Request() req, @Body() dto: codeForNewEmailType) {
-    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
     const result = await this.sessionAuthService.validateSessionToken(req.session)
-    // если возвращается false то сессия истекла
     if (!result) {
       return {
         text: 'Ваша сессия истекла, выполните повторный вход',
@@ -72,9 +63,7 @@ export class UsersController {
   @Patch('/update/email')
   @UseGuards(JwtAuthGuard)
   async updateEmail(@UserId() id: number, @Request() req, @Body() dto: codeType) {
-    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
     const result = await this.sessionAuthService.validateSessionToken(req.session)
-    // если возвращается false то сессия истекла
     if (!result) {
       return {
         text: 'Ваша сессия истекла, выполните повторный вход',
@@ -117,9 +106,7 @@ export class UsersController {
   @Patch('/update/password')
   @UseGuards(JwtAuthGuard)
   async updatePassword(@UserId() id: number, @Request() req, @Body() dto: UpdateUserDto) {
-    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
     const result = await this.sessionAuthService.validateSessionToken(req.session)
-    // если возвращается false то сессия истекла
     if (!result) {
       return {
         text: 'Ваша сессия истекла, выполните повторный вход',
@@ -185,22 +172,4 @@ export class UsersController {
   //   }
   //   return this.usersService.verifyTgInProfile(dto)
   // }
-
-  // СТАРОЕ ЕСЛИ ЧЕЛ ЗАРЕГАЛСЯ БЕЗ НОМЕРА ДО 21.03.2024
-  @Post('/giveInfo')
-  async giveInfo(@UserId() id: number, @Request() req, @Body() dto: any) {
-    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
-    const result = await this.sessionAuthService.validateSessionToken(req.session)
-    // если возвращается false то сессия истекла
-    if (!result) {
-      return {
-        text: 'Ваша сессия истекла, выполните повторный вход',
-      }
-    }
-    return this.usersService.giveInfo(dto)
-  }
-
-
-
-
 }

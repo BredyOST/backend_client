@@ -3252,7 +3252,7 @@ packages:
       prompts: 2.4.2
       yargs: 17.6.2
     transitivePeerDependencies:
-      - '@types/node'
+      - '@helpersAuth/node'
       - supports-color
       - ts-node
     dev: true
@@ -3608,7 +3608,7 @@ packages:
       import-local: 3.1.0
       jest-cli: 29.3.1_zfha7dvnw4nti6zkbsmhmn6xo4
     transitivePeerDependencies:
-      - '@types/node'
+      - '@helpersAuth/node'
       - supports-color
       - ts-node
     dev: true

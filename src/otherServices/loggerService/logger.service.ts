@@ -12,7 +12,6 @@ export class LogsService {
   constructor(@Inject('RepositoryNameAllAdd') repositoryName: string) {
     this.repositoryName = repositoryName
     this.logger = winston.createLogger({
-      // Настройки логгера winston
       transports: [
         new DailyRotateFile({
           filename: `logs/${this.repositoryName}/error-%DATE%.log`,

@@ -25,7 +25,6 @@ import { TelegramTwoService } from '../otherServices/telegram.service/telegramBo
 export type createUSerWithLink = {
   phoneNumber: string
   password: string
-  // activationLink: string
   ip: string
 }
 
@@ -36,7 +35,7 @@ export class UsersService {
     @InjectRepository(UserEntity)
     private repository: Repository<UserEntity>,
     private readonly mailerService: MailerService,
-    private LogsService: LogsService, // сервис для создания общих уведомления и ошибок
+    private LogsService: LogsService,
     private readonly httpService: HttpService,
     private telegramTwoService: TelegramTwoService,
   ) {}
@@ -69,7 +68,6 @@ export class UsersService {
       forChangePhoneNumber,
     })
   }
-  // по id
   async findById(id: number) {
     return this.repository.findOneBy({
       id,
@@ -116,7 +114,7 @@ export class UsersService {
       }
     }
   }
-  // сохраняем обвновленного пользователя
+  // сохраняем обновленного пользователя
   async saveUpdatedUser(id, user) {
     try {
       await this.repository.update(id, user)
@@ -129,7 +127,7 @@ export class UsersService {
   async updateEmailСode(id: number, dto: codeForNewEmailType) {
     try {
       const user = await this.findById(+id)
-      // проверям не прислал ли нам пользователь свой же email
+      // проверям не прислал ли нам пользователь зарегистрированный email
       if (user.email === dto.email) throw new HttpException('Вы уже ипользуете этот email', HttpStatus.UNAUTHORIZED)
       if (dto.indicator === 'change') {
         if (user.forChangeEmail === dto.email) throw new HttpException('Email уже добавлен во временное хранилище, проверьте ваш Email', HttpStatus.UNAUTHORIZED)
@@ -600,7 +598,7 @@ export class UsersService {
       throw new HttpException('Ошибка отправки сообщения', HttpStatus.FORBIDDEN)
     }
   }
-  // отправить нвоый пароль - запрос
+  // отправить новый пароль - запрос
   async sendChangePassword(to: string, password: string) {
     let retries = 3 // количество повторных попыток
     let success = false // флаг успешной отправки
@@ -721,7 +719,7 @@ export class UsersService {
     }
   }
 
-  //когда зашел в форму заыбл пароль и восстанавливаешь его через номер телефона
+  //когда зашел в форму забыл пароль и восстанавливаешь его через номер телефона
   async reqCallForgetPassword(id: number, dto: phoneType) {
 
     try {
@@ -1162,17 +1160,4 @@ export class UsersService {
   //     }
   //   }
   // }
-
-  // СТАРОЕ
-  async giveInfo(dto) {
-      try {
-
-        const user = await this.findByEmail(dto.email)
-
-
-
-      } catch (err) {
-
-      }
-  }
 }

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { JwtModule } from '@nestjs/jwt';
 import { SessionTokenStrategy } from '../strategies/session.strategy'
-import {SessionAuthService} from "./session-auth.service";
+import { SessionAuthService } from './session-auth.service'
 
 @Module({
   imports: [

@@ -6,14 +6,15 @@ import { SessionAuthService } from '../../auth/session-auth/session-auth.service
 
 @Controller('prices')
 export class PricesController {
-  constructor(private readonly pricesService: PricesService, private readonly sessionAuthService: SessionAuthService) {}
+  constructor(
+    private readonly pricesService: PricesService,
+    private readonly sessionAuthService: SessionAuthService
+  ) {}
 
   @Post('/create')
   @UseGuards(JwtAuthGuard)
   async create(@UserId() id: number, @Request() req, @Body() dto) {
-    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
     const result = await this.sessionAuthService.validateSessionToken(req.session)
-    // если возвращается false то сессия истекла
     if (!result) {
       return {
         text: 'Ваша сессия истекла, выполните повторный вход',
@@ -25,9 +26,7 @@ export class PricesController {
   @Get('/getAllOpen')
   @UseGuards(JwtAuthGuard)
   async getAllForAdmins(@UserId() id: number, @Request() req) {
-    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
     const result = await this.sessionAuthService.validateSessionToken(req.session)
-    // если возвращается false то сессия истекла
     if (!result) {
       return {
         text: 'Ваша сессия истекла, выполните повторный вход',
@@ -38,16 +37,13 @@ export class PricesController {
 
   @Get('/getAll')
   async getAll() {
-    console.log('222')
     return this.pricesService.getAll()
   }
 
   @Patch('/update')
   @UseGuards(JwtAuthGuard)
   async updateOne(@UserId() id: number, @Request() req, @Body() dto) {
-    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
     const result = await this.sessionAuthService.validateSessionToken(req.session)
-    // если возвращается false то сессия истекла
     if (!result) {
       return {
         text: 'Ваша сессия истекла, выполните повторный вход',
@@ -59,9 +55,7 @@ export class PricesController {
   @Delete('/delete')
   @UseGuards(JwtAuthGuard)
   async deleteOne(@UserId() id: number, @Request() req, @Body() dto) {
-    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
     const result = await this.sessionAuthService.validateSessionToken(req.session)
-    // если возвращается false то сессия истекла
     if (!result) {
       return {
         text: 'Ваша сессия истекла, выполните повторный вход',

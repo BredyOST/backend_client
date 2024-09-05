@@ -16,6 +16,7 @@ export type category = {
   extraWords: any[]
   salary: string
 }
+
 export type PaymentNotificationDto = {
   type: string
   event: string
@@ -82,7 +83,6 @@ export class CategoriesController {
     return this.categoriesService.updateThis(dto.category)
   }
 
-
   // УДАЛЕНИЕ КАТЕГОРИИ
   @Delete('/delete')
   @UseGuards(JwtAuthGuard)
@@ -108,9 +108,7 @@ export class CategoriesController {
   @Post('/freePeriod')
   @UseGuards(JwtAuthGuard)
   async activateFreePeriod(@UserId() id: number, @Request() req, @Body() dto: number) {
-    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
     const result = await this.sessionAuthService.validateSessionToken(req.session)
-    // если возвращается false то сессия истекла
     if (!result) {
       return {
         text: 'Ваша сессия истекла, выполните повторный вход',
@@ -136,10 +134,7 @@ export class CategoriesController {
   @Post('/payment')
   @UseGuards(JwtAuthGuard)
   async payment(@UserId() id: number, @Request() req, @Body() dto: any) {
-
-    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
     const result = await this.sessionAuthService.validateSessionToken(req.session)
-    // если возвращается false то сессия истекла
     if (!result) {
       return {
         text: 'Ваша сессия истекла, выполните повторный вход',
@@ -159,7 +154,6 @@ export class CategoriesController {
   // получить все категории
   @Get('/getAll')
   async getAllCategories() {
-    console.log('22')
     return this.categoriesService.getAllCategories()
   }
 

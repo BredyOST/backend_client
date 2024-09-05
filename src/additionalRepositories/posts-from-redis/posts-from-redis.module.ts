@@ -4,7 +4,7 @@ import { PostsFromRedisController } from './posts-from-redis.controller'
 import { JwtStrategy } from '../../auth/strategies/jwt.strategy'
 import { UsersModule } from '../../users/users.module'
 import { SessionAuthModule } from '../../auth/session-auth/session-auth.module'
-import {RedisModule} from "../../redis/redis.module";
+import { RedisModule } from "../../redis/redis.module";
 
 @Module({
   imports: [

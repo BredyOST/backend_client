@@ -5,12 +5,12 @@ import { LogsController } from './logger.controller'
 export const RepositoryNameAllAdd = 'RepositoryNameAllAdd'
 export const RepositoryAllAdd: Provider = {
   provide: RepositoryNameAllAdd,
-  useValue: `PostsAdd`, // Замените на желаемое имя репозитория
+  useValue: `PostsAdd`,
 }
+  @Module({
+    controllers: [LogsController],
+    providers: [LogsService, RepositoryAllAdd],
+    exports: [LogsService],
+  })
 
-@Module({
-  controllers: [LogsController],
-  providers: [LogsService, RepositoryAllAdd],
-  exports: [LogsService],
-})
 export class LogsModule {}

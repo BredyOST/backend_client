@@ -1,26 +1,20 @@
-import {Controller, Post, UseGuards, Request, Body, Get, Redirect, Param, Res} from '@nestjs/common'
+import { Controller, Post, UseGuards, Request, Body, Get, Redirect, Param, Res} from '@nestjs/common'
 import { AuthService } from './auth.service'
 import { UserEntity } from '../users/entities/user.entity'
 import { LocalAuthGuard } from './guards/local.guard'
 import { RefreshTokenDto } from '../users/dto/refresh-token.dto'
 import { SessionAuthService } from './session-auth/session-auth.service'
-// import * as dotenv from 'dotenv'
-import * as process from 'process';
+import * as process from 'process'
 import { ConfigService } from '@nestjs/config'
-// dotenv.config()
-
 
 export type createUserType = {
   phoneNumber: string
   password: string
   passwordCheck: string
 }
-
 export type email = {
   email: string
 }
-
-
 export type accessNumber = {
   email?: string
   phoneNumber: string
@@ -45,7 +39,7 @@ export class AuthController {
     return this.authService.register(dto, clientIp)
   }
 
-  // ВХОД В УЧЕТКУ
+  // ВХОД В УЧЕТНУЮ ЗАПИСЬ
   @UseGuards(LocalAuthGuard)
   @Post('/login')
   async login(@Request() req) {
@@ -62,11 +56,12 @@ export class AuthController {
   // async activate(@Request() req: any) {
   //   return this.authService.activate(req.params.link)
   // }
+
   @Get('activate/:link')
   @Redirect('https://xn--e1affem4a4d.com', 301)
   async activate(@Param('link') activationLink: string, @Res() res: Response) {
     await this.authService.activate(activationLink);
-    return { url: 'https://xn--e1affem4a4d.com/dashboard/profile' };
+    return { url: 'https://xn--e1affem4a4d.com/dashboard/profile' }
   }
   // ЗАПРОС ПОВТОРНОЙ АКТИВАЦИИ
   @Post('/activateRepeat')
@@ -83,9 +78,7 @@ export class AuthController {
   // ЗАПРОС НА НОВЫЕ ТОКЕНЫ ДОСТУПА, АТОМАТИЧЕСКИ ОТПРАВЛЯЕТСЯ ПО ОКОНЧАНИЮ СРОКА ДЕЙСТВИЯ РЕФРЕШ ТОКЕНА
   @Post('/login/access-token')
   async getNewTokens(@Body() dto: RefreshTokenDto, @Request() req) {
-    // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
     const result = await this.sessionAuthService.validateSessionToken(req.session)
-    // если возвращается false то сессия истекла
     if (!result) {
       return {
         text: 'Ваша сессия истекла, выполните повторный вход',

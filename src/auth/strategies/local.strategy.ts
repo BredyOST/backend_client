@@ -15,9 +15,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     })
   }
 
-  async validate(
-    request: Request,
-  ): Promise<any> {
+  async validate(request: Request): Promise<any> {
 
     try {
 

@@ -33,9 +33,9 @@ export class GroupsFromVkService {
 
 	// ====================================================
 	async getGroupsBatch(size,offset) {
-		const groups = await this.repository.find({
-			take: size,
-			skip: offset,
+    const groups = await this.repository.find({
+      take: size,
+      skip: offset,
 			order: { id: 'ASC' },
 		});
 		return groups;
@@ -171,9 +171,7 @@ export class GroupsFromVkService {
 		try {
 
 			const group = await this.findByIdVk(idVk)
-
 			if (!group) return
-
 			let shouldUpdate = false // Флаг, указывающий, нужно ли обновлять запись в базе данных
 
 			// Обновляем количество постов, если переданное значение отличается от текущего или текущего значения нет
@@ -187,7 +185,6 @@ export class GroupsFromVkService {
 				group.postsLastDate = date
 				shouldUpdate = true
 			}
-
 			// Обновляем запись в базе данных, если были внесены изменения
 			if (shouldUpdate) {
 				await this.repository.update(group.id, group)
@@ -200,9 +197,7 @@ export class GroupsFromVkService {
 
 	async addPostDateWhenUpdate(count: number, date: Date, idVk: string, groupInfo) {
 
-		// const group = await this.findByIdVk(idVk)
 		if (!groupInfo) return
-
 		let shouldUpdate = false // Флаг, указывающий, нужно ли обновлять запись в базе данных
 
 		// Обновляем количество постов, если переданное значение отличается от текущего или текущего значения нет
@@ -217,12 +212,10 @@ export class GroupsFromVkService {
 			groupInfo.postsDateWhenUpdate = date
 			shouldUpdate = true
 		}
-
 		// Обновляем запись в базе данных, если были внесены изменения
 		if (shouldUpdate) {
 			this.repository.update(groupInfo.id, groupInfo)
 		}
-
 	}
 
 	async changePostsDateToDateUpdateWhenBreak(info) {
@@ -242,231 +235,7 @@ export class GroupsFromVkService {
 		}
 	}
 
-	// для теста
-	async createThis(id) {
-		await this.repository.save({
-			idVk: id,
-		})
-	}
 	async updateThis(id, group) {
 		await this.repository.update(id, group)
 	}
-	async deleteThis(group) {
-		try {
-			await this.repository.delete(group.id)
-		} catch (err) {
-			if (err.response === 'Пользователь не найден') {
-				throw err
-			} else if (err.response === 'Не достаточно прав доступа') {
-				throw err
-			} else if (err.response === 'Группа не найдена по id') {
-				throw err
-			} else {
-				throw new HttpException('Ошибка при обновлении', HttpStatus.FORBIDDEN)
-			}
-		}
-	}
-
-
-	async getGroupsNew() {
-		let start = 15370500
-		let end = 15371000
-		let resultArray = []
-		let forIndex = 0;
-		// формируем запрос на сл посты в вк
-		const requestPosts = [];
-
-		for (let i = 0; i <= 500000000000; i++) {
-			forIndex = 0
-			resultArray = []
-
-			for(let  o = start; o <= end; o++) {
-				resultArray.push(o)
-			}
-
-		const access = process.env['ACCESS_TOKEN'];
-		const versionVk = process.env['VERSION_VK'];
-
-		const groupIds = []
-
-			try {
-
-			const response = await firstValueFrom(
-				this.httpService.get<any>(`https://api.vk.com/method/groups.getById?group_ids=${resultArray}&access_token=${access}&fields=name,members_count,is_closed,deactivated,counters&v=${versionVk}`,
-				)
-					.pipe(
-						catchError((error: AxiosError) => {
-							if (error.response && 'data' in error.response && error.response.data != undefined) {}
-							throw new Error(`${error}`);
-						}),
-					),
-			);
-
-			start += 500;
-			end += 500;
-			console.log(end)
-			const data = response?.data;
-
-			for (let index = 0; index < response?.data?.response?.groups.length; index++) {
-				const item = response.data.response.groups[index];
-				if (item.is_closed == 0 && item?.members_count >= 1000 && (item?.deactivated != 'deleted' || item?.deactivated != 'banned')) {
-					if (item.name.includes(
-						'жк' ||
-						'недвижимост' ||
-						'квартир' ||
-						'риелтер' ||
-						'район' ||
-						'дом' ||
-						'дачи' ||
-						'строительств' ||
-						'ремонт' ||
-						'дизайн' ||
-						'архитектур' ||
-						'ищу' ||
-						'без посредников' ||
-						'аренд' ||
-						'мам'
-						// 'работа' ||
-						// 'отзыв' ||
-						// 'отзови' ||
-						// 'город' ||
-						// 'мамы' ||
-						// 'шабашк' ||
-						// 'школ' ||
-						// 'куп' ||
-						// 'продай' ||
-						// 'женски' ||
-						// 'объявле' ||
-						// 'доска' ||
-						// 'студент' ||
-						// 'спроси' ||
-						// 'совет' ||
-						// 'репет' ||
-						// 'ищу' ||
-						// 'барахол' ||
-						// 'женск' ||
-						// 'подслушано' ||
-						// 'первый' ||
-						// 'наш' ||
-						// 'проверено' ||
-						// 'р-н' ||
-						// 'мама' ||
-						// 'сегодня' ||
-						// 'мкр' ||
-						// 'ЕГЭ' ||
-						// 'ОГЭ' ||
-						// 'сплетни' ||
-						// 'район' ||
-						// 'вакансии' ||
-						// 'покуп' ||
-						// 'книг' ||
-						// 'krash' ||
-						// 'беремен' ||
-						// 'доск' ||
-						// 'признавашк' ||
-						// 'купи' ||
-						// 'прода' ||
-						// 'стукач' ||
-						// 'мамин' ||
-						// 'выбирает' ||
-						// 'мам' ||
-						// 'полезные контакты' ||
-						// 'село' ||
-						// 'деревн' ||
-						// 'подслухано' ||
-						// 'типичны' ||
-						// 'жк' ||
-						// 'поиск' ||
-						// 'прод' ||
-						// 'ищу' ||
-						// 'найдись' ||
-						// 'спрашивай' ||
-						// 'дете'
-					)) {
-						const sameGroup = await this.findByIdVk(`-${item.id}`)
-						if (!sameGroup) {
-							await this.repository.save({
-								idVk: `-${item.id}`,
-							})
-							const sameGroup = await this.findByIdVk(`-${item.id}`)
-							sameGroup.name = item.name
-							await this.repository.update(sameGroup.id, sameGroup)
-						}
-
-					}
-				}
-			}
-
-				// // if (requestPosts.length >= 2) {
-				//
-				// 	const codeIfPostsNo =
-				// 		requestPosts.join('\n') +
-				// 		'\nreturn { ' +
-				// 		requestPosts
-				// 			.map((_, index) => `group${index}: response${index}`)
-				// 			.join(', ') +
-				// 		' };';
-				//
-				// 	console.log(codeIfPostsNo)
-				// 	const result = await this.getPostsFromVK(codeIfPostsNo)
-				// 	// console.log(result)
-				// 	// return
-				// // }
-		} catch (err) {
-			console.log(err)
-		}
-		}
-	}
-	// async getPostsFromVK(postsForRequest) {
-	// 	const access = process.env['ACCESS_TOKEN'];
-	// 	const versionVk = process.env['VERSION_VK'];
-	// 	try {
-	// 		const { data } = await firstValueFrom(
-	// 			this.httpService.get<any>(`https://api.vk.com/method/execute?code=${postsForRequest}&access_token=${access}&v=${versionVk}`)
-	// 				.pipe(
-	// 					catchError((error: AxiosError) => {
-	// 						if (
-	// 							error.response &&
-	// 							'data' in error.response &&
-	// 							error.response.data != undefined
-	// 						) {
-	//
-	// 						}
-	// 						throw new Error(
-	// 							`getPostsFromVK An error happened! ${data} для ${postsForRequest}`,
-	// 						);
-	// 					}),
-	// 				),
-	// 		);
-	//
-	// 		console.log(data)
-	//
-	// 		// очищаем ответ, удаляя лишнее
-	// 		if (data?.response && typeof data.response === 'object') {
-	// 			if ('execute_errors' in data.response) {
-	// 				delete data.response.execute_errors;
-	// 			}
-	// 		}
-	//
-	// 		const filteredData = { response: {} };
-	//
-	// 		filteredData.response = Object.fromEntries(
-	// 			Object.entries(data.response).filter(([key, value]: [string, any]) => {
-	// 				return (
-	// 					value !== false &&
-	// 					(!value.count || value.count !== 0) &&
-	// 					value.items &&
-	// 					value.items.length > 0
-	// 				);
-	// 			}),
-	// 		);
-	// 		return filteredData;
-	// 	} catch (err) {
-	// 		console.log(err)
-	// 	}
-	// }
-
-
-
-
 }

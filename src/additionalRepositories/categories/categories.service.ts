@@ -11,8 +11,6 @@ import { TransactionService } from '../transaction/transaction.service'
 import * as process from 'process'
 import { TelegramTwoService } from '../../otherServices/telegram.service/telegramBotTwo.service'
 
-// admin.initializeApp();
-
 @Injectable()
 export class CategoriesService {
   constructor(
@@ -51,7 +49,7 @@ export class CategoriesService {
       const res = await this.findAll()
       return res
     } catch (err) {
-      throw new HttpException('Ошибка получении всех категорий', HttpStatus.FORBIDDEN)
+      throw new HttpException('Ошибка получения всех категорий', HttpStatus.FORBIDDEN)
     }
   }
 
@@ -78,7 +76,7 @@ export class CategoriesService {
       })
 
       return {
-        text: ' категория успено добавлена',
+        text: ' категория успешно добавлена',
       }
     } catch (err) {
       if (err.response === 'Пользователь не найден') {
@@ -180,8 +178,6 @@ export class CategoriesService {
     }
   }
 
-
-
   async deleteCategory(id: number, dto: { id: number }) {
     try {
       const user = await this.usersService.findById(+id)
@@ -262,11 +258,10 @@ export class CategoriesService {
       // }
 
       const days = 1
-
       const categories = []
       const purchaseDate = new Date() // Дата покупки
       const endDate = new Date(purchaseDate) // Создаем новый объект Date, чтобы не изменять оригинальный
-      endDate.setDate(purchaseDate.getDate() + days) // Устанавливаем дату окончания на 1 дня после даты покупки
+      endDate.setDate(purchaseDate.getDate() + days) // Устанавливаем дату окончания = +1 день после даты покупки
 
       for (const item of dto) {
         const nameCategory = await this.findById_category(item.id)
@@ -281,7 +276,7 @@ export class CategoriesService {
       }
 
       user.activatedFreePeriod = true // делам активным бесплатный период
-      user.categoriesFreePeriod = categories // записываекм пользователю категории для бесплатного периода
+      user.categoriesFreePeriod = categories // записываем пользователю категории для бесплатного периода
 
       await this.usersService.saveUpdatedUser(user.id, user)
 
@@ -426,11 +421,6 @@ export class CategoriesService {
           await this.addToChat(user, item.id, item.chatList)
         }
       }
-
-      // return {
-      //   text: 'Подписка на уведомления оформлена',
-      // }
-
     } catch (err) {
       if (err.response === 'Пользователь не найден') {
         throw err
@@ -564,7 +554,7 @@ export class CategoriesService {
       }
 
       try {
-        const response = await axios.post(url, data, {headers})
+        const response = await axios.post(url, data, { headers })
 
         const confirmationUrl = response.data?.confirmation?.confirmation_url
 
@@ -578,7 +568,7 @@ export class CategoriesService {
             id_payment: response.data.id,
             payment_method: response.data.payment_method.type,
             status: response.data.status,
-            createdAt: new Date(), // текущая дата и время
+            createdAt: new Date(),
           }
           this.transactionService.addNewTransaction(id, newTransaction)
         }
@@ -597,7 +587,7 @@ export class CategoriesService {
     }
   }
 
-  // для уведомлений
+  // для уведомлений - не активно на сайте
   async createPayNotification(userThis, dto) {
 
     try {
@@ -717,7 +707,7 @@ export class CategoriesService {
         Authorization: authorization,
       }
 
-      const response = await axios.get(url, {headers})
+      const response = await axios.get(url, { headers })
       return response;
     } catch (error) {
       console.log(error)
@@ -748,7 +738,7 @@ export class CategoriesService {
     }
 
     try {
-      const response = await axios.post(url, data, {headers});
+      const response = await axios.post(url, data, { headers });
 
       if (response?.data && response?.status == 200 && response.data.status == 'succeeded') {
         const trans = await this.transactionService.changeTransaction(response)
@@ -761,7 +751,7 @@ export class CategoriesService {
           }
         }
       }
-      return {statusCode: HttpStatus.OK, data: response.data};
+      return { statusCode: HttpStatus.OK, data: response.data };
     } catch (error) {
       throw new Error('Failed to get payment information');
     }
@@ -775,8 +765,6 @@ export class CategoriesService {
       const thisUser = user;
 
       if (categId == 1) {
-
-        // const categoryFromDb = await this.findByIdCategory(categId);
 
         if (chatName.toLowerCase().includes('языки')) chatId = process.env['CHAT_LANGUAGE']
         if (chatName.toLowerCase().includes('мате')) chatId = process.env['CHAT_MATH']
@@ -801,5 +789,4 @@ export class CategoriesService {
       console.log(err)
     }
   }
-
 }

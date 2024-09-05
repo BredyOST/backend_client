@@ -11,14 +11,13 @@ export class PricesService {
     @InjectRepository(PriceEntity)
     private repository: Repository<PriceEntity>,
     private readonly usersService: UsersService,
-    private LogsService: LogsService, // сервис для создания общих уведомления и ошибок
+    private LogsService: LogsService,
   ) {}
 
-  // получить все
   async getAllPrices() {
     return await this.repository.find()
   }
-  // поиск по идентификатору
+
   async findOneByIdentificatorId(identificatorId) {
     return await this.repository.findOneBy({
       identificatorId,
@@ -115,7 +114,7 @@ export class PricesService {
 
       if (!changedPrice) throw new HttpException('Вы не внесли изменения', HttpStatus.UNAUTHORIZED)
       return {
-        text:'внесены изменения'
+        text: 'внесены изменения',
       }
 
     } catch (err) {

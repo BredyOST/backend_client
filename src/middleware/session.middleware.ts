@@ -7,7 +7,7 @@ import * as process from 'process'
   imports: [
     SessionModule.forRootAsync({
       useFactory: () => ({
-        session: { secret: process.env['SESSION_KEY'] }, // Замените на свой секретный ключ
+        session: { secret: process.env['SESSION_KEY'] },
       }),
     }),
   ],

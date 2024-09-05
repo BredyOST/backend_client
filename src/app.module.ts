@@ -34,7 +34,7 @@ import * as dotenv from 'dotenv'
 import { PostsFromRedisModule } from './additionalRepositories/posts-from-redis/posts-from-redis.module'
 import { TelegramService } from './otherServices/telegram.service/telegram.service'
 import { TelegramServiceThree } from './otherServices/telegram.service/telegramBotAccess.service'
-import {TelegramBotControlMessage,} from "./otherServices/telegram.service/telegramBotControlMessage.service";
+import { TelegramBotControlMessage } from "./otherServices/telegram.service/telegramBotControlMessage.service";
 
 dotenv.config()
 
@@ -94,7 +94,7 @@ dotenv.config()
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(IpMiddleware, SessionTokenMiddleware).forRoutes('*') // Примените Middleware ко всем маршрутам
+    consumer.apply(IpMiddleware, SessionTokenMiddleware).forRoutes('*') // Применяем Middleware ко всем маршрутам
   }
 }
 

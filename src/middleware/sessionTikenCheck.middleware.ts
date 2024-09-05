@@ -17,7 +17,7 @@ export class SessionTokenMiddleware implements NestMiddleware {
       const validatedToken = await this.sessionTokenStrategy.validateSessionToken(sessionToken)
 
       if (validatedToken) {
-        // Получите последнюю сессию пользователя из репозитория authorizationsService
+        // Получаем последнюю сессию пользователя из репозитория authorizationsService
         const userId = validatedToken._id
         const latestSession = await this.authorizationsService.findLastSessionByUserIdAndMonth(userId)
 

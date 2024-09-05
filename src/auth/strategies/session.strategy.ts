@@ -6,9 +6,7 @@ import { JwtService } from '@nestjs/jwt'
 
 @Injectable()
 export class SessionTokenStrategy extends PassportStrategy(Strategy, 'session') {
-  constructor(
-      private readonly jwtService: JwtService
-  ) {
+  constructor(private readonly jwtService: JwtService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -21,7 +19,6 @@ export class SessionTokenStrategy extends PassportStrategy(Strategy, 'session') 
       const secretKey = process.env['SECRET_KEY_TWO']
 
       const decoded = this.jwtService.verify(token, { secret: secretKey })
-      // console.log(decoded); // null
       return decoded
     } catch (err) {
       // console.log(err)

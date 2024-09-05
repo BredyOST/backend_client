@@ -5,15 +5,13 @@ import { UserEntity } from '../users/entities/user.entity'
 import * as bcrypt from 'bcrypt'
 import * as process from 'process'
 import { RefreshTokenDto } from '../users/dto/refresh-token.dto'
-import { v4 as uuidv4 } from 'uuid'
 import { MailerService } from '@nestjs-modules/mailer'
 import { AppService } from '../app.service'
 import { AuthorizationsService } from '../additionalRepositories/authorizations/authorizations.service'
 import { LogsService } from '../otherServices/loggerService/logger.service'
-import {accessNumber, createUserType, email} from './auth.controller'
+import { accessNumber, createUserType, email } from './auth.controller'
 import { SessionAuthService } from './session-auth/session-auth.service'
 import { ConfigService } from '@nestjs/config'
-import axios from "axios";
 
 @Injectable()
 export class AuthService {
@@ -40,13 +38,12 @@ export class AuthService {
       const checkUserWithTheSamePhone = await this.usersService.findByPhone(dto?.phoneNumber)
       if (checkUserWithTheSamePhone) throw new HttpException('Пользователь c таким номером телефона зарегистрирован', HttpStatus.BAD_REQUEST)
 
-      // генерируем ссылку активации учетной записи и шифруем ее
+      // генерируем ссылку активации учетной записи и шифруем ее (не актуально)
       // const activationLink = await uuidv4()
       const saltRounds = 10
       const salt = await bcrypt.genSalt(saltRounds)
       const password = await bcrypt.hash(dto.password, salt)
       // данные для нового пользователя
-
       const newUser: createUSerWithLink = {
         phoneNumber: dto.phoneNumber,
         password: password,
@@ -57,7 +54,6 @@ export class AuthService {
       const newUserDate = await this.usersService.create(newUser)
 
       if (!newUserDate || !newUserDate.phoneNumber) throw new HttpException('Ошибка при создании учетной записи, обновите страницу и попробуйте еще раз', HttpStatus.BAD_REQUEST)
-      // отправляем ссылку активации на указанный при регистрации email
 
       return {
         text: 'Регистрация завершена. Осталось подтвердить номер телефона',
@@ -81,7 +77,7 @@ export class AuthService {
   async login(user: UserEntity, clientIp, userAgent) {
     try {
 
-      // убираем лишнее, что не хотим возвращать пользователю
+      // убираем лишнее, что не нужно возвращать пользователю
       const { password, activationLink, activationNumber, id, updateAt, deletedAt, ...other } = user
       // получаем токены доступа
       const tokens = await this.issueTokenPair(user.id)
@@ -96,7 +92,7 @@ export class AuthService {
       user.lastVisit = new Date()
       //обновляем пользователя
       await this.usersService.saveUpdatedUser(user.id, user)
-      // создаем сессиию для добавления в репозиторий авторизации
+      // создаем сессию для добавления в репозиторий авторизации
       const authDto = {
         clientIp: clientIp,
         userId: user.id,
@@ -190,11 +186,11 @@ export class AuthService {
       // ищем в базе данных пользователя по email или phone
       if (request?.email !== 'no date') {
         user = await this.usersService.findByEmail(request.email)
-        if(user && !user?.isActivatedEmail) throw new HttpException('Для входа через email, требуется его подтвердить', HttpStatus.UNAUTHORIZED)
+        if (user && !user?.isActivatedEmail) throw new HttpException('Для входа через email, требуется его подтвердить', HttpStatus.UNAUTHORIZED)
       }
       if (request?.phoneNumber !== 'no date') {
         user = await this.usersService.findByPhone(request?.phoneNumber)
-        if(user && !user?.isActivatedPhone) throw new HttpException('Не подтвержден номер телефона', HttpStatus.UNAUTHORIZED)
+        if (user && !user?.isActivatedPhone) throw new HttpException('Не подтвержден номер телефона', HttpStatus.UNAUTHORIZED)
       }
 
       // если не активирован email, то ошибка
@@ -203,7 +199,7 @@ export class AuthService {
       // }
 
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
-      // сравниваем пароли, то что ввели и тот который у пользователя
+      // сравниваем пароли, то что ввели и тот который у пользователя в бд
       const isMatch = await bcrypt.compare(request.password, user.password)
       if (!isMatch) throw new HttpException('Не верный логин или пароль', HttpStatus.UNAUTHORIZED)
 
@@ -243,11 +239,11 @@ export class AuthService {
       const tokens = await this.issueTokenPair(user.id)
       // токен сессии мы уже проверили в middleware поэтому получаем новый
       const sessionToken = await this.tokenForSession(user.id)
-      // теперь надо перезаписать этот токен пользователю
+      // перезаписываем токен пользователю
       user.sessionToken = sessionToken
       // сохраняем обновленного пользователя
       await this.usersService.saveUpdatedUser(user.id, user)
-      // далее меняем этот токен в последней авторизации этого пользователя, т.к. они потом будут сравниваться для понимания, что это активаная сессия
+      // далее меняем этот токен в последней авторизации этого пользователя, т.к. они потом будут сравниваться для понимания, что это активная сессия
       const latestSession = await this.authorizationsService.findLastSessionByUserIdAndMonth(user.id)
       // записываем в эту сессию новый токен
       latestSession.sessionToken = sessionToken
@@ -305,7 +301,7 @@ export class AuthService {
   async activate(activationLink) {
     await this.usersService.activate(activationLink)
   }
-  // направить ссылку активации повтороно
+  // направить ссылку активации повторно
   async activateRepeat(dto: email) {
     try {
       await this.usersService.activateRepeat(dto)

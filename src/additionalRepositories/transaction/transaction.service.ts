@@ -25,8 +25,8 @@ export class TransactionService {
     const transaction = await this.repository.findOne({
       where: {
         id_payment: response.data.id,
-      }
-    });
+      },
+    })
     if (transaction) {
       transaction.status = 'success'
       transaction.paymentAt = response.captured_at
@@ -38,7 +38,7 @@ export class TransactionService {
   }
 
   async addNewTransaction(id, dto) {
-    if (!dto) throw new HttpException('Неудачная транзакиця оплаты на покупк', HttpStatus.UNAUTHORIZED)
+    if (!dto) throw new HttpException('Неудачная транзакция оплаты на покупки', HttpStatus.UNAUTHORIZED)
     await this.repository.save(dto)
   }
 }

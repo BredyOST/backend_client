@@ -1,10 +1,9 @@
-import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import { RedisService } from '../../redis/redis.service'
-import {UsersService} from "../../users/users.service";
+import { UsersService } from '../../users/users.service'
 
 @Injectable()
 export class PostsFromRedisService {
-
 
   constructor(
       private redisService: RedisService,
@@ -15,10 +14,9 @@ export class PostsFromRedisService {
     try {
       const user = await this.usersService.findById(+id)
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
+      const pattern = await this.redisService.getAllKeys(`id:${dto.id}-*`)
 
-      const pattern = await this.redisService.getAllKeys(`id:${dto.id}-*`);
-
-      return pattern;
+      return pattern
 
     } catch (err) {
       if (err.response === 'Пользователь не найден') {
@@ -42,7 +40,6 @@ export class PostsFromRedisService {
       if (err.response === 'Пользователь не найден') {
         throw err
       } else {
-        console.log('redis error')
         console.log(err)
       }
     }

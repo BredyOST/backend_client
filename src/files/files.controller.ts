@@ -13,16 +13,12 @@ import { UserId } from '../decorators/user-id.decorator'
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
-  // @Get()
-  // findAll(@UserId() id: number, @Query('type') fileType: FileType) {
-  //   return this.filesService.findAll(id, fileType);
-  // }
-
   @Get('/getAll')
   @UseGuards(JwtAuthGuard)
   getAll(@UserId() id: number) {
     return this.filesService.getAll(id)
   }
+  // тоже самое что и getAll
   @Get('/getAllStart')
   getAllStart() {
     return this.filesService.getAllStart()
@@ -64,10 +60,4 @@ export class FilesController {
   delete(@UserId() id: number, @Body() dto: any) {
     return this.filesService.delete(id, dto)
   }
-  // @Delete()
-  // @UseGuards(JwtAuthGuard)
-  // remove(@UserId() id: number, @Query('ids') ids: string) {
-  //   // files?ids=1,2,7,8
-  //   return this.filesService.remove(id, ids);
-  // }
 }

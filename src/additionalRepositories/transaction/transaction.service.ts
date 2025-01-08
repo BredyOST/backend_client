@@ -27,7 +27,9 @@ export class TransactionService {
         id_payment: response.data.id,
       },
     })
-    if (transaction) {
+    if (transaction.status == 'success') {
+      return false
+    } else if (transaction) {
       transaction.status = 'success'
       transaction.paymentAt = response.captured_at
       await this.repository.save(transaction)

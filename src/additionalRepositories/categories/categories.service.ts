@@ -898,14 +898,15 @@ export class CategoriesService {
 
     try {
       const receipt: any = await this.getPayment(paymentStatusDto.object.id)
-      console.log(receipt)
       const trans = await this.transactionService.changeTransaction(receipt)
-      let user = await this.usersService.findById(+trans?.user_id)
-      console.log('userId')
-      console.log(user)
-      user.wallet = user.wallet + +paymentStatusDto?.object?.amount?.value
-      await this.usersService.saveUpdatedUser(user.id, user)
-      return { statusCode: HttpStatus.OK, data: 'успешное пополнение' }
+      if (trans === false) {
+        return
+      } else {
+        const user = await this.usersService.findById(+trans?.user_id)
+        user.wallet = user.wallet + +paymentStatusDto?.object?.amount?.value
+        await this.usersService.saveUpdatedUser(user.id, user)
+        return { statusCode: HttpStatus.OK, data: 'успешное пополнение' }
+      }
     } catch (error) {
       throw new Error('Failed to get payment information')
     }

@@ -18,6 +18,8 @@ export class UserEntity {
   fullName: string
   @Column({ default: 0 })
   wallet: number
+  @Column({ default: 0 })
+  walletRef: number
   @Column({ type: 'jsonb', default: () => "'{}'::jsonb" })
   access: AccessPosts
   @Column({ default: '' })
@@ -62,6 +64,10 @@ export class UserEntity {
   activationTgNumberToProfile: string
   @Column({ default: '' })
   salaryCount: string
+  @Column({ default: '' })
+  parentRefId: string
+  @Column('jsonb', { array: false, default: [] })
+  childrenRefId: number[]
   @Column('jsonb', { array: false, default: [] })
   categoriesFreePeriod: PurchasedCategory[]
   @Column('jsonb', { array: false, default: [] })

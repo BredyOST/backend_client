@@ -10,7 +10,7 @@ import { AxiosError } from 'axios/index'
 import { AppService } from '../app.service'
 import { MailerService } from '@nestjs-modules/mailer'
 import { HttpService } from '@nestjs/axios'
-import {accessNumber, email} from '../auth/auth.controller'
+import { accessNumber, email } from '../auth/auth.controller'
 import {
   codeForChangePhone,
   codeForNewEmailType,
@@ -26,6 +26,8 @@ export type createUSerWithLink = {
   phoneNumber: string
   password: string
   ip: string
+  wallet: number
+  parentRefId: '' | string
 }
 
 @Injectable()
@@ -1186,4 +1188,14 @@ export class UsersService {
   //     }
   //   }
   // }
+
+  async addPercentToReferal(user: UserEntity, salary: number) {
+    try {
+      const parentUser = await this.findById(+user?.parentRefId)
+      parentUser.walletRef = parentUser.walletRef + (10 / 100) * salary
+      await this.saveUpdatedUser(user.id, user)
+    } catch (err) {
+      throw new HttpException('Ошибка при поплнении баланса рефа', HttpStatus.FORBIDDEN)
+    }
+  }
 }

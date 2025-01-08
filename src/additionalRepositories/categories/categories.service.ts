@@ -849,9 +849,6 @@ export class CategoriesService {
     const receipt: any = await this.getPayment(paymentStatusDto.object.id)
     if (receipt.data.status !== 'waiting_for_capture') return
 
-    console.log('receipt')
-    console.log(receipt)
-
     const url = `https://api.yookassa.ru/v3/payments/${paymentStatusDto.object.id}/capture`
     const shopId = process.env['SHOP_ID']
     const secretKey = process.env['SECRET_KEY_SHOP']
@@ -875,16 +872,13 @@ export class CategoriesService {
 
       if (response?.data && response?.status == 200 && response.data.status == 'succeeded') {
         const trans = await this.transactionService.changeTransaction(response)
-        const user = await this.usersService.findById(receipt?.user_id)
-        user.wallet = user.wallet + receipt.amount
-        await this.usersService.saveUpdatedUser(user.id, user)
-
-        if (trans) {
-          if (paymentStatusDto.object.description == 'Пополнение баланса на сайте клиенты.com') {
-            // this.activatePayment(trans)
-            if (user) {
-
-            }
+        if (trans === false) {
+          return
+        } else {
+          const user = await this.usersService.findById(receipt?.user_id)
+          if (user) {
+            user.wallet = user.wallet + receipt.amount
+            await this.usersService.saveUpdatedUser(user.id, user)
           }
         }
       }
@@ -905,6 +899,9 @@ export class CategoriesService {
         const user = await this.usersService.findById(+trans?.user_id)
         user.wallet = user.wallet + +paymentStatusDto?.object?.amount?.value
         await this.usersService.saveUpdatedUser(user.id, user)
+        if(user?.parentRefId) {
+          this.usersService.addPercentToReferal(user, +paymentStatusDto?.object?.amount?.value)
+        }
         return { statusCode: HttpStatus.OK, data: 'успешное пополнение' }
       }
     } catch (error) {

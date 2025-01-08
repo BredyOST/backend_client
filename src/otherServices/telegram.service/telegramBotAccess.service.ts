@@ -458,6 +458,8 @@ export class TelegramServiceThree implements OnApplicationShutdown {
           phoneNumber: phone,
           password: password,
           passwordCheck: password,
+          refId: '',
+
         }
         const newUser = await this.authService.register(infoForRegister, `000.00.00.000`)
         const user = await this.userService.findByPhone(phone)

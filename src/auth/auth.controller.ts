@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, Request, Body, Get, Redirect, Param, Res} from '@nestjs/common'
+import { Controller, Post, UseGuards, Request, Body, Get, Redirect, Param, Res } from '@nestjs/common'
 import { AuthService } from './auth.service'
 import { UserEntity } from '../users/entities/user.entity'
 import { LocalAuthGuard } from './guards/local.guard'
@@ -11,7 +11,9 @@ export type createUserType = {
   phoneNumber: string
   password: string
   passwordCheck: string
+  refId: null | string
 }
+
 export type email = {
   email: string
 }

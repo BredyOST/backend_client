@@ -30,7 +30,6 @@ export class AuthService {
   async register(dto: createUserType, clientIp: string) {
 
     try {
-
       // проверяем совпадают ли пароли, основной и проверочный
       if (dto.password !== dto.passwordCheck) throw new HttpException('Не совпадают введенные пароли', HttpStatus.BAD_REQUEST)
 
@@ -48,10 +47,20 @@ export class AuthService {
         phoneNumber: dto.phoneNumber,
         password: password,
         ip: clientIp,
+        wallet: 100,
+        parentRefId: dto.refId ? dto.refId : '',
       }
 
       // создаем нового пользователя
       const newUserDate = await this.usersService.create(newUser)
+      // добавляем реферала
+      if (dto.refId) {
+        const parentUserRef = await this.usersService.findById(+dto.refId)
+        if (parentUserRef) {
+          parentUserRef.childrenRefId = [...parentUserRef.childrenRefId, newUserDate.id]
+          await this.usersService.saveUpdatedUser(parentUserRef.id, parentUserRef)
+        }
+      }
 
       if (!newUserDate || !newUserDate.phoneNumber) throw new HttpException('Ошибка при создании учетной записи, обновите страницу и попробуйте еще раз', HttpStatus.BAD_REQUEST)
 
@@ -60,6 +69,7 @@ export class AuthService {
       }
 
     } catch (err) {
+      console.log(err)
       if (err.response === 'Не совпадают введенные пароли') {
         throw err
       } else if (err.response === 'Пользователь c таким номером телефона зарегистрирован') {

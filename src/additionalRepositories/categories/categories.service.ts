@@ -583,7 +583,6 @@ export class CategoriesService {
 
   // пополнить баланс на сумму введенную пользователем
   async createPayByUser(id, dto: { price: string }) {
-    console.log(dto)
     try {
       const user = await this.usersService.findById(+id)
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
@@ -901,10 +900,10 @@ export class CategoriesService {
       const receipt: any = await this.getPayment(paymentStatusDto.object.id)
       console.log(receipt)
       const trans = await this.transactionService.changeTransaction(receipt)
-      const user = await this.usersService.findById(+trans?.user_id)
+      let user = await this.usersService.findById(+trans?.user_id)
       console.log('userId')
       console.log(user)
-      user.wallet = user.wallet + receipt.amount
+      user.wallet = user.wallet + +paymentStatusDto?.object?.amount?.value
       await this.usersService.saveUpdatedUser(user.id, user)
       return { statusCode: HttpStatus.OK, data: 'успешное пополнение' }
     } catch (error) {

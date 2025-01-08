@@ -583,6 +583,7 @@ export class CategoriesService {
 
   // пополнить баланс на сумму введенную пользователем
   async createPayByUser(id, dto: { price: string }) {
+    console.log(dto)
     try {
       const user = await this.usersService.findById(+id)
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)

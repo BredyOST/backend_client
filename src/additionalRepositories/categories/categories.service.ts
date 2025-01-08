@@ -900,7 +900,7 @@ export class CategoriesService {
         user.wallet = user.wallet + +paymentStatusDto?.object?.amount?.value
         await this.usersService.saveUpdatedUser(user.id, user)
         if(user?.parentRefId) {
-          this.usersService.addPercentToReferal(user, +paymentStatusDto?.object?.amount?.value)
+          await this.usersService.addPercentToReferal(user, +paymentStatusDto?.object?.amount?.value)
         }
         return { statusCode: HttpStatus.OK, data: 'успешное пополнение' }
       }

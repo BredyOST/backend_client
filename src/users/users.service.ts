@@ -1193,7 +1193,7 @@ export class UsersService {
     try {
       const parentUser = await this.findById(+user?.parentRefId)
       parentUser.walletRef = parentUser.walletRef + (10 / 100) * salary
-      await this.saveUpdatedUser(user.id, user)
+      await this.saveUpdatedUser(parentUser.id, parentUser)
     } catch (err) {
       throw new HttpException('Ошибка при поплнении баланса рефа', HttpStatus.FORBIDDEN)
     }

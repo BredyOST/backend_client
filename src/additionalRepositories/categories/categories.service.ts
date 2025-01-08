@@ -846,8 +846,7 @@ export class CategoriesService {
   //     throw new Error('Failed to get payment information')
   //   }
   // }
-
-  async handlePaymentSuccess(paymentStatusDto) {
+  async handlePaymentCapture(paymentStatusDto) {
     const receipt: any = await this.getPayment(paymentStatusDto.object.id)
     if (receipt.data.status !== 'waiting_for_capture') return
 
@@ -889,6 +888,22 @@ export class CategoriesService {
         }
       }
       return { statusCode: HttpStatus.OK, data: response.data }
+    } catch (error) {
+      throw new Error('Failed to get payment information')
+    }
+  }
+
+  async handlePaymentSuccess(paymentStatusDto) {
+
+    try {
+      const receipt: any = await this.getPayment(paymentStatusDto.object.id)
+      console.log(receipt)
+      await this.transactionService.changeTransaction(receipt)
+      const user = await this.usersService.findById(receipt?.user_id)
+      console.log(user)
+      user.wallet = user.wallet + receipt.amount
+      await this.usersService.saveUpdatedUser(user.id, user)
+      return { statusCode: HttpStatus.OK, data: 'успешное пополнение' }
     } catch (error) {
       throw new Error('Failed to get payment information')
     }

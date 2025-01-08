@@ -186,10 +186,12 @@ export class CategoriesController {
 
   @Post('/payment/addCashToWallet')
   async handlePaymentSuccess(@Body() paymentStatusDto: PaymentNotificationDto) {
-    console.log(`PaymentNotificationDto`)
-    console.log(paymentStatusDto)
-    if (paymentStatusDto.object.status !== 'waiting_for_capture') return
-    const response = await this.categoriesService.handlePaymentSuccess(paymentStatusDto)
+    let response = null
+    if (paymentStatusDto.object.status == 'waiting_for_capture') {
+      response = await this.categoriesService.handlePaymentCapture(paymentStatusDto)
+    } else if (paymentStatusDto.object.status == 'succeeded') {
+      response = await this.categoriesService.handlePaymentSuccess(paymentStatusDto)
+    }
     return response?.data
   }
 

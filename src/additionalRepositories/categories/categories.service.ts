@@ -788,7 +788,6 @@ export class CategoriesService {
   }
 
   async getPayment(paymentStatusDto: string) {
-    console.log(paymentStatusDto)
     try {
       const url = `https://api.yookassa.ru/v3/payments/${paymentStatusDto}`
       const shopId = process.env['SHOP_ID']
@@ -901,8 +900,9 @@ export class CategoriesService {
     try {
       const receipt: any = await this.getPayment(paymentStatusDto.object.id)
       console.log(receipt)
-      await this.transactionService.changeTransaction(receipt)
-      const user = await this.usersService.findById(receipt?.user_id)
+      const trans = await this.transactionService.changeTransaction(receipt)
+      const user = await this.usersService.findById(+trans?.user_id)
+      console.log('userId')
       console.log(user)
       user.wallet = user.wallet + receipt.amount
       await this.usersService.saveUpdatedUser(user.id, user)

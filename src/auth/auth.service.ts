@@ -39,7 +39,7 @@ export class AuthService {
       if (checkUserWithTheSamePhone) throw new HttpException('Пользователь c таким номером телефона зарегистрирован', HttpStatus.BAD_REQUEST)
 
       // генерируем ссылку активации учетной записи и шифруем ее (не актуально)
-      // const activationLink = await uuidv4()
+      // constants activationLink = await uuidv4()
       const saltRounds = 10
       const salt = await bcrypt.genSalt(saltRounds)
       const password = await bcrypt.hash(dto.password, salt)

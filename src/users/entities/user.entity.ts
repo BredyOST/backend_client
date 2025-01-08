@@ -8,7 +8,7 @@ export class UserEntity {
   email: string
   @Column({ default: '', nullable: true })
   forChangeEmail: string
-  @Column({ default: ''})
+  @Column({ default: '' })
   phoneNumber: string
   @Column({ default: '' })
   forChangePhoneNumber: string
@@ -16,6 +16,10 @@ export class UserEntity {
   password: string
   @Column({ default: '' })
   fullName: string
+  @Column({ default: 0 })
+  wallet: number
+  @Column({ type: 'jsonb', default: () => "'{}'::jsonb" })
+  access: AccessPosts
   @Column({ default: '' })
   chatIdTg: string
   @Column({ default: '' })
@@ -56,6 +60,8 @@ export class UserEntity {
   activationCodeForChangePasswordTg: string
   @Column({ default: '' })
   activationTgNumberToProfile: string
+  @Column({ default: '' })
+  salaryCount: string
   @Column('jsonb', { array: false, default: [] })
   categoriesFreePeriod: PurchasedCategory[]
   @Column('jsonb', { array: false, default: [] })
@@ -91,4 +97,19 @@ export interface PurchasedCategoryNotifications {
   purchaseEndDate: Date // Дата окончания подписки
   purchasePeriod: number
   chatList: string
+}
+
+export interface AccessPosts {
+  '1': number[]
+  '2': number[]
+  '3': number[]
+  '4': number[]
+  '5': number[]
+  '6': number[]
+  '7': number[]
+  '8': number[]
+  '9': number[]
+  '10': number[]
+  '11': number[]
+  '12': number[]
 }

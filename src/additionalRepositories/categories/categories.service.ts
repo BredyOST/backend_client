@@ -14,13 +14,12 @@ import { TelegramTwoService } from '../../otherServices/telegram.service/telegra
 @Injectable()
 export class CategoriesService {
   constructor(
-      @InjectRepository(CategoryEntity)
-      private repository: Repository<CategoryEntity>,
-      private transactionService: TransactionService,
-      private usersService: UsersService,
-      private telegramTwoService: TelegramTwoService,
-  ) {
-  }
+    @InjectRepository(CategoryEntity)
+    private repository: Repository<CategoryEntity>,
+    private transactionService: TransactionService,
+    private usersService: UsersService,
+    private telegramTwoService: TelegramTwoService,
+  ) {}
 
   async findByIdCategory(id_category: string) {
     return this.repository.findOneBy({
@@ -251,9 +250,9 @@ export class CategoriesService {
       if (user.endFreePeriod) throw new HttpException('Вы уже использовали бесплатный период', HttpStatus.UNAUTHORIZED)
       if (user.activatedFreePeriod) throw new HttpException('Вы уже используете бесплатный период', HttpStatus.UNAUTHORIZED)
       if (dto.length >= 2) throw new HttpException('Для бесплатного периода доступна одна категория', HttpStatus.UNAUTHORIZED)
-      // const sameIp = await this.usersService.findByIp(`${user.ip}`)
+      // constants sameIp = await this.usersService.findByIp(`${user.ip}`)
 
-      // for (const item of sameIp) {
+      // for (constants item of sameIp) {
       //   if (item?.activatedFreePeriod || item?.endFreePeriod || item?.categoriesFreePeriod?.length > 0) throw new HttpException('Вы уже использовали бесплатный период', HttpStatus.UNAUTHORIZED)
       // }
 
@@ -303,29 +302,29 @@ export class CategoriesService {
   // async activateFreePeriodNotification(id: number, dto) {
   //
   //   try {
-  //     const user = await this.usersService.findById(+id)
+  //     constants user = await this.usersService.findById(+id)
   //     if (!user.phoneNumber) throw new HttpException('Необходимо добавить номер телефона', HttpStatus.UNAUTHORIZED)
   //     if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
   //     if (dto.length <= 0) throw new HttpException('Необходимо выбрать категории', HttpStatus.UNAUTHORIZED)
   //     if (user.endFreePeriodNotification) throw new HttpException('Вы уже использовали бесплатный период', HttpStatus.UNAUTHORIZED)
   //     if (user.activatedFreePeriodNotification) throw new HttpException('Вы уже используете бесплатный период', HttpStatus.UNAUTHORIZED)
   //     if (dto.length >= 2) throw new HttpException('Для бесплатного периода доступна одна категория', HttpStatus.UNAUTHORIZED)
-  //     const sameIp = await this.usersService.findByIp(user.ip)
+  //     constants sameIp = await this.usersService.findByIp(user.ip)
   //
-  //     for (const item of sameIp) {
+  //     for (constants item of sameIp) {
   //       if (item?.activatedFreePeriod || item?.endFreePeriod || item?.categoriesFreePeriod?.length > 0) throw new HttpException('Вы уже использовали бесплатный период', HttpStatus.UNAUTHORIZED)
   //     }
   //
-  //     const days = 1
+  //     constants days = 1
   //
-  //     const categories = []
-  //     const purchaseDate = new Date() // Дата покупки
-  //     const endDate = new Date(purchaseDate) // Создаем новый объект Date, чтобы не изменять оригинальный
+  //     constants categories = []
+  //     constants purchaseDate = new Date() // Дата покупки
+  //     constants endDate = new Date(purchaseDate) // Создаем новый объект Date, чтобы не изменять оригинальный
   //     endDate.setDate(purchaseDate.getDate() + days) // Устанавливаем дату окончания на 1 дня после даты покупки
   //
-  //     for (const item of dto) {
-  //       const nameCategory = await this.findById_category(item.id)
-  //       const obj = {
+  //     for (constants item of dto) {
+  //       constants nameCategory = await this.findById_category(item.id)
+  //       constants obj = {
   //         id: item.id, // id купленной категории
   //         category: nameCategory.name,
   //         purchaseBuyDate: purchaseDate, // Дата покупки
@@ -362,12 +361,10 @@ export class CategoriesService {
   //   }
   // }
   async activatePaymentNotification(dto) {
-
     try {
-
       const user = await this.usersService.findById(+dto.user_id)
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
-      let noInfo = false;
+      let noInfo = false
 
       const currentDate = new Date()
 
@@ -376,7 +373,7 @@ export class CategoriesService {
         noInfo = true
       } else {
         for (const item of dto.category) {
-          let existingCategory = user.notificationsHasBought.find((category) => category.chatList === item.chatList);
+          const existingCategory = user.notificationsHasBought.find((category) => category.chatList === item.chatList)
 
           // если есть категория у пользователя
           if (existingCategory) {
@@ -385,21 +382,20 @@ export class CategoriesService {
 
             if (actualDate) {
               // Обновляем существующую категорию, добавляя новый период и увеличив срок окончания подписки
-              existingCategory.purchasePeriod += item.purchasePeriod;
-              existingCategory.purchaseEndDate = new Date(existingCategory.purchaseEndDate);
+              existingCategory.purchasePeriod += item.purchasePeriod
+              existingCategory.purchaseEndDate = new Date(existingCategory.purchaseEndDate)
               // console.log(existingCategory.purchaseEndDate)
 
               if (dto.title == 'Недельный') {
-                existingCategory.purchaseEndDate.setDate(existingCategory.purchaseEndDate.getDate() + item.purchasePeriod);
+                existingCategory.purchaseEndDate.setDate(existingCategory.purchaseEndDate.getDate() + item.purchasePeriod)
               } else if (dto.title == 'Погрузись в работу') {
-                existingCategory.purchaseEndDate.setMonth(existingCategory.purchaseEndDate.getMonth() + item.purchasePeriod);
+                existingCategory.purchaseEndDate.setMonth(existingCategory.purchaseEndDate.getMonth() + item.purchasePeriod)
               }
 
-              const noExistingCategory = user.notificationsHasBought.filter((category) => category.chatList !== item.chatList);
+              const noExistingCategory = user.notificationsHasBought.filter((category) => category.chatList !== item.chatList)
               user.notificationsHasBought = [...noExistingCategory, existingCategory]
             }
             if (!actualDate) {
-
               const noExistingCategory = user.notificationsHasBought.filter((category) => category.chatList !== item.chatList)
               user.notificationsHasBought = [...noExistingCategory, item]
               await this.addToChat(user, item.id, item.chatList)
@@ -440,11 +436,9 @@ export class CategoriesService {
 
       if (user?.categoriesHasBought?.length == 0) {
         user.categoriesHasBought = dto.category
-
       } else {
         for (const item of dto.category) {
-
-          let existingCategory = user.categoriesHasBought.find((category) => category.id === item.id);
+          const existingCategory = user.categoriesHasBought.find((category) => category.id === item.id)
           // если есть категория у пользователя
           if (existingCategory) {
             const dateCategoryEnd = new Date(existingCategory.purchaseEndDate)
@@ -452,19 +446,19 @@ export class CategoriesService {
 
             if (actualDate) {
               // Обновляем существующую категорию, добавляя новый период и увеличив срок окончания подписки
-              existingCategory.purchasePeriod += item.purchasePeriod;
-              existingCategory.purchaseEndDate = new Date(existingCategory.purchaseEndDate);
+              existingCategory.purchasePeriod += item.purchasePeriod
+              existingCategory.purchaseEndDate = new Date(existingCategory.purchaseEndDate)
 
               if (dto.title == 'Недельный') {
-                existingCategory.purchaseEndDate.setDate(existingCategory.purchaseEndDate.getDate() + item.purchasePeriod);
+                existingCategory.purchaseEndDate.setDate(existingCategory.purchaseEndDate.getDate() + item.purchasePeriod)
               } else if (dto.title == 'Погрузись в работу') {
-                existingCategory.purchaseEndDate.setMonth(existingCategory.purchaseEndDate.getMonth() + item.purchasePeriod);
+                existingCategory.purchaseEndDate.setMonth(existingCategory.purchaseEndDate.getMonth() + item.purchasePeriod)
               }
-              const noExistingCategory = user.categoriesHasBought.filter((category) => category.id !== item.id);
+              const noExistingCategory = user.categoriesHasBought.filter((category) => category.id !== item.id)
               user.categoriesHasBought = [...noExistingCategory, existingCategory]
             }
             if (!actualDate) {
-              const noExistingCategory = user.categoriesHasBought.filter((category) => category.id !== item.id);
+              const noExistingCategory = user.categoriesHasBought.filter((category) => category.id !== item.id)
               user.categoriesHasBought = [...noExistingCategory, item]
             }
           } else if (!existingCategory) {
@@ -587,9 +581,110 @@ export class CategoriesService {
     }
   }
 
+  // пополнить баланс на сумму введенную пользователем
+  async createPayByUser(id, dto: { price: string }) {
+    try {
+      const user = await this.usersService.findById(+id)
+      if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
+
+      const shopId = process.env['SHOP_ID']
+      const secretKey = process.env['SECRET_KEY_SHOP']
+      const idempotenceKey = uuid.v4()
+
+      const url = 'https://api.yookassa.ru/v3/payments'
+      const authorization = `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString('base64')}`
+
+      const data = {
+        amount: {
+          value: `${dto.price}`,
+          currency: 'RUB',
+        },
+        payment_method_data: {
+          type: 'bank_card',
+        },
+        confirmation: {
+          type: 'redirect',
+          return_url: process.env['CLIENT_URL'],
+        },
+        capture: true,
+        description: 'Пополнение баланса на сайте клиенты.com',
+        receipt: {
+          customer: {
+            email: '89292642644m@gmail.com',
+          },
+          items: [
+            {
+              description: 'клиенты.com',
+              quantity: 1.000,
+              amount: {
+                value: `${+dto.price / 2}`,
+                currency: 'RUB',
+              },
+              vat_code: 1,
+              payment_mode: 'full_prepayment',
+              payment_subject: 'commodity',
+            },
+            {
+              description: 'Пополнение кошелька',
+              quantity: 1.000,
+              amount: {
+                value: `${+dto.price / 2}`,
+                currency: 'RUB',
+              },
+              vat_code: 4,
+              payment_mode: 'full_prepayment',
+              payment_subject: 'marked',
+              mark_mode: 0,
+              mark_code_info: {
+                gs_1m: 'DFGwNDY0MDE1Mzg2NDQ5MjIxNW9vY2tOelDFuUFwJh05MUVFMDYdOTJXK2ZaMy9uTjMvcVdHYzBjSVR3NFNOMWg1U2ZLV0dRMWhHL0UrZi8ydkDvPQ==',
+              },
+              measure: 'piece',
+            },
+          ],
+        },
+      }
+
+      const headers = {
+        Authorization: authorization,
+        'Idempotence-Key': idempotenceKey,
+        'Content-Type': 'application/json',
+      }
+
+      try {
+        const response = await axios.post(url, data, { headers })
+        const confirmationUrl = response.data?.confirmation?.confirmation_url
+
+        if (response.data?.confirmation?.confirmation_url) {
+          const newTransaction = {
+            title: 'пополнение счета',
+            type: response.data.status,
+            user_id: id,
+            amount: dto.price,
+            category: 'без категории',
+            id_payment: response.data.id,
+            payment_method: response.data.payment_method.type,
+            status: response.data.status,
+            createdAt: new Date(),
+          }
+          this.transactionService.addNewTransaction(id, newTransaction)
+        }
+        return confirmationUrl
+      } catch (error) {
+        throw new HttpException('Failed to create payment', HttpStatus.FORBIDDEN)
+      }
+    } catch (err) {
+      if (err.response === 'Пользователь не найден') {
+        throw err
+      } else if (err.response === 'Необходимо выбрать категории') {
+        throw err
+      } else {
+        throw new HttpException('Ошибка при создании оплаты', HttpStatus.FORBIDDEN)
+      }
+    }
+  }
+
   // для уведомлений - не активно на сайте
   async createPayNotification(userThis, dto) {
-
     try {
       const user = userThis
       // if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
@@ -613,7 +708,6 @@ export class CategoriesService {
       }
 
       for (const item of dto.chatList) {
-
         for (const elem of item.chats) {
           const nameCategory = await this.findById_category(item.id)
 
@@ -631,13 +725,12 @@ export class CategoriesService {
         }
       }
 
-
       const url = 'https://api.yookassa.ru/v3/payments'
       const authorization = `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString('base64')}`
 
       const data = {
         amount: {
-          value: `${price}`,
+          value: `${price.co}`,
           currency: 'RUB',
         },
         payment_method_data: {
@@ -658,7 +751,7 @@ export class CategoriesService {
       }
 
       try {
-        const response = await axios.post(url, data, {headers})
+        const response = await axios.post(url, data, { headers })
 
         const confirmationUrl = response.data?.confirmation?.confirmation_url
 
@@ -677,12 +770,10 @@ export class CategoriesService {
           this.transactionService.addNewTransaction(user.id, newTransaction)
         }
         return confirmationUrl
-
       } catch (error) {
         throw new HttpException('Failed to create payment', HttpStatus.FORBIDDEN)
       }
     } catch (err) {
-
       if (err.response === 'Пользователь не найден') {
         throw err
       } else if (err.response === 'Необходимо выбрать категории') {
@@ -692,12 +783,11 @@ export class CategoriesService {
       } else {
         throw new HttpException('Ошибка при создании оплаты', HttpStatus.FORBIDDEN)
       }
-
     }
   }
 
   async getPayment(paymentStatusDto: string) {
-
+    console.log(paymentStatusDto)
     try {
       const url = `https://api.yookassa.ru/v3/payments/${paymentStatusDto}`
       const shopId = process.env['SHOP_ID']
@@ -708,16 +798,61 @@ export class CategoriesService {
       }
 
       const response = await axios.get(url, { headers })
-      return response;
+      return response
     } catch (error) {
       console.log(error)
     }
-
   }
 
-  async capturePayment(paymentStatusDto) {
-    const receipt = await this.getPayment(paymentStatusDto.object.id)
+  // старый код
+  // async capturePayment(paymentStatusDto) {
+  //   const receipt = await this.getPayment(paymentStatusDto.object.id)
+  //   if (receipt.data.status !== 'waiting_for_capture') return
+  //
+  //   const url = `https://api.yookassa.ru/v3/payments/${paymentStatusDto.object.id}/capture`
+  //   const shopId = process.env['SHOP_ID']
+  //   const secretKey = process.env['SECRET_KEY_SHOP']
+  //   const authorization = `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString('base64')}`
+  //   const idempotenceKey = uuid.v4()
+  //   const headers = {
+  //     Authorization: authorization,
+  //     'Idempotence-Key': idempotenceKey,
+  //     'Content-Type': 'application/json',
+  //   }
+  //
+  //   const data = {
+  //     amount: {
+  //       value: `${paymentStatusDto.object.amount.value}`,
+  //       currency: `${paymentStatusDto.object.amount.currency}`,
+  //     },
+  //   }
+  //
+  //   try {
+  //     const response = await axios.post(url, data, { headers })
+  //
+  //     if (response?.data && response?.status == 200 && response.data.status == 'succeeded') {
+  //       const trans = await this.transactionService.changeTransaction(response)
+  //       if (trans) {
+  //         if (paymentStatusDto.object.description == 'Оплата подписки на сайте клиенты.com') {
+  //           this.activatePayment(trans)
+  //         }
+  //         if (paymentStatusDto.object.description == 'Оплата подписки уведомлений на сайте клиенты.com') {
+  //           this.activatePaymentNotification(trans)
+  //         }
+  //       }
+  //     }
+  //     return { statusCode: HttpStatus.OK, data: response.data }
+  //   } catch (error) {
+  //     throw new Error('Failed to get payment information')
+  //   }
+  // }
+
+  async handlePaymentSuccess(paymentStatusDto) {
+    const receipt: any = await this.getPayment(paymentStatusDto.object.id)
     if (receipt.data.status !== 'waiting_for_capture') return
+
+    console.log('receipt')
+    console.log(receipt)
 
     const url = `https://api.yookassa.ru/v3/payments/${paymentStatusDto.object.id}/capture`
     const shopId = process.env['SHOP_ID']
@@ -738,34 +873,33 @@ export class CategoriesService {
     }
 
     try {
-      const response = await axios.post(url, data, { headers });
+      const response = await axios.post(url, data, { headers })
 
       if (response?.data && response?.status == 200 && response.data.status == 'succeeded') {
         const trans = await this.transactionService.changeTransaction(response)
         if (trans) {
-          if (paymentStatusDto.object.description == 'Оплата подписки на сайте клиенты.com') {
+          if (paymentStatusDto.object.description == 'Пополнение баланса на сайте клиенты.com') {
             this.activatePayment(trans)
-          }
-          if (paymentStatusDto.object.description == 'Оплата подписки уведомлений на сайте клиенты.com') {
-            this.activatePaymentNotification(trans)
+            const user = await this.usersService.findById(receipt?.user_id)
+            if (user) {
+              user.wallet = user.wallet + receipt.amount
+              await this.usersService.saveUpdatedUser(user.id, user)
+            }
           }
         }
       }
-      return { statusCode: HttpStatus.OK, data: response.data };
+      return { statusCode: HttpStatus.OK, data: response.data }
     } catch (error) {
-      throw new Error('Failed to get payment information');
+      throw new Error('Failed to get payment information')
     }
   }
 
   async addToChat(user, categId, chatName) {
-
     try {
-
-      let chatId;
-      const thisUser = user;
+      let chatId
+      const thisUser = user
 
       if (categId == 1) {
-
         if (chatName.toLowerCase().includes('языки')) chatId = process.env['CHAT_LANGUAGE']
         if (chatName.toLowerCase().includes('мате')) chatId = process.env['CHAT_MATH']
         if (chatName.toLowerCase().includes('рус')) chatId = process.env['CHAT_RUS']
@@ -784,7 +918,6 @@ export class CategoriesService {
       await this.usersService.saveUpdatedUser(thisUser.id, thisUser)
 
       await this.telegramTwoService.sendlink(thisUser.chatIdTg, link, chatName)
-
     } catch (err) {
       console.log(err)
     }

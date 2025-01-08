@@ -155,7 +155,7 @@ export class ChatsFromTelegramService {
   }
   async addPostDateWhenUpdate(date: Date, id: string, groupInfo) {
 
-    // const group = await this.findByIdVk(idVk)
+    // constants group = await this.findByIdVk(idVk)
     if (!groupInfo) return
 
     let shouldUpdate = false // Флаг, указывающий, нужно ли обновлять запись в базе данных

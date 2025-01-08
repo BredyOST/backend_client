@@ -19,7 +19,7 @@
 //
 //     private createHeapdump() {
 //         // Генерируем имя файла с дампом кучи
-//         const dumpFile = path.join('D:/WEB/search-back/src/middleware', `heapdump-${Date.now().toString()}.heapsnapshot`);
+//         constants dumpFile = path.join('D:/WEB/search-back/src/middleware', `heapdump-${Date.now().toString()}.heapsnapshot`);
 //
 //         // Создаем дамп кучи
 //         heapdump.writeSnapshot(dumpFile, (err: Error | null) => {

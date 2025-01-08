@@ -55,7 +55,7 @@ dotenv.config()
           password: configService.get('DB_PASSWORD'),
           database: configService.get('DB_NAME'),
           synchronize: true,
-          cache: false, // Включение кеширования
+          cache: false,
           entities: [UserEntity, CategoryEntity, GroupsFromVkEntity, TransactionEntity, FileEntity, AuthorizationEntity, PriceEntity, ChatsFromTelegramEntity],
         }
       },

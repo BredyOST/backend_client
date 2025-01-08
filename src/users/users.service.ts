@@ -244,6 +244,35 @@ export class UsersService {
       }
     }
   }
+
+  // Списать деньги
+  async openLink(id, dto) {
+    try {
+      const user = await this.findById(+id)
+      if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
+      // изменяем остаток
+      user.wallet = user.wallet - dto.salary
+      if (user.wallet >= 0) {
+        await this.saveUpdatedUser(id, user)
+        return {
+          text: 'средства успешно списаны',
+        }
+      } else {
+        throw new HttpException('Не достаточно средств на балансе', HttpStatus.UNAUTHORIZED)
+      }
+
+    } catch (err) {
+      if (err.response === 'Пользователь не найден') {
+        throw err
+      } else if (err.response === `Ошибка при обновлении пользователя`) {
+        throw err
+      } else if (err.response === 'Не достаточно средств на балансе') {
+        throw err
+      } else {
+        throw new HttpException('Ошибка при провере баланса', HttpStatus.FORBIDDEN)
+      }
+    }
+  }
   // изменение телефона
   async updatePhone(id: number, dto: codeForNewPhone) {
 
@@ -718,7 +747,6 @@ export class UsersService {
       }
     }
   }
-
   //когда зашел в форму забыл пароль и восстанавливаешь его через номер телефона
   async reqCallForgetPassword(id: number, dto: phoneType) {
 
@@ -780,7 +808,6 @@ export class UsersService {
       }
     }
   }
-
   // проверка введенного кода пользователем для верификации номера телефона
   async verifyPhoneCode(id: number, dto: { phoneNumber: string, numberActivation: string}) {
 
@@ -874,7 +901,6 @@ export class UsersService {
       }
 
     } catch (err) {
-      console.log(err)
       if (err.response === 'Не заполнены или некорректно заполнены поля') {
         throw err
       } else if (err.response === 'Введенные пароли не совпадают') {
@@ -1129,7 +1155,7 @@ export class UsersService {
   // async numberTgActivate(id, dto) {
   //   try {
   //
-  //     const user = await this.findById(id)
+  //     constants user = await this.findById(id)
   //
   //     if (!user) throw new HttpException('Аккаунт не найден', HttpStatus.UNAUTHORIZED)
   //     if (user.activationTgNumber !== dto.number) throw new HttpException('Не верный код активации', HttpStatus.UNAUTHORIZED)

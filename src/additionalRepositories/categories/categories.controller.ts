@@ -121,7 +121,7 @@ export class CategoriesController {
   // @UseGuards(JwtAuthGuard)
   // async activateFreePeriodNotification(@UserId() id: number, @Request() req, @Body() dto: number) {
   //   // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
-  //   const result = await this.sessionAuthService.validateSessionToken(req.session)
+  //   constants result = await this.sessionAuthService.validateSessionToken(req.session)
   //   // если возвращается false то сессия истекла
   //   if (!result) {
   //     return {
@@ -144,6 +144,20 @@ export class CategoriesController {
     return { url: `${link}` }
   }
 
+  @Post('/addPayment')
+  @UseGuards(JwtAuthGuard)
+  async paymentByUser(@UserId() id: number, @Request() req, @Body() dto: { price: string }) {
+
+    const result = await this.sessionAuthService.validateSessionToken(req.session)
+    if (!result) {
+      return {
+        text: 'Ваша сессия истекла, выполните повторный вход',
+      }
+    }
+    const link = await this.categoriesService.createPayByUser(id, dto)
+    return { url: `${link}` }
+  }
+
   // получить категорию по id
   @Get('/findById')
   async findById(id: number) {
@@ -163,10 +177,19 @@ export class CategoriesController {
     return this.categoriesService.findById_category(id)
   }
 
-  @Post('/payment/status')
-  async handlePaymentStatus(@Body() paymentStatusDto: PaymentNotificationDto) {
+  // @Post('/payment/status')
+  // async handlePaymentStatus(@Body() paymentStatusDto: PaymentNotificationDto) {
+  //   if (paymentStatusDto.object.status !== 'waiting_for_capture') return
+  //   const response = await this.categoriesService.capturePayment(paymentStatusDto)
+  //   return response?.data
+  // }
+
+  @Post('/payment/addCashToWallet')
+  async handlePaymentSuccess(@Body() paymentStatusDto: PaymentNotificationDto) {
+    console.log(`PaymentNotificationDto`)
+    console.log(paymentStatusDto)
     if (paymentStatusDto.object.status !== 'waiting_for_capture') return
-    const response = await this.categoriesService.capturePayment(paymentStatusDto)
+    const response = await this.categoriesService.handlePaymentSuccess(paymentStatusDto)
     return response?.data
   }
 

@@ -9,7 +9,7 @@ import * as process from 'process'
     private isBotRunning = false
 
     constructor(){
-        // const token = process.env["TOKEN_BOT_FIVE"]
+        // constants token = process.env["TOKEN_BOT_FIVE"]
         //
         // if (this.isBotRunning) {
         //     console.log('Bot is already running.') // Логирование сообщения о повторном запуске
@@ -23,9 +23,9 @@ import * as process from 'process'
         //
         // // Подписка на обновления канала
         // this.bot.on("message:left_chat_member", async (ctx) => {
-        //     const message = ctx.update.message;
-        //     const chatId = message.chat.id;
-        //     const messageId = message.message_id;
+        //     constants message = ctx.update.message;
+        //     constants chatId = message.chat.id;
+        //     constants messageId = message.message_id;
         //
         //     try {
         //         await ctx.api.deleteMessage(chatId, messageId);
@@ -37,9 +37,9 @@ import * as process from 'process'
         // });
         //
         // this.bot.on("message:new_chat_members", async (ctx) => {
-        //     const message = ctx.update.message;
-        //     const chatId = message.chat.id;
-        //     const messageId = message.message_id;
+        //     constants message = ctx.update.message;
+        //     constants chatId = message.chat.id;
+        //     constants messageId = message.message_id;
         //
         //     try {
         //         await ctx.api.deleteMessage(chatId, messageId);
@@ -52,9 +52,9 @@ import * as process from 'process'
         //
         //
         // this.bot.catch((err) => {
-        //     const ctx = err.ctx
+        //     constants ctx = err.ctx
         //     console.error(`Error while handling update ${ctx?.update?.update_id}:`)
-        //     const e = err.error
+        //     constants e = err.error
         //     if (e instanceof GrammyError) {
         //         console.error('Error in request:', e?.description)
         //     } else if (e instanceof HttpError) {
@@ -70,7 +70,7 @@ import * as process from 'process'
         //         console.log('Bot started successfully.11111111111111111111111')
         //
         //         // Отправляем клавиатуру с кнопкой сразу после успешного запуска бота
-        //         const startKeyBoard = new Keyboard().text('Отправить контакт')
+        //         constants startKeyBoard = new Keyboard().text('Отправить контакт')
         //         this.bot.api.sendMessage('<YOUR_CHAT_ID>', "Welcome to the bot! Press 'Share your contact' to start.", {
         //             reply_markup: startKeyBoard,
         //         })

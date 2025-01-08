@@ -13,9 +13,9 @@ export class RedisService {
 
     const password = encodeURIComponent(this.configService.get<string>('PASSWORD_REDIS'))
     const redisPath = this.configService.get<string>('PATH_REDIS')
-    // const redisPath = process.env['PATH_REDIS']
+    // constants redisPath = process.env['PATH_REDIS']
     const redisAddress = this.configService.get<string>('ADRESS_REDIS')
-    // console.log(redisPath)
+    console.log(redisPath)
 
     const config = {
       url: `rediss://:${password}${redisAddress}`,
@@ -58,13 +58,13 @@ export class RedisService {
     }
 
     // try {
-    //   const product = await this.client.get(key)
-    //   const encodedBody = JSON.parse(product, reviveFromBase64Representation)
+    //   constants product = await this.client.get(key)
+    //   constants encodedBody = JSON.parse(product, reviveFromBase64Representation)
     //
     //   if (key.includes('id')) {
     //     return encodedBody
     //   } else {
-    //     const decodedBody = Buffer.from(encodedBody?.value?.data?.body, 'base64').toString('utf-8')
+    //     constants decodedBody = Buffer.from(encodedBody?.value?.data?.body, 'base64').toString('utf-8')
     //     return decodedBody
     //   }
     // } catch (err) {
@@ -141,12 +141,12 @@ export class RedisService {
   //   let cursor = 0; // Изменено на число
   //   do {
   //     // Используйте SCAN для поиска ключей по шаблону
-  //     const reply = await this.client.scan(cursor, {
+  //     constants reply = await this.client.scan(cursor, {
   //       MATCH: pattern,
   //       COUNT: 100,
   //     });
   //     cursor = reply[0]; // Обновление курсора
-  //     const keys = reply[1]; // Получение ключей
+  //     constants keys = reply[1]; // Получение ключей
   //
   //     // Удалите найденные ключи
   //     if (keys.length > 0) {

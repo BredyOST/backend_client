@@ -28,7 +28,7 @@ export class TelegramService implements OnApplicationShutdown {
     // ])
     //
     // this.bot.command('start', async (ctx) => {
-    //   const shareKeyBoard = new Keyboard().requestContact('Отправить контакт').resized()
+    //   constants shareKeyBoard = new Keyboard().requestContact('Отправить контакт').resized()
     //   await ctx.reply("Приветствую тебя, я официальный телеграмм-бот сайта клиенты.com.\n  \nСкорее всего вы проходите регистрацию на сайте и выбрали вариант подтверждения аккаунта через телеграм.\n" +
     //       "Сейчас вместо кнопки start вы увидите кнопку Отправить контакт.\n " +
     //       "Для того чтобы мне проверить вашу учету запись по номеру телефона, вам нужно им со мной поделиться нажав на кнопку и подтвердить передачу. \n" +
@@ -39,24 +39,24 @@ export class TelegramService implements OnApplicationShutdown {
     //
     // // Обработчик всех входящих текстовых сообщений
     // this.bot.on(':contact', async (ctx) => {
-    //   const chatId = ctx.message.chat.id
+    //   constants chatId = ctx.message.chat.id
     //   let phone = ctx.message.contact.phone_number
-    //   const name = ctx.message.contact.first_name
-    //   const lastName = ctx.message.contact.last_name
-    //   const userId = ctx.message.contact.user_id
+    //   constants name = ctx.message.contact.first_name
+    //   constants lastName = ctx.message.contact.last_name
+    //   constants userId = ctx.message.contact.user_id
     //
     //   if (!phone.startsWith('+')) {
     //     phone = '+' + phone
     //   }
     //
-    //   const samePhoneUser = await this.userService.findByPhone(phone)
-    //   // const newPhoneUser = await this.userService.findByChangePhone(phone)
+    //   constants samePhoneUser = await this.userService.findByPhone(phone)
+    //   // constants newPhoneUser = await this.userService.findByChangePhone(phone)
     //
     //   if (samePhoneUser && samePhoneUser.isActivatedPhone) {
     //     await this.bot.api.sendMessage(ctx?.message?.contact?.user_id, `Хм.. \nВаш номер телефона ${phone} зарегистрирован в системе и является подтвержденным, попробуйте войти в свою учетную запись.\n \nЕсли вы забыли пароль, то вы можете его легко восстановить.`)
     //     return
     //   } else {
-    //     const code = await this.userService.verifyTg(samePhoneUser, userId, chatId)
+    //     constants code = await this.userService.verifyTg(samePhoneUser, userId, chatId)
     //
     //     if (code?.text) {
     //       await this.bot.api.sendMessage(
@@ -70,9 +70,9 @@ export class TelegramService implements OnApplicationShutdown {
     // })
     //
     // this.bot.catch((err) => {
-    //   const ctx = err.ctx
+    //   constants ctx = err.ctx
     //   console.error(`Error while handling update ${ctx?.update?.update_id}:`)
-    //   const e = err.error
+    //   constants e = err.error
     //   if (e instanceof GrammyError) {
     //     console.error('Error in request:', e?.description)
     //   } else if (e instanceof HttpError) {
@@ -121,7 +121,7 @@ export class TelegramService implements OnApplicationShutdown {
       }
 
       const samePhoneUser = await this.userService.findByPhone(phone)
-      // const newPhoneUser = await this.userService.findByChangePhone(phone)
+      // constants newPhoneUser = await this.userService.findByChangePhone(phone)
 
       if (samePhoneUser && samePhoneUser.isActivatedPhone) {
         await this.bot.api.sendMessage(ctx?.message?.contact?.user_id, `Хм.. \nВаш номер телефона ${phone} зарегистрирован в системе и является подтвержденным, попробуйте войти в свою учетную запись.\n \nЕсли вы забыли пароль, то вы можете его легко восстановить.`)
@@ -160,7 +160,7 @@ export class TelegramService implements OnApplicationShutdown {
       //   console.log('Bot started successfully.')
       //
       //   // Отправляем клавиатуру с кнопкой сразу после успешного запуска бота
-      //   const startKeyBoard = new Keyboard().text('Отправить контакт')
+      //   constants startKeyBoard = new Keyboard().text('Отправить контакт')
       //   this.bot.api.sendMessage('<YOUR_CHAT_ID>', "Welcome to the bot! Press 'Share your contact' to start.", {
       //     reply_markup: startKeyBoard,
       //   })

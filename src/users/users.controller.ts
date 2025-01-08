@@ -11,6 +11,7 @@ export type codeType = { code: string }
 export type codeForNewPhone = { phoneNumber: string }
 export type codeForChangePhone = { phoneNumber: string; phoneToChange: string }
 export type phoneType = { phone: string, indicator: string }
+
 @Controller('users')
 export class UsersController {
   constructor(
@@ -72,12 +73,25 @@ export class UsersController {
     return this.usersService.updateEmail(id, dto)
   }
 
+  // Списать сумму при переходе по ссылке
+  @Post('/open/link')
+  @UseGuards(JwtAuthGuard)
+  async openLink(@UserId() id: number, @Request() req, @Body() dto: { salary: number }) {
+    const result = await this.sessionAuthService.validateSessionToken(req.session)
+    if (!result) {
+      return {
+        text: 'Ваша сессия истекла, выполните повторный вход',
+      }
+    }
+    return this.usersService.openLink(id, dto)
+  }
+
   // // ОБНОВЛЕНИЕ ТЕЛЕФОНА
   // @Patch('/update/phone')
   // @UseGuards(JwtAuthGuard)
   // async updatePhone(@UserId() id: number, @Request() req, @Body() dto: codeForNewPhone) {
   //   // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
-  //   const result = await this.sessionAuthService.validateSessionToken(req.session)
+  //   constants result = await this.sessionAuthService.validateSessionToken(req.session)
   //   // если возвращается false то сессия истекла
   //   if (!result) {
   //     return {
@@ -92,7 +106,7 @@ export class UsersController {
   // @UseGuards(JwtAuthGuard)
   // async codeForChangePhone(@UserId() id: number, @Request() req, @Body() dto: codeForChangePhone) {
   //   // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
-  //   const result = await this.sessionAuthService.validateSessionToken(req.session)
+  //   constants result = await this.sessionAuthService.validateSessionToken(req.session)
   //   // если возвращается false то сессия истекла
   //   if (!result) {
   //     return {
@@ -137,7 +151,7 @@ export class UsersController {
   // @UseGuards(JwtAuthGuard)
   // async verifyTg(@UserId() id: number, @Request() req, @Body() dto: any) {
   //   // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
-  //   const result = await this.sessionAuthService.validateSessionToken(req.session)
+  //   constants result = await this.sessionAuthService.validateSessionToken(req.session)
   //   // если возвращается false то сессия истекла
   //   if (!result)
   //     return {
@@ -163,7 +177,7 @@ export class UsersController {
   // @UseGuards(JwtAuthGuard)
   // async verifyTgInProfile(@UserId() id: number, @Request() req, @Body() dto: any) {
   //   // передаем параметр запроса, который мы добавили при проверке в мидлваре а именно токен
-  //   const result = await this.sessionAuthService.validateSessionToken(req.session)
+  //   constants result = await this.sessionAuthService.validateSessionToken(req.session)
   //   // если возвращается false то сессия истекла
   //   if (!result) {
   //     return {

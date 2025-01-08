@@ -20,7 +20,7 @@ export class TelegramTwoService implements OnApplicationShutdown {
 
     // this.bot.command('share', async (ctx) => {
     //
-    //   // const shareKeyBoard = new Keyboard().requestContact('Add contact').resized()
+    //   // constants shareKeyBoard = new Keyboard().requestContact('Add contact').resized()
     //   await ctx.reply(
     //     `Напишите в чат "получить информацию".\n \nWrite here "get information".`,
     //     // {
@@ -30,11 +30,11 @@ export class TelegramTwoService implements OnApplicationShutdown {
     // })
 
     // this.bot.hears('получить информацию', async (ctx) => {
-    //   const userId = ctx.message.from.id
-    //   const currentDate = new Date();
+    //   constants userId = ctx.message.from.id
+    //   constants currentDate = new Date();
     //
     //
-    //   const user = await this.userService.findByIdTg(`${userId}`)
+    //   constants user = await this.userService.findByIdTg(`${userId}`)
     //
     //
     //   if (!user || !user?.phoneNumber) {
@@ -44,7 +44,7 @@ export class TelegramTwoService implements OnApplicationShutdown {
     //   if (user && user?.phoneNumber) {
     //
     //     if (user.notificationsFreePeriod.length !== 0 && !user.endFreePeriodNotification && currentDate.getTime() < new Date(user.notificationsFreePeriod[0].purchaseEndDate).getTime()) {
-    //       const category = await this.categoriesService.findByName(user.notificationsFreePeriod[0].category);
+    //       constants category = await this.categoriesService.findByName(user.notificationsFreePeriod[0].category);
     //
     //       await this.bot.api.sendMessage(
     //         userId,
@@ -62,10 +62,10 @@ export class TelegramTwoService implements OnApplicationShutdown {
     //   //
     //   //   let arrayText = [];
     //   //
-    //   //   for (const item of user?.notificationsHasBought) {
+    //   //   for (constants item of user?.notificationsHasBought) {
     //   //
     //   //     if (new Date(item.purchaseEndDate).getTime() > new Date(currentDate).getTime()) {
-    //   //       const category = await this.categoriesService.findByName(item.category);
+    //   //       constants category = await this.categoriesService.findByName(item.category);
     //   //       arrayText.push(`У вас подключена платная подписка в категории: \n"${item.category}". \nНачало периода: ${new Date(item.purchaseBuyDate)}. \nЗавершение периода: ${new Date(
     //   //         item.purchaseEndDate,
     //   //       )}, \n \nдоступные чаты: ${[...category.chatNames]}. \n \nНапишите в ответ название чата в формате: \n \n Для репетиторов, платный, физика
@@ -80,13 +80,13 @@ export class TelegramTwoService implements OnApplicationShutdown {
 
     // this.bot.on('message:text', async (ctx) => {
     //
-    //   const phone = ctx.message
-    //   const userId = ctx.message.from.id
-    //   const text = ctx.message.text
-    //   const arrayText = text.split(',')
-    //   const currentDate = new Date();
+    //   constants phone = ctx.message
+    //   constants userId = ctx.message.from.id
+    //   constants text = ctx.message.text
+    //   constants arrayText = text.split(',')
+    //   constants currentDate = new Date();
     //
-    //   const user = await this.userService.findByIdTg(`${userId}`)
+    //   constants user = await this.userService.findByIdTg(`${userId}`)
     //
     //   if (!user || !user?.phoneNumber) {
     //     await this.bot.api.sendMessage(ctx?.message?.contact?.user_id, `У вас не добавлен номер телефона в профиле, пользователь не найден. Добавьте номер и попробуйте заново`)
@@ -94,7 +94,7 @@ export class TelegramTwoService implements OnApplicationShutdown {
     //
     //
     //   if (arrayText[1].toLowerCase().includes('пробный')) {
-    //     const check = user.notificationsFreePeriod.find((item) => item.category.toLowerCase() == arrayText[0].toLowerCase())
+    //     constants check = user.notificationsFreePeriod.find((item) => item.category.toLowerCase() == arrayText[0].toLowerCase())
     //
     //     if (!check) {
     //       await this.bot.api.sendMessage(
@@ -116,13 +116,13 @@ export class TelegramTwoService implements OnApplicationShutdown {
     // })
 
     // this.bot.hears('получить', async (ctx) => {
-    //   const chatId = process.env['CHAT_MATH']
-    //   const name = 'MyInviteLink'; // Название пригласительной ссылки (необязательно)
-    //   const currentDate = new Date();
-    //   const futureDate = Math.floor((currentDate.getTime() + (24 * 60 * 60 * 1000)) / 1000); // Преобразуем в Unix timestamp, разделив на 1000 и округлив
-    //   const createsJoinRequest = false; // Указывает, нужно ли администраторам чата одобрять запросы на вступление по этой ссылке (необязательно)
+    //   constants chatId = process.env['CHAT_MATH']
+    //   constants name = 'MyInviteLink'; // Название пригласительной ссылки (необязательно)
+    //   constants currentDate = new Date();
+    //   constants futureDate = Math.floor((currentDate.getTime() + (24 * 60 * 60 * 1000)) / 1000); // Преобразуем в Unix timestamp, разделив на 1000 и округлив
+    //   constants createsJoinRequest = false; // Указывает, нужно ли администраторам чата одобрять запросы на вступление по этой ссылке (необязательно)
     //
-    //   const link = await this.bot.api.createChatInviteLink(chatId,{
+    //   constants link = await this.bot.api.createChatInviteLink(chatId,{
     //     name,
     //     expire_date: futureDate,
     //     member_limit: 1,
@@ -200,7 +200,7 @@ export class TelegramTwoService implements OnApplicationShutdown {
 
   async createLink(user, chatId, chatName) {
 
-    // const chatId = process.env['CHAT_MATH']
+    // constants chatId = process.env['CHAT_MATH']
     const name = 'MyInviteLink'; // Название пригласительной ссылки (необязательно)
     const currentDate = new Date();
     const futureDate = Math.floor((currentDate.getTime() + (7 * 60 * 60 * 1000)) / 1000); // Преобразуем в Unix timestamp, разделив на 1000 и округлив

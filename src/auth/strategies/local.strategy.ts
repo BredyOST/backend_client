@@ -21,7 +21,6 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
 
       const user = await this.authService.validateUser(request.body)
 
-
       if (!user) {
         throw new HttpException('Неверный логин или пароль', HttpStatus.UNAUTHORIZED)
       }

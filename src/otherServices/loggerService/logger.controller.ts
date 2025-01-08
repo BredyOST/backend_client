@@ -7,13 +7,13 @@ export class LogsController {
 
   // @Get('error')
   // async getErrorLogs() {
-  //     const logs = await this.loggerService.getErrorLogs();
+  //     constants logs = await this.loggerService.getErrorLogs();
   //     return { logs };
   // }
   //
   // @Get('info')
   // async getInfoLogs() {
-  //     const logs = await this.loggerService.getInfoLogs();
+  //     constants logs = await this.loggerService.getInfoLogs();
   //     return { logs };
   // }
 }

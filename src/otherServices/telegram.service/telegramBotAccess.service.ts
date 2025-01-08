@@ -31,16 +31,16 @@ export class TelegramServiceThree implements OnApplicationShutdown {
     // ])
     //
     // this.bot.command('start', async (ctx) => {
-    //   const categories = await this.categoriesService.findAll()
-    //   const filtered = categories.filter((item) => item.channelActive).sort((a, b) => a.id - b.id)
-    //   const text = []
+    //   constants categories = await this.categoriesService.findAll()
+    //   constants filtered = categories.filter((item) => item.channelActive).sort((a, b) => a.id - b.id)
+    //   constants text = []
     //
     //   filtered.forEach((item) => {
-    //     const block = `КАТЕГОРИЯ №${item.id} - ${item.name}.\nДоступные чаты: ${[...item.chatNames]}`
+    //     constants block = `КАТЕГОРИЯ №${item.id} - ${item.name}.\nДоступные чаты: ${[...item.chatNames]}`
     //     text.push(block)
     //   })
     //
-    //   const keyBoard = new Keyboard().text('Получить доступ').text('Оплатил, но не пришла ссылка на вступление в чат').row().resized()
+    //   constants keyBoard = new Keyboard().text('Получить доступ').text('Оплатил, но не пришла ссылка на вступление в чат').row().resized()
     //   await ctx.reply(
     //     `Приветствую тебя, я официальный телеграмм-бот сайта клиенты.com.\n\nНаправляю список категорий и доступных к ним чатов:\n\n${text.join('\n\n')}\n\n` +
     //       `Варианты подписки на один канал:\n\n` +
@@ -58,29 +58,29 @@ export class TelegramServiceThree implements OnApplicationShutdown {
     // // Обработчик всех входящих текстовых сообщений
     // this.bot.on(':contact', async (ctx) => {
     //
-    //   const chatId = ctx.message.chat.id
+    //   constants chatId = ctx.message.chat.id
     //   let phone = ctx.message.contact.phone_number
-    //   const name = ctx.message.contact.first_name
-    //   const lastName = ctx.message.contact.last_name
-    //   const userId = ctx.message.contact.user_id
+    //   constants name = ctx.message.contact.first_name
+    //   constants lastName = ctx.message.contact.last_name
+    //   constants userId = ctx.message.contact.user_id
     //
     //   if (!phone.startsWith('+')) {
     //     phone = '+' + phone
     //   }
     //
     //   // Создаем клавиатуру
-    //   const keyBoardCategory = new Keyboard();
+    //   constants keyBoardCategory = new Keyboard();
     //
-    //   const categories = await this.categoriesService.findAll()
-    //   const filtered = categories.filter((item) => item.channelActive).sort((a, b) => a.id - b.id)
+    //   constants categories = await this.categoriesService.findAll()
+    //   constants filtered = categories.filter((item) => item.channelActive).sort((a, b) => a.id - b.id)
     //
     //   filtered.forEach((item) => {
     //     keyBoardCategory.text(`${item.id}-${item.name}`).resized();
     //   });
     //
-    //   const sameUser = await this.userService.findByPhone(phone)
+    //   constants sameUser = await this.userService.findByPhone(phone)
     //
-    //   const saveInfo = async () => {
+    //   constants saveInfo = async () => {
     //     if (!sameUser.chatIdTg) sameUser.chatIdTg = `${chatId}`
     //     if (!sameUser.userIdTg) sameUser.userIdTg = `${userId}`
     //     await this.userService.saveUpdatedUser(sameUser.id, sameUser)
@@ -113,14 +113,14 @@ export class TelegramServiceThree implements OnApplicationShutdown {
     //   }
     //
     //   if (!sameUser) {
-    //     const password = await this.userService.randomPassword(12)
-    //     const infoForRegister = {
+    //     constants password = await this.userService.randomPassword(12)
+    //     constants infoForRegister = {
     //       phoneNumber: phone,
     //       password: password,
     //       passwordCheck: password,
     //     }
-    //     const newUser = await this.authService.register(infoForRegister, `000.00.00.000`)
-    //     const user = await this.userService.findByPhone(phone)
+    //     constants newUser = await this.authService.register(infoForRegister, `000.00.00.000`)
+    //     constants user = await this.userService.findByPhone(phone)
     //
     //
     //     user.isActivatedPhone = true
@@ -147,7 +147,7 @@ export class TelegramServiceThree implements OnApplicationShutdown {
     // })
     //
     // this.bot.hears('Получить доступ', async (ctx) => {
-    //   const shareKeyBoard = new Keyboard().requestContact('Отправить контакт').resized()
+    //   constants shareKeyBoard = new Keyboard().requestContact('Отправить контакт').resized()
     //   await ctx.reply(
     //       'Для продолжения мне необходимо проверить имеется ли учетная запись с вашим номером телефона на сайте клиенты.com. Если ее нет я ее быстро создам и направлю вам данные для входа. Это необходимо для подключения вашего аккаунта к телеграмм чату и проведения платежей. В учетную запись заходить необязательно, все будет в телеграмме',
     //       {
@@ -160,19 +160,19 @@ export class TelegramServiceThree implements OnApplicationShutdown {
     //   await ctx.reply(`Если вы оплатили и не пришла ссылка на вступление в чат, напишите в телеграмм @MaksOST1\n\n` +
     //       `Мы проверим вашу оплату и предоставим доступ\n`)
     //
-    //   // const chatId = ctx.message.chat.id
-    //   // const userId = ctx.message.from.id
-    //   // const user = await this.userService.findByIdTgUser(`${userId}`)
+    //   // constants chatId = ctx.message.chat.id
+    //   // constants userId = ctx.message.from.id
+    //   // constants user = await this.userService.findByIdTgUser(`${userId}`)
     // })
     //
     // // БЛОК РАБОТЫ С КАТЕГОРИЯМИ
     // this.bot.hears(/^(\d+)\s*-\s*(.+)$/, async (ctx) => {
     //
-    //   const message = ctx.message.text.split('-')
+    //   constants message = ctx.message.text.split('-')
     //
     //   // Создаем клавиатуру
-    //   const keyBoardCategory = new Keyboard();
-    //   const category = await this.categoriesService.findById_category(+message[0])
+    //   constants keyBoardCategory = new Keyboard();
+    //   constants category = await this.categoriesService.findById_category(+message[0])
     //
     //   category?.chatNames?.forEach((item,index) => {
     //     if((index + 1) % 2 == 0) {
@@ -193,10 +193,10 @@ export class TelegramServiceThree implements OnApplicationShutdown {
     // // На оплату для выбора
     // this.bot.hears(/^(\d+)\.\s*(.+)$/, async (ctx) => {
     //
-    //   const message = ctx.message.text.split('.')
+    //   constants message = ctx.message.text.split('.')
     //
     //   // Создаем клавиатуру
-    //   const keyBoardCategory = new Keyboard()
+    //   constants keyBoardCategory = new Keyboard()
     //       .text(`${message[0]} ${message[1]}: 1 меc. - 3000 руб.`)
     //       .text(`${message[0]} ${message[1]}: 2 мес. - 6000 руб.`).row()
     //       .text(`${message[0]} ${message[1]}: 3 мес. - 9000 руб.`)
@@ -216,36 +216,36 @@ export class TelegramServiceThree implements OnApplicationShutdown {
     // // тут уже ссылку формируем на оплату
     // this.bot.hears(/.*руб\..*/, async (ctx) => {
     //
-    //   const chatId = ctx.message.chat.id
-    //   const userId = ctx.message.from.id
+    //   constants chatId = ctx.message.chat.id
+    //   constants userId = ctx.message.from.id
     //
-    //   const regex = /^(\d+)\s+(.*?)\s*:\s*(\d+)\s+(ме[сc]\.|нед\.|недели|месяц)\s+-\s+(\d+)\s+руб\.$/i;
+    //   constants regex = /^(\d+)\s+(.*?)\s*:\s*(\d+)\s+(ме[сc]\.|нед\.|недели|месяц)\s+-\s+(\d+)\s+руб\.$/i;
     //
-    //   const message = ctx.message.text
-    //   const match = message.match(regex);
+    //   constants message = ctx.message.text
+    //   constants match = message.match(regex);
     //
     //   if (match) {
-    //     const number = match[1]; // Номер
-    //     const subject = match[2]; // Предмет
-    //     const duration = match[3]; // Срок дни
-    //     const nameMonthOtWeek = match[4]; // Срок
-    //     const price = match[5]; // Цена
+    //     constants number = match[1]; // Номер
+    //     constants subject = match[2]; // Предмет
+    //     constants duration = match[3]; // Срок дни
+    //     constants nameMonthOtWeek = match[4]; // Срок
+    //     constants price = match[5]; // Цена
     //
-    //     const user = await this.userService.findByIdTgUser(`${userId}`)
+    //     constants user = await this.userService.findByIdTgUser(`${userId}`)
     //
     //     if (user && user.isActivatedPhone) {
     //
-    //       const chosenCategory = await this.categoriesService.findById_category(+number)
+    //       constants chosenCategory = await this.categoriesService.findById_category(+number)
     //
-    //       const priceWeek = nameMonthOtWeek.includes('не')
-    //       const priceMonth = nameMonthOtWeek.includes('ме')
-    //       const title = priceWeek ? 'Недельный' : 'Погрузись в работу'
+    //       constants priceWeek = nameMonthOtWeek.includes('не')
+    //       constants priceMonth = nameMonthOtWeek.includes('ме')
+    //       constants title = priceWeek ? 'Недельный' : 'Погрузись в работу'
     //       let days;
     //
     //       if (nameMonthOtWeek.includes('не')) days = +duration * 7
     //       if (nameMonthOtWeek.includes('ме')) days = +duration
     //
-    //       const payment = {
+    //       constants payment = {
     //         categ: [{id: chosenCategory.id, text: chosenCategory.name, chatNames: chosenCategory.chatNames}],
     //         price: +price,
     //         period: days,
@@ -253,7 +253,7 @@ export class TelegramServiceThree implements OnApplicationShutdown {
     //         chatList: [{id: chosenCategory.id, chats: [subject]}]
     //       }
     //
-    //       const link = await this.categoriesService.createPayNotification(user, payment)
+    //       constants link = await this.categoriesService.createPayNotification(user, payment)
     //
     //       await ctx.reply(
     //           `Ваша ссылка для проведения оплаты:\n\n` +
@@ -275,15 +275,15 @@ export class TelegramServiceThree implements OnApplicationShutdown {
     //
     // this.bot.hears(/t\.me\.*/, async (ctx) => {
     //
-    //   const text = ctx.message.text
+    //   constants text = ctx.message.text
     //
     //   async function getInfo(text) {
     //     try {
     //
-    //       const link = `http://localhost:7000`
-    //       const encodedText = encodeURIComponent(text);
+    //       constants link = `http://localhost:7000`
+    //       constants encodedText = encodeURIComponent(text);
     //
-    //       const response = await fetch(`${link}/telegram-posts/addPeopleFromChat?text=${encodedText}`, {
+    //       constants response = await fetch(`${link}/telegram-posts/addPeopleFromChat?text=${encodedText}`, {
     //         method: 'GET',
     //         headers: {
     //           'Content-Type': 'application/json',
@@ -295,7 +295,7 @@ export class TelegramServiceThree implements OnApplicationShutdown {
     //             `Failed to fetch categories. Status: ${response.status}`,
     //         );
     //       }
-    //       const responseData = await response.json();
+    //       constants responseData = await response.json();
     //
     //       // await this.bot.api.messages.AddChatUser()
     //
@@ -315,14 +315,14 @@ export class TelegramServiceThree implements OnApplicationShutdown {
     //     }
     //   }
     //
-    //   const result = await getInfo(text)
+    //   constants result = await getInfo(text)
     //
     // })
     //
     // this.bot.catch((err) => {
-    //   const ctx = err.ctx
+    //   constants ctx = err.ctx
     //   console.error(`Error while handling update ${ctx?.update?.update_id}:`)
-    //   const e = err.error
+    //   constants e = err.error
     //   if (e instanceof GrammyError) {
     //     console.error('Error in request:', e?.description)
     //   } else if (e instanceof HttpError) {
@@ -338,7 +338,7 @@ export class TelegramServiceThree implements OnApplicationShutdown {
     //     console.log('Bot started successfully.')
     //
     //     // Отправляем клавиатуру с кнопкой сразу после успешного запуска бота
-    //     const startKeyBoard = new Keyboard().text('Отправить контакт')
+    //     constants startKeyBoard = new Keyboard().text('Отправить контакт')
     //     this.bot.api.sendMessage('<YOUR_CHAT_ID>', "Welcome to the bot! Press 'Share your contact' to start.", {
     //       reply_markup: startKeyBoard,
     //     })
@@ -500,9 +500,9 @@ export class TelegramServiceThree implements OnApplicationShutdown {
       await ctx.reply(`Если вы оплатили и не пришла ссылка на вступление в чат, напишите в телеграмм @MaksOST1\n\n` +
           `Мы проверим вашу оплату и предоставим доступ\n`)
 
-      // const chatId = ctx.message.chat.id
-      // const userId = ctx.message.from.id
-      // const user = await this.userService.findByIdTgUser(`${userId}`)
+      // constants chatId = ctx.message.chat.id
+      // constants userId = ctx.message.from.id
+      // constants user = await this.userService.findByIdTgUser(`${userId}`)
     })
 
     // БЛОК РАБОТЫ С КАТЕГОРИЯМИ
@@ -679,7 +679,7 @@ export class TelegramServiceThree implements OnApplicationShutdown {
       //   console.log('Bot started successfully.')
       //
       //   // Отправляем клавиатуру с кнопкой сразу после успешного запуска бота
-      //   const startKeyBoard = new Keyboard().text('Отправить контакт')
+      //   constants startKeyBoard = new Keyboard().text('Отправить контакт')
       //   this.bot.api.sendMessage('<YOUR_CHAT_ID>', "Welcome to the bot! Press 'Share your contact' to start.", {
       //     reply_markup: startKeyBoard,
       //   })

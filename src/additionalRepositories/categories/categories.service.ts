@@ -877,13 +877,15 @@ export class CategoriesService {
 
       if (response?.data && response?.status == 200 && response.data.status == 'succeeded') {
         const trans = await this.transactionService.changeTransaction(response)
+        const user = await this.usersService.findById(receipt?.user_id)
+        user.wallet = user.wallet + receipt.amount
+        await this.usersService.saveUpdatedUser(user.id, user)
+
         if (trans) {
           if (paymentStatusDto.object.description == 'Пополнение баланса на сайте клиенты.com') {
-            this.activatePayment(trans)
-            const user = await this.usersService.findById(receipt?.user_id)
+            // this.activatePayment(trans)
             if (user) {
-              user.wallet = user.wallet + receipt.amount
-              await this.usersService.saveUpdatedUser(user.id, user)
+
             }
           }
         }

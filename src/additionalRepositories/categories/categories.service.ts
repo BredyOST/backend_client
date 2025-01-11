@@ -586,7 +586,8 @@ export class CategoriesService {
     try {
       const user = await this.usersService.findById(+id)
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
-
+      console.log(1)
+      console.log(dto.price)
       const shopId = process.env['SHOP_ID']
       const secretKey = process.env['SECRET_KEY_SHOP']
       const idempotenceKey = uuid.v4()

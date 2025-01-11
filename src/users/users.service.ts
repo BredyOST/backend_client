@@ -103,7 +103,7 @@ export class UsersService {
       const user = await this.repository.findOneBy({ id })
       if (!user) throw new HttpException('Пользователь не найден', HttpStatus.UNAUTHORIZED)
       // определяем что нам нужно вернуть
-      const { activationLink, activationNumber, id: idVk, password, ip, updateAt, deletedAt, sessionToken, ...other } = user
+      const { activationLink, activationNumber, password, ip, updateAt, deletedAt, sessionToken, ...other } = user
 
       return { ...other, identificator: 'получено' }
     } catch (err) {

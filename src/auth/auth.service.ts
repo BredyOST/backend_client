@@ -88,7 +88,7 @@ export class AuthService {
     try {
 
       // убираем лишнее, что не нужно возвращать пользователю
-      const { password, activationLink, activationNumber, id, updateAt, deletedAt, ...other } = user
+      const { password, activationLink, activationNumber, updateAt, deletedAt, ...other } = user
       // получаем токены доступа
       const tokens = await this.issueTokenPair(user.id)
       if (!tokens || !tokens.accessToken || !tokens.refreshToken) {
